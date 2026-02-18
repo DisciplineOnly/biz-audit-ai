@@ -123,6 +123,7 @@ export function MultiCheckbox({
         return (
           <label
             key={opt}
+            onClick={() => toggle(opt)}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-all text-sm ${
               isSelected
                 ? "border-[hsl(var(--coral))] bg-[hsl(var(--coral)_/_0.05)]"
