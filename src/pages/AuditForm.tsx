@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Zap, Save } from "lucide-react";
 import { AuditFormState, auditReducer, initialFormState, Niche } from "@/types/audit";
@@ -57,7 +57,7 @@ export default function AuditForm() {
   const [state, dispatch] = useReducer(auditReducer, initialFormState);
   const [errors, setErrors] = useState<string[]>([]);
   const [savedToast, setSavedToast] = useState(false);
-  const [animKey, setAnimKey] = useState(0);
+  const stepRef = useRef<HTMLDivElement>(null);
 
   // Initialize niche and load saved state
   useEffect(() => {
@@ -97,6 +97,15 @@ export default function AuditForm() {
   const tabLabels = [...STEP_LABELS];
   tabLabels[3] = step4Label;
 
+  const triggerAnim = () => {
+    const el = stepRef.current;
+    if (el) {
+      el.classList.remove("step-enter");
+      void el.offsetWidth; // reflow
+      el.classList.add("step-enter");
+    }
+  };
+
   const handleNext = () => {
     const errs = validateStep(currentStep, state);
     if (errs.length > 0) {
@@ -117,7 +126,7 @@ export default function AuditForm() {
       return;
     }
 
-    setAnimKey((k) => k + 1);
+    triggerAnim();
     dispatch({ type: "SET_STEP", payload: currentStep + 1 });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -128,7 +137,7 @@ export default function AuditForm() {
       return;
     }
     setErrors([]);
-    setAnimKey((k) => k + 1);
+    triggerAnim();
     dispatch({ type: "SET_STEP", payload: currentStep - 1 });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -136,7 +145,7 @@ export default function AuditForm() {
   const handleTabClick = (stepIndex: number) => {
     if (state.completedSteps.includes(stepIndex) || stepIndex < currentStep) {
       setErrors([]);
-      setAnimKey((k) => k + 1);
+      triggerAnim();
       dispatch({ type: "SET_STEP", payload: stepIndex });
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -257,7 +266,7 @@ export default function AuditForm() {
         )}
 
         {/* Step content */}
-        <div key={animKey} className="step-enter">
+        <div ref={stepRef} className="step-enter">
           {currentStep === 1 && <Step1BusinessInfo {...stepProps} />}
           {currentStep === 2 && <Step2Technology {...stepProps} />}
           {currentStep === 3 && <Step3LeadFunnel {...stepProps} />}
