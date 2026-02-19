@@ -15,10 +15,10 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### AI Report Generation
 
-- [ ] **AI-01**: Edge function calls Claude Haiku 4.5 to generate personalized report text based on form answers
-- [ ] **AI-02**: AI prompt includes niche context (home services vs real estate) for industry-specific framing
-- [ ] **AI-03**: AI prompt includes actual category scores (0-100) so recommendations reference specific weak areas
-- [ ] **AI-04**: Generated report text replaces template-based content while keeping the existing report structure (gaps, quick wins, strategic recommendations)
+- [x] **AI-01**: Edge function calls Claude Haiku 4.5 to generate personalized report text based on form answers
+- [x] **AI-02**: AI prompt includes niche context (home services vs real estate) for industry-specific framing
+- [x] **AI-03**: AI prompt includes actual category scores (0-100) so recommendations reference specific weak areas
+- [x] **AI-04**: Generated report text replaces template-based content while keeping the existing report structure (gaps, quick wins, strategic recommendations)
 
 ### Email Notifications
 
@@ -30,7 +30,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 - [ ] **SEC-01**: Rate limiting enforced on audit submissions (max 3 per email address per 24 hours)
 - [x] **SEC-02**: RLS policies prevent anonymous users from reading other users' audit data
 - [x] **SEC-03**: Service role key and API keys stored only in Supabase secrets, never in client-side code
-- [ ] **SEC-04**: User-provided free-text fields sanitized before inclusion in LLM prompts to prevent prompt injection
+- [x] **SEC-04**: User-provided free-text fields sanitized before inclusion in LLM prompts to prevent prompt injection
 
 ## v2 Requirements
 
@@ -67,16 +67,16 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DATA-01 | Phase 1 | Complete |
 | DATA-02 | Phase 1 | Complete |
 | DATA-03 | Phase 5 | Pending |
-| AI-01 | Phase 2 | Pending |
-| AI-02 | Phase 2 | Pending |
-| AI-03 | Phase 2 | Pending |
-| AI-04 | Phase 2 | Pending |
+| AI-01 | Phase 2 | Complete |
+| AI-02 | Phase 2 | Complete |
+| AI-03 | Phase 2 | Complete |
+| AI-04 | Phase 2 | Complete |
 | EMAIL-01 | Phase 3 | Pending |
 | EMAIL-02 | Phase 3 | Pending |
 | SEC-01 | Phase 4 | Pending |
 | SEC-02 | Phase 1 | Complete |
 | SEC-03 | Phase 1 | Complete |
-| SEC-04 | Phase 2 | Pending |
+| SEC-04 | Phase 2 | Complete |
 
 **Coverage:**
 - v1 requirements: 13 total
