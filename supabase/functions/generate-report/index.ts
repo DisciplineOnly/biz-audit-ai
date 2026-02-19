@@ -384,8 +384,19 @@ Deno.serve(async (req: Request) => {
     })
 
     // Extract and parse response
-    const responseText = (message.content[0] as { type: string; text: string }).text
-    const reportData = JSON.parse(responseText)
+    let responseText = (message.content[0] as { type: string; text: string }).text
+    // Strip markdown fences if present (Claude sometimes wraps JSON)
+    responseText = responseText.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '').trim()
+
+    // Fix literal newlines inside JSON string values (Claude sometimes breaks strings across lines)
+    let reportData: Record<string, unknown>
+    try {
+      reportData = JSON.parse(responseText)
+    } catch {
+      // Collapse all newlines to spaces and retry — JSON structure doesn't need them
+      responseText = responseText.replace(/\r?\n/g, ' ').replace(/\s+/g, ' ')
+      reportData = JSON.parse(responseText)
+    }
 
     // Update report_status to 'completed'
     await supabaseAdmin
