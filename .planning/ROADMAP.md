@@ -48,7 +48,11 @@ Plans:
   3. The returned report text references actual weak-scoring categories by name and score
   4. Free-text fields from the form (business name, biggest challenge, tech frustrations) are sanitized before reaching the LLM prompt
   5. The OpenAI API key is not present in the built JS bundle
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 02-01-PLAN.md -- Database migration (report_status column), shared CORS module, and generate-report edge function code
+- [ ] 02-02-PLAN.md -- Deploy edge function via MCP and verify via curl with sample audit data
 
 ### Phase 3: Email and Webhook
 **Goal**: Admin and user notification emails are sent automatically when an audit is inserted, with confirmed deliverability to real inboxes
