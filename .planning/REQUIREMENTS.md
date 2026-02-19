@@ -9,8 +9,8 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Data Persistence
 
-- [ ] **DATA-01**: Completed audit submissions are persisted to Supabase Postgres with all form answers, scores, and contact info
-- [ ] **DATA-02**: Each audit generates a unique UUID that serves as a permanent, shareable report URL
+- [x] **DATA-01**: Completed audit submissions are persisted to Supabase Postgres with all form answers, scores, and contact info
+- [x] **DATA-02**: Each audit generates a unique UUID that serves as a permanent, shareable report URL
 - [ ] **DATA-03**: Report page loads audit data from Supabase instead of localStorage when accessed via shareable URL
 
 ### AI Report Generation
@@ -29,7 +29,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 - [ ] **SEC-01**: Rate limiting enforced on audit submissions (max 3 per email address per 24 hours)
 - [ ] **SEC-02**: RLS policies prevent anonymous users from reading other users' audit data
-- [ ] **SEC-03**: Service role key and API keys stored only in Supabase secrets, never in client-side code
+- [x] **SEC-03**: Service role key and API keys stored only in Supabase secrets, never in client-side code
 - [ ] **SEC-04**: User-provided free-text fields sanitized before inclusion in LLM prompts to prevent prompt injection
 
 ## v2 Requirements
@@ -64,8 +64,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DATA-01 | Phase 1 | Pending |
-| DATA-02 | Phase 1 | Pending |
+| DATA-01 | Phase 1 | Complete |
+| DATA-02 | Phase 1 | Complete |
 | DATA-03 | Phase 5 | Pending |
 | AI-01 | Phase 2 | Pending |
 | AI-02 | Phase 2 | Pending |
@@ -75,7 +75,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EMAIL-02 | Phase 3 | Pending |
 | SEC-01 | Phase 4 | Pending |
 | SEC-02 | Phase 1 | Pending |
-| SEC-03 | Phase 1 | Pending |
+| SEC-03 | Phase 1 | Complete |
 | SEC-04 | Phase 2 | Pending |
 
 **Coverage:**
@@ -85,4 +85,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-19*
-*Last updated: 2026-02-19 after roadmap creation — all 13 requirements mapped*
+*Last updated: 2026-02-19 after 01-02 execution — DATA-01, DATA-02, SEC-03 marked complete*

@@ -34,8 +34,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 3 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Create audits table with RLS via Supabase MCP migration + Security Advisor check
-- [ ] 01-02-PLAN.md — Install @supabase/supabase-js, scaffold client singleton and submitAudit function
+- [x] 01-01-PLAN.md — Create audits table with RLS via Supabase MCP migration + Security Advisor check
+- [x] 01-02-PLAN.md — Install @supabase/supabase-js, scaffold client singleton and submitAudit function
 - [ ] 01-03-PLAN.md — Automated backend verification + browser round-trip checkpoint
 
 ### Phase 2: AI Report Edge Function
@@ -101,7 +101,7 @@ Note: Phase 3 depends only on Phase 1 and can be worked in parallel with Phase 2
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Schema and Environment | 0/3 | Not started | - |
+| 1. Schema and Environment | 2/3 | In progress | - |
 | 2. AI Report Edge Function | 0/? | Not started | - |
 | 3. Email and Webhook | 0/? | Not started | - |
 | 4. Rate Limiting | 0/? | Not started | - |
