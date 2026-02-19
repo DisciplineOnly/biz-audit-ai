@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-19)
 ## Current Position
 
 Phase: 2 of 6 (AI Report Edge Function)
-Plan: 1 of 2 in current phase
-Status: In progress — 02-01 complete, 02-02 pending
-Last activity: 2026-02-19 — Completed 02-01: generate-report edge function code + migration
+Plan: 2 of 2 in current phase — PHASE COMPLETE
+Status: Phase 2 complete — moving to Phase 3 (Email/Webhook)
+Last activity: 2026-02-19 — Completed 02-02: deployed and verified generate-report edge function
 
-Progress: [████░░░░░░] 22%
+Progress: [█████░░░░░] 33%
 
 ## Performance Metrics
 
@@ -28,11 +28,11 @@ Progress: [████░░░░░░] 22%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-schema-and-environment | 3/3 COMPLETE | ~18 min | ~6 min |
-| 02-ai-report-edge-function | 1/2 | ~25 min | ~25 min |
+| 02-ai-report-edge-function | 2/2 COMPLETE | ~55 min | ~27 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (~6 min), 01-02 (4 min), 01-03 (~10 min incl. human verification), 02-01 (~25 min)
-- Trend: 02-01 longer due to comprehensive edge function implementation (428 lines)
+- Last 5 plans: 01-02 (4 min), 01-03 (~10 min incl. human verification), 02-01 (~25 min), 02-02 (~30 min)
+- Trend: Phase 2 plans longer due to edge function implementation (428 lines) and multi-step verification
 
 *Updated after each plan completion*
 
@@ -58,6 +58,9 @@ Recent decisions affecting current work:
 - Edge function (02-01): PII excluded from LLM prompt by omission — buildPrompt() never references .email, .phone, .contactName keys
 - Edge function (02-01): report_status 'failed' update is best-effort — wrapped in separate try/catch, error intentionally swallowed to preserve original error response
 - Edge function (02-01): Migration applied by orchestrator MCP — executor lacks direct MCP tool access (same pattern as Phase 1)
+- Edge function (02-02): Claude Haiku 4.5 wraps JSON in markdown fences and embeds literal newlines despite prompt instructions — two-pass JSON parsing added (fence strip + newline collapse) and deployed as v3
+- Edge function (02-02): ANTHROPIC_API_KEY confirmed absent from client bundle — grep dist/ returns 0; API key stays in Supabase secret store server-side only
+- Phase 2: All five success criteria confirmed PASS via curl test — niche framing, score-aware recommendations, PII exclusion, valid JSON schema, no API key in bundle
 
 ### Pending Todos
 
@@ -66,13 +69,14 @@ None.
 ### Blockers/Concerns
 
 - DNS propagation for Resend sender domain takes up to 48 hours — must start domain verification in Phase 3 immediately, before any other Phase 3 work
-- Supabase free tier pauses after 7 days inactivity and has lower edge function timeout — confirm paid tier before Phase 2
-- Migration 20260219120000_add_report_status_to_audits.sql must be applied to remote DB via MCP before 02-02 testing
-- ANTHROPIC_API_KEY must be stored as Supabase secret before edge function deployment testing
 - Shareable URL SELECT policy decision deferred to Phase 5 planning: anon policy on UUID vs. fetch-report edge function with service role reads
+
+*Resolved:*
+- ~~Migration 20260219120000_add_report_status_to_audits.sql must be applied to remote DB~~ — applied via MCP before 02-02 testing
+- ~~ANTHROPIC_API_KEY must be stored as Supabase secret~~ — confirmed present and working (02-02 curl PASS)
 
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Completed 02-01-PLAN.md — generate-report edge function code + migration SQL created
-Resume file: .planning/phases/02-ai-report-edge-function/02-02-PLAN.md
+Stopped at: Completed 02-02-PLAN.md — generate-report edge function deployed and verified (Phase 2 complete)
+Resume file: .planning/phases/03-email-webhook/03-01-PLAN.md (Phase 3 starts next)

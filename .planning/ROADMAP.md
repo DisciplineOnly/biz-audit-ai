@@ -13,7 +13,7 @@ BizAudit is a working React/Vite SPA with client-side scoring. This milestone ad
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Schema and Environment** - Supabase project wired up, audits table created with RLS, secrets secured
-- [ ] **Phase 2: AI Report Edge Function** - generate-report edge function deployed and tested in isolation
+- [x] **Phase 2: AI Report Edge Function** - generate-report edge function deployed and tested in isolation (completed 2026-02-19)
 - [ ] **Phase 3: Email and Webhook** - send-notification edge function + Database Webhook sending admin and user emails
 - [ ] **Phase 4: Rate Limiting** - email-based submission rate limiting enforced before frontend goes public
 - [ ] **Phase 5: Frontend Integration** - Loading.tsx and Report.tsx wired to backend; shareable report URLs live
@@ -106,7 +106,7 @@ Note: Phase 3 depends only on Phase 1 and can be worked in parallel with Phase 2
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Schema and Environment | 3/3 | Complete    | 2026-02-19 |
-| 2. AI Report Edge Function | 0/? | Not started | - |
+| 2. AI Report Edge Function | 2/2 | Complete   | 2026-02-19 |
 | 3. Email and Webhook | 0/? | Not started | - |
 | 4. Rate Limiting | 0/? | Not started | - |
 | 5. Frontend Integration | 0/? | Not started | - |
