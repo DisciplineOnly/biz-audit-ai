@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Zap } from "lucide-react";
+import { submitAudit } from "@/lib/submitAudit";
+import type { AuditFormState, AuditScores } from "@/types/audit";
 
 const steps = [
   "Analyzing your technology stack...",
@@ -18,9 +20,39 @@ export default function Loading() {
   const location = useLocation();
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const auditIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    const auditId = (location.state as { auditId?: string })?.auditId || "demo-" + Date.now();
+    const locationState = location.state as { auditId?: string; formState?: AuditFormState; scores?: AuditScores } | null;
+    const formState = locationState?.formState;
+    const scores = locationState?.scores;
+
+    // Validate required data
+    if (!formState || !scores) {
+      setError("Missing form data. Please start over.");
+      setTimeout(() => navigate("/"), 3000);
+      return;
+    }
+
+    if (!formState.niche) {
+      setError("Missing niche selection. Please start over.");
+      setTimeout(() => navigate("/"), 3000);
+      return;
+    }
+
+    // Submit audit to database
+    submitAudit(formState, scores)
+      .then((id) => {
+        console.log("Audit saved successfully with ID:", id);
+        auditIdRef.current = id;
+      })
+      .catch((err) => {
+        console.error("Failed to save audit:", err);
+        setError(`Failed to save audit: ${err.message}`);
+        // Use fallback ID if save fails
+        auditIdRef.current = locationState?.auditId || "demo-" + Date.now();
+      });
 
     const stepInterval = setInterval(() => {
       setCurrentStep((prev) => {
@@ -43,7 +75,9 @@ export default function Loading() {
     }, 140);
 
     const redirect = setTimeout(() => {
-      navigate(`/report/${auditId}`, { state: location.state });
+      // Use auditIdRef.current if available, otherwise fallback
+      const finalAuditId = auditIdRef.current || locationState?.auditId || "demo-" + Date.now();
+      navigate(`/report/${finalAuditId}`, { state: { ...locationState, auditId: finalAuditId } });
     }, 14500);
 
     return () => {
@@ -92,6 +126,11 @@ export default function Loading() {
       <p className="text-white/50 text-sm mb-10 text-center">
         This takes about 15–20 seconds — please don't close this tab
       </p>
+      {error && (
+        <div className="w-full max-w-md mb-4 p-4 bg-red-500/20 border border-red-500/50 rounded-lg">
+          <p className="text-red-200 text-sm text-center">{error}</p>
+        </div>
+      )}
 
       {/* Progress bar */}
       <div className="w-full max-w-md mb-8">
