@@ -28,7 +28,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 ### Security
 
 - [ ] **SEC-01**: Rate limiting enforced on audit submissions (max 3 per email address per 24 hours)
-- [ ] **SEC-02**: RLS policies prevent anonymous users from reading other users' audit data
+- [x] **SEC-02**: RLS policies prevent anonymous users from reading other users' audit data
 - [x] **SEC-03**: Service role key and API keys stored only in Supabase secrets, never in client-side code
 - [ ] **SEC-04**: User-provided free-text fields sanitized before inclusion in LLM prompts to prevent prompt injection
 
@@ -74,7 +74,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EMAIL-01 | Phase 3 | Pending |
 | EMAIL-02 | Phase 3 | Pending |
 | SEC-01 | Phase 4 | Pending |
-| SEC-02 | Phase 1 | Pending |
+| SEC-02 | Phase 1 | Complete |
 | SEC-03 | Phase 1 | Complete |
 | SEC-04 | Phase 2 | Pending |
 

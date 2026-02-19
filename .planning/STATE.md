@@ -9,29 +9,29 @@ See: .planning/PROJECT.md (updated 2026-02-19)
 
 ## Current Position
 
-Phase: 1 of 6 (Schema and Environment)
-Plan: 2 of 3 in current phase
-Status: In progress
-Last activity: 2026-02-19 — Completed 01-02: Supabase client SDK + submitAudit function
+Phase: 2 of 6 (AI Report Edge Function)
+Plan: 0 of ? in current phase
+Status: Phase 1 complete — ready for Phase 2
+Last activity: 2026-02-19 — Completed 01-03: Phase 1 verification — all five success criteria PASS
 
-Progress: [██░░░░░░░░] 10%
+Progress: [███░░░░░░░] 17%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: ~4 min/plan
-- Total execution time: ~8 min
+- Total plans completed: 3
+- Average duration: ~6 min/plan
+- Total execution time: ~18 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-schema-and-environment | 2/3 | ~8 min | ~4 min |
+| 01-schema-and-environment | 3/3 COMPLETE | ~18 min | ~6 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (~4 min), 01-02 (4 min)
-- Trend: Fast — environment setup and client SDK scaffold are quick tasks
+- Last 5 plans: 01-01 (~6 min), 01-02 (4 min), 01-03 (~10 min incl. human verification)
+- Trend: Fast — infrastructure verification with human browser checkpoint
 
 *Updated after each plan completion*
 
@@ -51,6 +51,8 @@ Recent decisions affecting current work:
 - Client SDK: Only VITE_SUPABASE_PUBLISHABLE_KEY exposed to frontend — SEC-03 compliant; no service_role or secret keys
 - Client SDK: submitAudit chains .select('id').single() to capture UUID — required for supabase-js v2 (returns null data without .select())
 - Client SDK: niche null guard deferred to caller (Loading.tsx in Phase 5) — DB CHECK constraint is final guard
+- Verification (01-03): submitAudit changed to crypto.randomUUID() client-side — .select().single() returned null in browser context despite row being inserted; crypto.randomUUID() is the correct v2 browser pattern
+- Phase 1: All five success criteria confirmed PASS via automated MCP checks + human browser round-trip approval
 
 ### Pending Todos
 
@@ -59,12 +61,11 @@ None.
 ### Blockers/Concerns
 
 - DNS propagation for Resend sender domain takes up to 48 hours — must start domain verification in Phase 3 immediately, before any other Phase 3 work
-- Supabase free tier pauses after 7 days inactivity and has lower edge function timeout — confirm paid tier before Phase 1
+- Supabase free tier pauses after 7 days inactivity and has lower edge function timeout — confirm paid tier before Phase 2
 - Shareable URL SELECT policy decision deferred to Phase 5 planning: anon policy on UUID vs. fetch-report edge function with service role reads
-- USER SETUP REQUIRED: User must create D:/Claude/BizAudit/.env from .env.example with VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY before running the app
 
 ## Session Continuity
 
 Last session: 2026-02-19
-Stopped at: Completed 01-02-PLAN.md — Supabase client SDK and submitAudit function; ready for 01-03 verification plan
+Stopped at: Completed 01-03-PLAN.md — Phase 1 verification complete; all five success criteria PASS; Phase 1 done
 Resume file: None
