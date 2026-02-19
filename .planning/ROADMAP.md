@@ -31,7 +31,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. An anonymous user querying the audits table via the anon key receives zero rows (RLS blocks reads)
   4. Supabase Security Advisor shows no warnings on the audits table
   5. No API keys other than VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY exist in any VITE_ environment variable
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Create audits table with RLS via Supabase MCP migration + Security Advisor check
+- [ ] 01-02-PLAN.md — Install @supabase/supabase-js, scaffold client singleton and submitAudit function
+- [ ] 01-03-PLAN.md — Automated backend verification + browser round-trip checkpoint
 
 ### Phase 2: AI Report Edge Function
 **Goal**: A deployed Supabase edge function generates personalized AI report content from audit answers and can be verified independently via HTTP before any frontend changes
@@ -96,7 +101,7 @@ Note: Phase 3 depends only on Phase 1 and can be worked in parallel with Phase 2
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Schema and Environment | 0/? | Not started | - |
+| 1. Schema and Environment | 0/3 | Not started | - |
 | 2. AI Report Edge Function | 0/? | Not started | - |
 | 3. Email and Webhook | 0/? | Not started | - |
 | 4. Rate Limiting | 0/? | Not started | - |
