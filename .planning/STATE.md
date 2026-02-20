@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-19)
 ## Current Position
 
 Phase: 3 of 6 (Email/Webhook)
-Plan: 2 of 3 in current phase — 03-02 COMPLETE
-Status: In progress — 03-02 done (send-notification edge function), next: 03-03 (Database Webhook configuration)
-Last activity: 2026-02-20 — Completed 03-02: send-notification edge function with Resend admin email
+Plan: 3 of 3 in current phase — 03-03 COMPLETE
+Status: Phase 3 complete — all 3 plans done; next: Phase 4 (Report Page)
+Last activity: 2026-02-20 — Completed 03-03: Database Webhook configured, end-to-end email pipeline verified
 
-Progress: [███████░░░] 43%
+Progress: [████████░░] 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: ~9 min/plan
-- Total execution time: ~51 min
+- Total plans completed: 6
+- Average duration: ~13 min/plan (skewed by human checkpoint steps in Phase 3 Plan 3)
+- Total execution time: ~111 min
 
 **By Phase:**
 
@@ -29,7 +29,7 @@ Progress: [███████░░░] 43%
 |-------|-------|-------|----------|
 | 01-schema-and-environment | 3/3 COMPLETE | ~18 min | ~6 min |
 | 02-ai-report-edge-function | 2/2 COMPLETE | ~55 min | ~27 min |
-| 03-email-webhook | 2/3 in progress | ~18 min | ~9 min |
+| 03-email-webhook | 3/3 COMPLETE | ~78 min | ~26 min |
 
 **Recent Trend:**
 - Last 5 plans: 01-03 (~10 min), 02-01 (~25 min), 02-02 (~30 min), 03-01 (~8 min)
@@ -70,6 +70,10 @@ Recent decisions affecting current work:
 - Email (03-02): double guard on report_status === 'completed' AND email_status === 'pending' — prevents duplicate sends if webhook fires again
 - Email (03-02): HTML email uses inline styles only (no style blocks) — Gmail strips style blocks; table-based layout for Outlook compatibility
 - Email (03-02): AI report read failure degrades gracefully — email still sends with contact info and scores, omits recommendations section
+- Deploy (03-03): Supabase Edge Function webhook type chosen over HTTP Request type — eliminates manual URL/service_role auth header configuration
+- Deploy (03-03): generate-report MCP deploy inlines corsHeaders constant — MCP cannot resolve ../_shared/cors.ts; local file retains shared import for CLI deploy compatibility
+- Deploy (03-03): ADMIN_EMAIL must match Resend account owner email — onboarding@resend.dev sandbox restriction
+- Email (03-03): EMAIL-02 (user email to contact) deferred — requires custom Resend domain verification before delivery to arbitrary addresses
 
 ### Pending Todos
 
@@ -77,7 +81,7 @@ None.
 
 ### Blockers/Concerns
 
-- DNS propagation for Resend sender domain takes up to 48 hours — must start domain verification in Phase 3 immediately, before any other Phase 3 work
+- EMAIL-02 deferred: user email requires Resend custom domain verification (up to 48h DNS propagation) — should initiate now so it is ready for Phase 5
 - Shareable URL SELECT policy decision deferred to Phase 5 planning: anon policy on UUID vs. fetch-report edge function with service role reads
 
 *Resolved:*
@@ -87,5 +91,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Completed 03-02 (send-notification edge function with Resend admin email)
-Resume file: .planning/phases/03-email-webhook/03-03-PLAN.md
+Stopped at: Completed 03-03 (Database Webhook + end-to-end email verification) — Phase 3 complete
+Resume file: .planning/phases/04-report-page/04-01-PLAN.md (or run phase-plan for Phase 4)
