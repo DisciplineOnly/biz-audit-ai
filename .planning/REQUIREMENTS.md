@@ -11,7 +11,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 - [x] **DATA-01**: Completed audit submissions are persisted to Supabase Postgres with all form answers, scores, and contact info
 - [x] **DATA-02**: Each audit generates a unique UUID that serves as a permanent, shareable report URL
-- [ ] **DATA-03**: Report page loads audit data from Supabase instead of localStorage when accessed via shareable URL
+- [x] **DATA-03**: Report page loads audit data from Supabase instead of localStorage when accessed via shareable URL
 
 ### AI Report Generation
 
