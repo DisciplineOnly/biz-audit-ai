@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-19)
 ## Current Position
 
 Phase: 3 of 6 (Email/Webhook)
-Plan: 1 of 3 in current phase — 03-01 COMPLETE
-Status: In progress — 03-01 done (DB foundation), next: 03-02 (send-notification edge function)
-Last activity: 2026-02-20 — Completed 03-01: email_status migration + audit_reports table + generate-report updated
+Plan: 2 of 3 in current phase — 03-02 COMPLETE
+Status: In progress — 03-02 done (send-notification edge function), next: 03-03 (Database Webhook configuration)
+Last activity: 2026-02-20 — Completed 03-02: send-notification edge function with Resend admin email
 
-Progress: [██████░░░░] 38%
+Progress: [███████░░░] 43%
 
 ## Performance Metrics
 
@@ -29,7 +29,7 @@ Progress: [██████░░░░] 38%
 |-------|-------|-------|----------|
 | 01-schema-and-environment | 3/3 COMPLETE | ~18 min | ~6 min |
 | 02-ai-report-edge-function | 2/2 COMPLETE | ~55 min | ~27 min |
-| 03-email-webhook | 1/3 in progress | ~8 min | ~8 min |
+| 03-email-webhook | 2/3 in progress | ~18 min | ~9 min |
 
 **Recent Trend:**
 - Last 5 plans: 01-03 (~10 min), 02-01 (~25 min), 02-02 (~30 min), 03-01 (~8 min)
@@ -66,6 +66,10 @@ Recent decisions affecting current work:
 - Email (03-01): audit_reports upsert uses onConflict: 'audit_id' — idempotent for edge function retries
 - Email (03-01): audit_reports upsert placed BEFORE report_status 'completed' update — webhook ordering requirement (data must exist before send-notification fires)
 - Email (03-01): no anon RLS policies on audit_reports — service_role bypasses RLS for edge function reads/writes
+- Email (03-02): always return 200 from send-notification — Database Webhooks retry on non-2xx, causing duplicate emails
+- Email (03-02): double guard on report_status === 'completed' AND email_status === 'pending' — prevents duplicate sends if webhook fires again
+- Email (03-02): HTML email uses inline styles only (no style blocks) — Gmail strips style blocks; table-based layout for Outlook compatibility
+- Email (03-02): AI report read failure degrades gracefully — email still sends with contact info and scores, omits recommendations section
 
 ### Pending Todos
 
@@ -83,5 +87,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Completed 03-01 (email_status migration + audit_reports table + generate-report updated)
-Resume file: .planning/phases/03-email-webhook/03-02-PLAN.md
+Stopped at: Completed 03-02 (send-notification edge function with Resend admin email)
+Resume file: .planning/phases/03-email-webhook/03-03-PLAN.md
