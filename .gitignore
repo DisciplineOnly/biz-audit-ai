@@ -12,8 +12,6 @@ dist
 dist-ssr
 *.local
 
-# Local environment variables (never commit)
-.env
 
 # Editor directories and files
 .vscode/*
