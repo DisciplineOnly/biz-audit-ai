@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-19)
 
 **Core value:** Business owners complete the audit and receive a personalized, AI-driven analysis that makes them want to book a consultation
-**Current focus:** Phase 3 — Email/Webhook
+**Current focus:** Phase 4 — Rate Limiting
 
 ## Current Position
 
-Phase: 3 of 6 (Email/Webhook)
-Plan: 3 of 3 in current phase — 03-03 COMPLETE
-Status: Phase 3 complete — all 3 plans done; next: Phase 4 (Report Page)
-Last activity: 2026-02-20 — Completed 03-03: Database Webhook configured, end-to-end email pipeline verified
+Phase: 4 of 6 (Rate Limiting)
+Plan: 1 of 2 in current phase — 04-01 COMPLETE
+Status: In progress — 1 of 2 plans done; next: 04-02 (Deploy and test rate limiting)
+Last activity: 2026-02-20 — Completed 04-01: Dual-vector rate limiting guard added to generate-report edge function
 
-Progress: [████████░░] 50%
+Progress: [█████████░] 58%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: ~13 min/plan (skewed by human checkpoint steps in Phase 3 Plan 3)
-- Total execution time: ~111 min
+- Total plans completed: 7
+- Average duration: ~11 min/plan
+- Total execution time: ~113 min
 
 **By Phase:**
 
@@ -30,6 +30,7 @@ Progress: [████████░░] 50%
 | 01-schema-and-environment | 3/3 COMPLETE | ~18 min | ~6 min |
 | 02-ai-report-edge-function | 2/2 COMPLETE | ~55 min | ~27 min |
 | 03-email-webhook | 3/3 COMPLETE | ~78 min | ~26 min |
+| 04-rate-limiting | 1/2 in progress | ~2 min | ~2 min |
 
 **Recent Trend:**
 - Last 5 plans: 01-03 (~10 min), 02-01 (~25 min), 02-02 (~30 min), 03-01 (~8 min)
@@ -74,6 +75,10 @@ Recent decisions affecting current work:
 - Deploy (03-03): generate-report MCP deploy inlines corsHeaders constant — MCP cannot resolve ../_shared/cors.ts; local file retains shared import for CLI deploy compatibility
 - Deploy (03-03): ADMIN_EMAIL must match Resend account owner email — onboarding@resend.dev sandbox restriction
 - Email (03-03): EMAIL-02 (user email to contact) deferred — requires custom Resend domain verification before delivery to arbitrary addresses
+- Rate limit (04-01): fixedWindow chosen for predictable reset time suitable for user-facing time hint
+- Rate limit (04-01): Same 429 message for email and IP limit hits — does not reveal which vector triggered
+- Rate limit (04-01): Redis and Ratelimit instances created inside handler (per_worker mode, consistent with 02-01 pattern)
+- Rate limit (04-01): Email matching is case-sensitive — email passed directly to limit() without normalization
 
 ### Pending Todos
 
@@ -91,5 +96,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Completed 03-03 (Database Webhook + end-to-end email verification) — Phase 3 complete
-Resume file: .planning/phases/04-report-page/04-01-PLAN.md (or run phase-plan for Phase 4)
+Stopped at: Completed 04-01 (Dual-vector rate limiting guard added to generate-report edge function)
+Resume file: .planning/phases/04-rate-limiting/04-02-PLAN.md
