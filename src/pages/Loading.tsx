@@ -1,8 +1,12 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Zap } from "lucide-react";
 import { submitAudit } from "@/lib/submitAudit";
-import type { AuditFormState, AuditScores } from "@/types/audit";
+import { supabase } from "@/lib/supabase";
+import { FunctionsHttpError } from "@supabase/supabase-js";
+import type { AuditFormState, AuditScores, AIReportData } from "@/types/audit";
+
+const MIN_WAIT_MS = 8000;
 
 const steps = [
   "Analyzing your technology stack...",
@@ -21,40 +25,128 @@ export default function Loading() {
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [isRateLimited, setIsRateLimited] = useState(false);
+  const [rateLimitMessage, setRateLimitMessage] = useState("");
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [, setAiReport] = useState<AIReportData | null>(null);
+
   const auditIdRef = useRef<string | null>(null);
+  const mountedRef = useRef(true);
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const apiResolvedRef = useRef(false);
+
+  // Capture location state once at mount
+  const locationStateRef = useRef(
+    location.state as { auditId?: string; formState?: AuditFormState; scores?: AuditScores } | null
+  );
+  const formStateRef = useRef(locationStateRef.current?.formState);
+  const scoresRef = useRef(locationStateRef.current?.scores);
+
+  const callGenerateReport = useCallback(
+    async (startTime: number) => {
+      const auditId = auditIdRef.current;
+      if (!auditId || auditId.startsWith("demo-")) {
+        // submitAudit failed — skip AI, go to report with template content
+        const elapsed = Date.now() - startTime;
+        await new Promise<void>((r) => setTimeout(r, Math.max(0, MIN_WAIT_MS - elapsed)));
+        if (!mountedRef.current) return;
+        apiResolvedRef.current = true;
+        setProgress(100);
+        navigate(`/report/${auditId}`, {
+          state: { formState: formStateRef.current, scores: scoresRef.current, auditId },
+        });
+        return;
+      }
+
+      const elapsed = Date.now() - startTime;
+      const remaining = Math.max(0, MIN_WAIT_MS - elapsed);
+      const minTimer = new Promise<void>((r) => setTimeout(r, remaining));
+
+      try {
+        const generateCall = supabase.functions.invoke("generate-report", {
+          body: { auditId, formState: formStateRef.current, scores: scoresRef.current },
+        });
+
+        const [result] = await Promise.all([generateCall, minTimer]);
+        const { data, error: invokeError } = result;
+
+        if (!mountedRef.current) return;
+
+        if (invokeError instanceof FunctionsHttpError) {
+          const body = await invokeError.context.json();
+          if (body?.rateLimited) {
+            setIsRateLimited(true);
+            setRateLimitMessage(body.message ?? "Too many submissions. Please try again later.");
+            return; // Stay on loading screen — do NOT navigate
+          }
+          throw invokeError; // Non-429 HTTP error
+        }
+
+        if (invokeError || !data?.success) {
+          throw new Error(
+            invokeError?.message || data?.error || "Report generation failed"
+          );
+        }
+
+        // Success — navigate to report with AI data
+        if (!mountedRef.current) return;
+        apiResolvedRef.current = true;
+        setAiReport(data.report as AIReportData);
+        setProgress(100);
+        navigate(`/report/${auditId}`, {
+          state: {
+            formState: formStateRef.current,
+            scores: scoresRef.current,
+            auditId,
+            aiReport: data.report,
+          },
+        });
+      } catch (err) {
+        if (!mountedRef.current) return;
+        setAiError((err as Error).message || "Report generation failed");
+        // Show Retry + Skip buttons — user can retry or skip to template report
+      }
+    },
+    [navigate]
+  );
+
+  const handleRetry = useCallback(() => {
+    setAiError(null);
+    callGenerateReport(Date.now()); // No min timer on retry — user already waited
+  }, [callGenerateReport]);
+
+  const handleSkipToReport = useCallback(() => {
+    const auditId = auditIdRef.current || "demo-" + Date.now();
+    navigate(`/report/${auditId}`, {
+      state: { formState: formStateRef.current, scores: scoresRef.current, auditId },
+    });
+  }, [navigate]);
 
   useEffect(() => {
-    const locationState = location.state as { auditId?: string; formState?: AuditFormState; scores?: AuditScores } | null;
-    const formState = locationState?.formState;
-    const scores = locationState?.scores;
+    mountedRef.current = true;
+
+    const locationState = locationStateRef.current;
+    const formState = formStateRef.current;
+    const scores = scoresRef.current;
 
     // Validate required data
     if (!formState || !scores) {
       setError("Missing form data. Please start over.");
-      setTimeout(() => navigate("/"), 3000);
+      setTimeout(() => { if (mountedRef.current) navigate("/"); }, 3000);
       return;
     }
 
     if (!formState.niche) {
       setError("Missing niche selection. Please start over.");
-      setTimeout(() => navigate("/"), 3000);
+      setTimeout(() => { if (mountedRef.current) navigate("/"); }, 3000);
       return;
     }
 
-    // Submit audit to database
-    submitAudit(formState, scores)
-      .then((id) => {
-        console.log("Audit saved successfully with ID:", id);
-        auditIdRef.current = id;
-      })
-      .catch((err) => {
-        console.error("Failed to save audit:", err);
-        setError(`Failed to save audit: ${err.message}`);
-        // Use fallback ID if save fails
-        auditIdRef.current = locationState?.auditId || "demo-" + Date.now();
-      });
+    const startTime = Date.now();
 
+    // Decorative step cycling (independent of real API work)
     const stepInterval = setInterval(() => {
+      if (!mountedRef.current) return;
       setCurrentStep((prev) => {
         if (prev >= steps.length - 1) {
           clearInterval(stepInterval);
@@ -64,28 +156,51 @@ export default function Loading() {
       });
     }, 1800);
 
-    const progressInterval = setInterval(() => {
+    // Progress bar: reaches ~90% at 8s (8000ms / 90 ticks ≈ 89ms per tick), then pauses
+    progressIntervalRef.current = setInterval(() => {
+      if (!mountedRef.current) return;
       setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(progressInterval);
-          return 100;
+        // Pause at 90% until API resolves
+        if (prev >= 90) {
+          if (apiResolvedRef.current) {
+            clearInterval(progressIntervalRef.current!);
+            return 100;
+          }
+          return 90;
         }
         return prev + 1;
       });
-    }, 140);
+    }, 89);
 
-    const redirect = setTimeout(() => {
-      // Use auditIdRef.current if available, otherwise fallback
-      const finalAuditId = auditIdRef.current || locationState?.auditId || "demo-" + Date.now();
-      navigate(`/report/${finalAuditId}`, { state: { ...locationState, auditId: finalAuditId } });
-    }, 14500);
+    // Async orchestration: submitAudit -> generate-report
+    async function runAuditFlow() {
+      // Step 1: Submit audit to DB (must complete first — auditId needed for generate-report)
+      try {
+        const id = await submitAudit(formState!, scores!);
+        if (!mountedRef.current) return;
+        console.log("Audit saved successfully with ID:", id);
+        auditIdRef.current = id;
+      } catch (err) {
+        if (!mountedRef.current) return;
+        console.error("Failed to save audit:", err);
+        setError(`Failed to save audit: ${(err as Error).message}`);
+        auditIdRef.current = locationState?.auditId || "demo-" + Date.now();
+      }
+
+      // Step 2: Fire generate-report + remaining min timer in parallel
+      if (mountedRef.current) {
+        await callGenerateReport(startTime);
+      }
+    }
+
+    runAuditFlow();
 
     return () => {
+      mountedRef.current = false;
       clearInterval(stepInterval);
-      clearInterval(progressInterval);
-      clearTimeout(redirect);
+      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
     };
-  }, [navigate, location.state]);
+  }, [navigate, callGenerateReport]);
 
   return (
     <div
@@ -105,9 +220,7 @@ export default function Loading() {
 
       {/* Spinner */}
       <div className="relative w-24 h-24 mb-8">
-        <div
-          className="absolute inset-0 rounded-full border-4 border-white/10"
-        />
+        <div className="absolute inset-0 rounded-full border-4 border-white/10" />
         <div
           className="absolute inset-0 rounded-full border-4 border-transparent animate-spin-slow"
           style={{
@@ -126,69 +239,111 @@ export default function Loading() {
       <p className="text-white/50 text-sm mb-10 text-center">
         This takes about 15–20 seconds — please don't close this tab
       </p>
+
+      {/* DB save error (non-blocking notice) */}
       {error && (
         <div className="w-full max-w-md mb-4 p-4 bg-red-500/20 border border-red-500/50 rounded-lg">
           <p className="text-red-200 text-sm text-center">{error}</p>
         </div>
       )}
 
-      {/* Progress bar */}
-      <div className="w-full max-w-md mb-8">
-        <div className="flex justify-between text-xs text-white/40 mb-2">
-          <span>Analyzing...</span>
-          <span>{progress}%</span>
+      {/* Rate limit block — replaces progress bar and step list */}
+      {isRateLimited ? (
+        <div className="w-full max-w-md text-center">
+          <div className="mb-4 text-4xl">🚫</div>
+          <h2 className="text-xl font-bold text-white mb-3">Too Many Submissions</h2>
+          <p className="text-white/70 mb-6">{rateLimitMessage}</p>
+          <p className="text-white/40 text-sm">
+            Your audit data has been saved. You'll receive your report once the limit resets.
+          </p>
         </div>
-        <div className="h-2 rounded-full bg-white/10 overflow-hidden">
-          <div
-            className="h-full rounded-full transition-all duration-200"
-            style={{
-              width: `${progress}%`,
-              backgroundColor: "hsl(var(--coral))",
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Steps list */}
-      <div className="w-full max-w-md space-y-3">
-        {steps.map((step, index) => {
-          const isActive = index === currentStep;
-          const isDone = index < currentStep;
-
-          return (
-            <div
-              key={index}
-              className={`flex items-center gap-3 text-sm transition-all duration-300 ${
-                isDone
-                  ? "text-white/50"
-                  : isActive
-                  ? "text-white"
-                  : "text-white/20"
-              }`}
-            >
-              <div
-                className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold transition-all ${
-                  isDone
-                    ? "bg-[hsl(var(--score-green))] text-white"
-                    : isActive
-                    ? "bg-[hsl(var(--coral))] text-white"
-                    : "bg-white/10 text-white/20"
-                }`}
-              >
-                {isDone ? "✓" : index + 1}
-              </div>
-              <span className={isActive ? "font-medium" : ""}>{step}</span>
-              {isActive && (
-                <span className="flex gap-1 ml-auto">
-                  <span className="loading-dot w-1.5 h-1.5 rounded-full bg-[hsl(var(--coral))]" />
-                  <span className="loading-dot w-1.5 h-1.5 rounded-full bg-[hsl(var(--coral))]" />
-                  <span className="loading-dot w-1.5 h-1.5 rounded-full bg-[hsl(var(--coral))]" />
-                </span>
-              )}
+      ) : (
+        <>
+          {/* Progress bar */}
+          <div className="w-full max-w-md mb-8">
+            <div className="flex justify-between text-xs text-white/40 mb-2">
+              <span>Analyzing...</span>
+              <span>{progress}%</span>
             </div>
-          );
-        })}
-      </div>
+            <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-200"
+                style={{
+                  width: `${progress}%`,
+                  backgroundColor: "hsl(var(--coral))",
+                }}
+              />
+            </div>
+          </div>
+
+          {/* AI error state — shown below progress bar */}
+          {aiError && (
+            <div className="w-full max-w-md space-y-3 mb-6">
+              <div className="p-4 bg-red-500/20 border border-red-500/50 rounded-lg">
+                <p className="text-red-200 text-sm text-center mb-3">
+                  Report generation encountered an issue.
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <button
+                    onClick={handleRetry}
+                    className="px-4 py-2 rounded-lg text-white font-medium text-sm"
+                    style={{ backgroundColor: "hsl(var(--coral))" }}
+                  >
+                    Retry
+                  </button>
+                  <button
+                    onClick={handleSkipToReport}
+                    className="px-4 py-2 rounded-lg text-white/70 hover:text-white font-medium text-sm border border-white/20 hover:border-white/40"
+                  >
+                    Skip to Report
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Steps list */}
+          <div className="w-full max-w-md space-y-3">
+            {steps.map((step, index) => {
+              const isActive = index === currentStep;
+              const isDone = index < currentStep;
+
+              return (
+                <div
+                  key={index}
+                  className={`flex items-center gap-3 text-sm transition-all duration-300 ${
+                    isDone
+                      ? "text-white/50"
+                      : isActive
+                      ? "text-white"
+                      : "text-white/20"
+                  }`}
+                >
+                  <div
+                    className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold transition-all ${
+                      isDone
+                        ? "bg-[hsl(var(--score-green))] text-white"
+                        : isActive
+                        ? "bg-[hsl(var(--coral))] text-white"
+                        : "bg-white/10 text-white/20"
+                    }`}
+                  >
+                    {isDone ? "✓" : index + 1}
+                  </div>
+                  <span className={isActive ? "font-medium" : ""}>{step}</span>
+                  {isActive && (
+                    <span className="flex gap-1 ml-auto">
+                      <span className="loading-dot w-1.5 h-1.5 rounded-full bg-[hsl(var(--coral))]" />
+                      <span className="loading-dot w-1.5 h-1.5 rounded-full bg-[hsl(var(--coral))]" />
+                      <span className="loading-dot w-1.5 h-1.5 rounded-full bg-[hsl(var(--coral))]" />
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
     </div>
   );
 }
