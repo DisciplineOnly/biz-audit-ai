@@ -266,3 +266,21 @@ export interface AuditReport {
   benchmarks: Array<{ category: string; level: "below" | "average" | "above" }>;
   generatedAt: string;
 }
+
+/** Shape returned by the generate-report edge function's AI response */
+export interface AIReportItem {
+  title: string;
+  description: string;
+  impact?: string;
+  timeframe?: string;
+  roi?: string;
+  priority: 'high' | 'medium' | 'low';
+  cta: string;
+}
+
+export interface AIReportData {
+  executiveSummary: string;
+  gaps: AIReportItem[];
+  quickWins: AIReportItem[];
+  strategicRecommendations: AIReportItem[];
+}
