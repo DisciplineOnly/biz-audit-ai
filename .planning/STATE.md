@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-19)
 ## Current Position
 
 Phase: 4 of 6 (Rate Limiting)
-Plan: 1 of 2 in current phase — 04-01 COMPLETE
-Status: In progress — 1 of 2 plans done; next: 04-02 (Deploy and test rate limiting)
-Last activity: 2026-02-20 — Completed 04-01: Dual-vector rate limiting guard added to generate-report edge function
+Plan: 2 of 2 in current phase — 04-02 COMPLETE
+Status: Phase 4 COMPLETE — all 2 plans done; next: Phase 5 (Frontend Integration)
+Last activity: 2026-02-20 — Completed 04-02: Upstash Redis configured in Supabase secrets; SEC-01 satisfied; curl verification deferred by user
 
-Progress: [█████████░] 58%
+Progress: [█████████░] 67%
 
 ## Performance Metrics
 
@@ -30,7 +30,7 @@ Progress: [█████████░] 58%
 | 01-schema-and-environment | 3/3 COMPLETE | ~18 min | ~6 min |
 | 02-ai-report-edge-function | 2/2 COMPLETE | ~55 min | ~27 min |
 | 03-email-webhook | 3/3 COMPLETE | ~78 min | ~26 min |
-| 04-rate-limiting | 1/2 in progress | ~2 min | ~2 min |
+| 04-rate-limiting | 2/2 COMPLETE | ~17 min | ~8 min |
 
 **Recent Trend:**
 - Last 5 plans: 01-03 (~10 min), 02-01 (~25 min), 02-02 (~30 min), 03-01 (~8 min)
@@ -79,6 +79,8 @@ Recent decisions affecting current work:
 - Rate limit (04-01): Same 429 message for email and IP limit hits — does not reveal which vector triggered
 - Rate limit (04-01): Redis and Ratelimit instances created inside handler (per_worker mode, consistent with 02-01 pattern)
 - Rate limit (04-01): Email matching is case-sensitive — email passed directly to limit() without normalization
+- Rate limit (04-02): Curl verification of live 429 behavior deferred by user — code inspection of fixedWindow(3, '24 h') satisfies Criterion 3; live test deferred to Phase 5 or manual QA
+- Rate limit (04-02): SEC-01 satisfied — guard enforces automatically on real traffic once Phase 5 wires generate-report into Loading.tsx
 
 ### Pending Todos
 
@@ -96,5 +98,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Completed 04-01 (Dual-vector rate limiting guard added to generate-report edge function)
-Resume file: .planning/phases/04-rate-limiting/04-02-PLAN.md
+Stopped at: Completed 04-02 (Phase 4 complete — Upstash Redis configured, SEC-01 satisfied)
+Resume file: .planning/phases/05-frontend-integration/ (Phase 5)

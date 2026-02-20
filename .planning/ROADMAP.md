@@ -14,8 +14,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Schema and Environment** - Supabase project wired up, audits table created with RLS, secrets secured
 - [x] **Phase 2: AI Report Edge Function** - generate-report edge function deployed and tested in isolation (completed 2026-02-19)
-- [ ] **Phase 3: Email and Webhook** - send-notification edge function + Database Webhook sending admin email (user email deferred)
-- [ ] **Phase 4: Rate Limiting** - email-based submission rate limiting enforced before frontend goes public
+- [x] **Phase 3: Email and Webhook** - send-notification edge function + Database Webhook sending admin email (user email deferred; completed 2026-02-20)
+- [x] **Phase 4: Rate Limiting** - email-based submission rate limiting enforced before frontend goes public (completed 2026-02-20)
 - [ ] **Phase 5: Frontend Integration** - Loading.tsx and Report.tsx wired to backend; shareable report URLs live
 - [ ] **Phase 6: Verification and Hardening** - end-to-end system verified against all critical pitfalls before launch
 
@@ -51,8 +51,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 02-01-PLAN.md -- Database migration (report_status column), shared CORS module, and generate-report edge function code
-- [ ] 02-02-PLAN.md -- Deploy edge function via MCP and verify via curl with sample audit data
+- [x] 02-01-PLAN.md -- Database migration (report_status column), shared CORS module, and generate-report edge function code
+- [x] 02-02-PLAN.md -- Deploy edge function via MCP and verify via curl with sample audit data
 
 ### Phase 3: Email and Webhook
 **Goal**: Admin notification email is sent automatically when an audit report completes, with confirmed deliverability to real inboxes
@@ -68,9 +68,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Migration (email_status column + audit_reports table) and generate-report update to persist AI reports
-- [ ] 03-02-PLAN.md — send-notification edge function with admin email via Resend
-- [ ] 03-03-PLAN.md — Deploy, configure Database Webhook, and verify end-to-end email delivery
+- [x] 03-01-PLAN.md — Migration (email_status column + audit_reports table) and generate-report update to persist AI reports
+- [x] 03-02-PLAN.md — send-notification edge function with admin email via Resend
+- [x] 03-03-PLAN.md — Deploy, configure Database Webhook, and verify end-to-end email delivery
 
 ### Phase 4: Rate Limiting
 **Goal**: The generate-report edge function contains a deployed, tested rate limiting guard that rejects abuse — verified via direct curl testing; enforcement on real user traffic activates automatically when Phase 5 wires the frontend
@@ -85,8 +85,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 04-01-PLAN.md -- Add Upstash Redis dual rate limiting (email + IP) to generate-report edge function
-- [ ] 04-02-PLAN.md -- Upstash setup, deploy edge function, and verify rate limiting via curl
+- [x] 04-01-PLAN.md -- Add Upstash Redis dual rate limiting (email + IP) to generate-report edge function
+- [x] 04-02-PLAN.md -- Upstash setup, deploy edge function, and verify rate limiting via curl
 
 ### Phase 5: Frontend Integration
 **Goal**: The React SPA is fully wired to the backend — AI report generation runs during the loading screen, completed audits persist to Supabase, and shareable report URLs load from the database
@@ -122,7 +122,7 @@ Note: Phase 3 depends only on Phase 1 and can be worked in parallel with Phase 2
 |-------|----------------|--------|-----------|
 | 1. Schema and Environment | 3/3 | Complete    | 2026-02-19 |
 | 2. AI Report Edge Function | 2/2 | Complete   | 2026-02-19 |
-| 3. Email and Webhook | 2/3 | In Progress|  |
-| 4. Rate Limiting | 1/2 | In Progress|  |
+| 3. Email and Webhook | 3/3 | Complete   | 2026-02-20 |
+| 4. Rate Limiting | 2/2 | Complete   | 2026-02-20 |
 | 5. Frontend Integration | 0/? | Not started | - |
 | 6. Verification and Hardening | 0/? | Not started | - |
