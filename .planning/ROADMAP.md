@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Schema and Environment** - Supabase project wired up, audits table created with RLS, secrets secured
 - [x] **Phase 2: AI Report Edge Function** - generate-report edge function deployed and tested in isolation (completed 2026-02-19)
-- [ ] **Phase 3: Email and Webhook** - send-notification edge function + Database Webhook sending admin and user emails
+- [ ] **Phase 3: Email and Webhook** - send-notification edge function + Database Webhook sending admin email (user email deferred)
 - [ ] **Phase 4: Rate Limiting** - email-based submission rate limiting enforced before frontend goes public
 - [ ] **Phase 5: Frontend Integration** - Loading.tsx and Report.tsx wired to backend; shareable report URLs live
 - [ ] **Phase 6: Verification and Hardening** - end-to-end system verified against all critical pitfalls before launch
@@ -55,7 +55,7 @@ Plans:
 - [ ] 02-02-PLAN.md -- Deploy edge function via MCP and verify via curl with sample audit data
 
 ### Phase 3: Email and Webhook
-**Goal**: Admin and user notification emails are sent automatically when an audit is inserted, with confirmed deliverability to real inboxes
+**Goal**: Admin notification email is sent automatically when an audit report completes, with confirmed deliverability to real inboxes
 **Depends on**: Phase 1
 **Requirements**: EMAIL-01, EMAIL-02
 **Success Criteria** (what must be TRUE):
@@ -63,7 +63,14 @@ Plans:
   2. Inserting a row into the audits table triggers an email to the submitting user within 60 seconds, with a working link to their report
   3. Both emails land in Gmail and Outlook inboxes (not spam) from the verified sending domain
   4. Removing or disabling the Database Webhook stops emails without affecting the core audit submission flow
-**Plans**: TBD
+
+**NOTE:** EMAIL-02 (user email, criteria 2-3) is deferred until a custom Resend domain is verified. Only EMAIL-01 (admin email) is implemented in this phase.
+**Plans**: 3 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Migration (email_status column + audit_reports table) and generate-report update to persist AI reports
+- [ ] 03-02-PLAN.md — send-notification edge function with admin email via Resend
+- [ ] 03-03-PLAN.md — Deploy, configure Database Webhook, and verify end-to-end email delivery
 
 ### Phase 4: Rate Limiting
 **Goal**: The audit submission endpoint rejects abuse before any user traffic reaches it
@@ -100,14 +107,14 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 Note: Phase 3 depends only on Phase 1 and can be worked in parallel with Phase 2 if needed.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Schema and Environment | 3/3 | Complete    | 2026-02-19 |
 | 2. AI Report Edge Function | 2/2 | Complete   | 2026-02-19 |
-| 3. Email and Webhook | 0/? | Not started | - |
+| 3. Email and Webhook | 0/3 | Planning complete | - |
 | 4. Rate Limiting | 0/? | Not started | - |
 | 5. Frontend Integration | 0/? | Not started | - |
 | 6. Verification and Hardening | 0/? | Not started | - |
