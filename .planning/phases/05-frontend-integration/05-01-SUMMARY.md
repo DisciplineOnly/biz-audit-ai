@@ -117,14 +117,17 @@ const corsHeaders = {
 
 The function source from `supabase/functions/fetch-report/index.ts` with the above substitution is ready to deploy.
 
-## Self-Check
+## Self-Check: PASSED
 
 - [x] `supabase/functions/fetch-report/index.ts` exists
 - [x] `src/lib/fetchReport.ts` exists and exports `fetchReport` and `FetchReportResult`
 - [x] `src/types/audit.ts` exports `AIReportData` and `AIReportItem`
 - [x] `npx tsc --noEmit` passes
-- [x] `npm run build` passes
-- [x] Commits `6c3e078` and `a14567d` verified
+- [x] `npm run build` passes (chunk size warning pre-existing, not from our changes)
+- [x] Commit `6c3e078` verified (Task 1: fetch-report edge function + AIReportData types)
+- [x] Commit `a14567d` verified (Task 2: fetchReport client helper)
+- [x] Commit `124cbf4` verified (docs: SUMMARY.md + STATE.md)
+- [x] Commit `9518e6a` verified (docs: ROADMAP.md + REQUIREMENTS.md + STATE.md final)
 
 ## Next Phase Readiness
 
