@@ -23,7 +23,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 ### Email Notifications
 
 - [x] **EMAIL-01**: Admin receives email notification when a new audit is completed, including contact name, email, niche, overall score, and report link
-- [x] **EMAIL-02**: User receives email with a link to their completed report after AI generation finishes
+- [ ] **EMAIL-02**: User receives email with a link to their completed report after AI generation finishes (deferred — requires custom Resend domain)
 
 ### Security
 
@@ -72,7 +72,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AI-03 | Phase 2 | Complete |
 | AI-04 | Phase 2 | Complete |
 | EMAIL-01 | Phase 3 | Complete |
-| EMAIL-02 | Phase 3 | Complete |
+| EMAIL-02 | Phase 3 | Deferred (requires custom Resend domain) |
 | SEC-01 | Phase 4 | Pending |
 | SEC-02 | Phase 1 | Complete |
 | SEC-03 | Phase 1 | Complete |
