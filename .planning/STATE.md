@@ -31,7 +31,7 @@ Progress: [█████████░] 75%
 | 02-ai-report-edge-function | 2/2 COMPLETE | ~55 min | ~27 min |
 | 03-email-webhook | 3/3 COMPLETE | ~78 min | ~26 min |
 | 04-rate-limiting | 2/2 COMPLETE | ~17 min | ~8 min |
-| 05-frontend-integration | 2/3 in progress | ~15 min (05-02) | ~15 min |
+| 05-frontend-integration | 2/3 in progress | ~30 min (05-01+05-02) | ~15 min |
 
 **Recent Trend:**
 - Last 5 plans: 01-03 (~10 min), 02-01 (~25 min), 02-02 (~30 min), 03-01 (~8 min)
@@ -87,6 +87,9 @@ Recent decisions affecting current work:
 - Loading.tsx (05-02): Retry re-calls only generate-report — auditIdRef preserved, no duplicate DB rows
 - Loading.tsx (05-02): mountedRef pattern for async cleanup safety — async flow not cancellable but results discarded after unmount
 - Loading.tsx (05-02): AIReportData interface added to types/audit.ts to type the edge function success response shape
+- fetch-report (05-01): service_role edge function reads audits + audit_reports — SEC-02 preserved (no anon SELECT policy added)
+- fetch-report (05-01): fetchReport client uses FunctionsHttpError body inspection to throw Error('not_found') on 404, distinguishing from other errors
+- fetch-report (05-01): edge function deployment deferred to orchestrator MCP — executor lacks MCP tool access (same pattern as 02-01)
 
 ### Pending Todos
 
@@ -100,6 +103,7 @@ None.
 *Resolved:*
 - ~~Migration 20260219120000_add_report_status_to_audits.sql must be applied to remote DB~~ — applied via MCP before 02-02 testing
 - ~~ANTHROPIC_API_KEY must be stored as Supabase secret~~ — confirmed present and working (02-02 curl PASS)
+- ~~Shareable URL SELECT policy decision~~ — resolved: fetch-report edge function with service_role (05-01); no anon SELECT policy needed
 
 ## Session Continuity
 
