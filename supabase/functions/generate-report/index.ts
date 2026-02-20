@@ -398,7 +398,17 @@ Deno.serve(async (req: Request) => {
       reportData = JSON.parse(responseText)
     }
 
-    // Update report_status to 'completed'
+    // Persist AI report for email notifications and future retrieval
+    // Must happen BEFORE report_status update — webhook fires on status change
+    // and send-notification needs the report data to already exist in audit_reports
+    await supabaseAdmin
+      .from('audit_reports')
+      .upsert({
+        audit_id: auditId,
+        report: reportData,
+      }, { onConflict: 'audit_id' })
+
+    // Update report_status to 'completed' (triggers Database Webhook → send-notification)
     await supabaseAdmin
       .from('audits')
       .update({ report_status: 'completed' })
