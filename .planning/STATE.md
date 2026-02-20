@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-19)
 
 **Core value:** Business owners complete the audit and receive a personalized, AI-driven analysis that makes them want to book a consultation
-**Current focus:** Phase 2 — AI Report Edge Function
+**Current focus:** Phase 3 — Email/Webhook
 
 ## Current Position
 
-Phase: 2 of 6 (AI Report Edge Function)
-Plan: 2 of 2 in current phase — PHASE COMPLETE
-Status: Phase 2 complete — moving to Phase 3 (Email/Webhook)
-Last activity: 2026-02-19 — Completed 02-02: deployed and verified generate-report edge function
+Phase: 3 of 6 (Email/Webhook)
+Plan: 1 of 3 in current phase — 03-01 COMPLETE
+Status: In progress — 03-01 done (DB foundation), next: 03-02 (send-notification edge function)
+Last activity: 2026-02-20 — Completed 03-01: email_status migration + audit_reports table + generate-report updated
 
-Progress: [█████░░░░░] 33%
+Progress: [██████░░░░] 38%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
+- Total plans completed: 5
 - Average duration: ~9 min/plan
-- Total execution time: ~43 min
+- Total execution time: ~51 min
 
 **By Phase:**
 
@@ -29,10 +29,11 @@ Progress: [█████░░░░░] 33%
 |-------|-------|-------|----------|
 | 01-schema-and-environment | 3/3 COMPLETE | ~18 min | ~6 min |
 | 02-ai-report-edge-function | 2/2 COMPLETE | ~55 min | ~27 min |
+| 03-email-webhook | 1/3 in progress | ~8 min | ~8 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-02 (4 min), 01-03 (~10 min incl. human verification), 02-01 (~25 min), 02-02 (~30 min)
-- Trend: Phase 2 plans longer due to edge function implementation (428 lines) and multi-step verification
+- Last 5 plans: 01-03 (~10 min), 02-01 (~25 min), 02-02 (~30 min), 03-01 (~8 min)
+- Trend: Phase 3 plans shorter — DB migration and targeted edge function edits vs. full implementations
 
 *Updated after each plan completion*
 
@@ -61,6 +62,10 @@ Recent decisions affecting current work:
 - Edge function (02-02): Claude Haiku 4.5 wraps JSON in markdown fences and embeds literal newlines despite prompt instructions — two-pass JSON parsing added (fence strip + newline collapse) and deployed as v3
 - Edge function (02-02): ANTHROPIC_API_KEY confirmed absent from client bundle — grep dist/ returns 0; API key stays in Supabase secret store server-side only
 - Phase 2: All five success criteria confirmed PASS via curl test — niche framing, score-aware recommendations, PII exclusion, valid JSON schema, no API key in bundle
+- Email (03-01): email_status values: pending/sent/failed only — no 'partial' (admin email only in Phase 3)
+- Email (03-01): audit_reports upsert uses onConflict: 'audit_id' — idempotent for edge function retries
+- Email (03-01): audit_reports upsert placed BEFORE report_status 'completed' update — webhook ordering requirement (data must exist before send-notification fires)
+- Email (03-01): no anon RLS policies on audit_reports — service_role bypasses RLS for edge function reads/writes
 
 ### Pending Todos
 
@@ -78,5 +83,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Phase 3 context gathered
-Resume file: .planning/phases/03-email-webhook/03-CONTEXT.md
+Stopped at: Completed 03-01 (email_status migration + audit_reports table + generate-report updated)
+Resume file: .planning/phases/03-email-webhook/03-02-PLAN.md
