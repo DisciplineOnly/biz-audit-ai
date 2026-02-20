@@ -2,6 +2,8 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { corsHeaders } from '../_shared/cors.ts'
 import Anthropic from 'npm:@anthropic-ai/sdk'
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { Ratelimit } from 'npm:@upstash/ratelimit'
+import { Redis } from 'npm:@upstash/redis'
 
 const MODEL = 'claude-haiku-4-5-20251001'
 const MAX_TOKENS = 2048
@@ -332,6 +334,14 @@ Generate the report now as valid JSON only.`
   return { system, user }
 }
 
+// --- IP extraction helper ---
+
+function getClientIp(req: Request): string {
+  const forwarded = req.headers.get('x-forwarded-for')
+  if (!forwarded) return 'unknown'
+  return forwarded.split(/\s*,\s*/)[0].trim()
+}
+
 // --- Main handler ---
 
 Deno.serve(async (req: Request) => {
@@ -347,6 +357,66 @@ Deno.serve(async (req: Request) => {
     auditId = body.auditId
     const formState: FormState = body.formState
     const scores: AuditScores = body.scores
+
+    // --- Rate limiting guard (SEC-01) ---
+    // Must run BEFORE any Anthropic or Supabase calls to reject abuse early
+    const contactEmail: string = body.formState?.step1?.email ?? 'unknown'
+    const clientIp = getClientIp(req)
+
+    // Instantiate Redis inside handler (per_worker mode requirement)
+    const redis = new Redis({
+      url: Deno.env.get('UPSTASH_REDIS_REST_URL')!,
+      token: Deno.env.get('UPSTASH_REDIS_REST_TOKEN')!,
+    })
+
+    const emailRatelimit = new Ratelimit({
+      redis,
+      limiter: Ratelimit.fixedWindow(3, '24 h'),
+      prefix: 'bizaudit:email',
+    })
+
+    const ipRatelimit = new Ratelimit({
+      redis,
+      limiter: Ratelimit.fixedWindow(10, '24 h'),
+      prefix: 'bizaudit:ip',
+    })
+
+    // Run both checks in parallel — email is case-sensitive per product decision
+    const [emailResult, ipResult] = await Promise.all([
+      emailRatelimit.limit(contactEmail),
+      ipRatelimit.limit(clientIp),
+    ])
+
+    if (!emailResult.success || !ipResult.success) {
+      // Use reset timestamp from the check(s) that failed
+      const failedResetMs = Math.max(
+        emailResult.success ? 0 : emailResult.reset,
+        ipResult.success ? 0 : ipResult.reset,
+      )
+      const hoursRemaining = Math.ceil((failedResetMs - Date.now()) / (1000 * 60 * 60))
+
+      let timeHint: string
+      if (hoursRemaining <= 1) {
+        timeHint = 'in about 1 hour'
+      } else if (hoursRemaining < 20) {
+        timeHint = `in about ${hoursRemaining} hours`
+      } else {
+        timeHint = 'tomorrow'
+      }
+
+      // Same message for email and IP — do not reveal which limit triggered
+      return new Response(
+        JSON.stringify({
+          rateLimited: true,
+          message: `You've already submitted 3 audits today. Try again ${timeHint}.`,
+        }),
+        {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      )
+    }
+    // --- End rate limiting guard ---
 
     // Instantiate clients inside handler (per_worker mode safe)
     const anthropic = new Anthropic({
