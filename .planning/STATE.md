@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-19)
 ## Current Position
 
 Phase: 5 of 6 (Frontend Integration)
-Plan: 2 of 3 in current phase — 05-02 COMPLETE
-Status: In progress — 05-02 done; next: 05-03 (Report.tsx AI data rendering)
-Last activity: 2026-02-20 — Completed 05-02: Loading.tsx refactored with generate-report invocation, rate limit handling, retry/skip UX
+Plan: 3 of 3 in current phase — 05-03 COMPLETE — Phase 5 DONE
+Status: Phase 5 complete — all 3 plans executed; next: Phase 6 (End-to-End Verification)
+Last activity: 2026-02-20 — Completed 05-03: Report.tsx refactored with dual data source, useQuery polling, skeleton, branded 404, AI content rendering
 
-Progress: [█████████░] 75%
+Progress: [█████████░] 83%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
+- Total plans completed: 8
 - Average duration: ~11 min/plan
-- Total execution time: ~113 min
+- Total execution time: ~128 min
 
 **By Phase:**
 
@@ -31,7 +31,7 @@ Progress: [█████████░] 75%
 | 02-ai-report-edge-function | 2/2 COMPLETE | ~55 min | ~27 min |
 | 03-email-webhook | 3/3 COMPLETE | ~78 min | ~26 min |
 | 04-rate-limiting | 2/2 COMPLETE | ~17 min | ~8 min |
-| 05-frontend-integration | 2/3 in progress | ~30 min (05-01+05-02) | ~15 min |
+| 05-frontend-integration | 3/3 COMPLETE | ~45 min | ~15 min |
 
 **Recent Trend:**
 - Last 5 plans: 01-03 (~10 min), 02-01 (~25 min), 02-02 (~30 min), 03-01 (~8 min)
@@ -90,6 +90,11 @@ Recent decisions affecting current work:
 - fetch-report (05-01): service_role edge function reads audits + audit_reports — SEC-02 preserved (no anon SELECT policy added)
 - fetch-report (05-01): fetchReport client uses FunctionsHttpError body inspection to throw Error('not_found') on 404, distinguishing from other errors
 - fetch-report (05-01): edge function deployment deferred to orchestrator MCP — executor lacks MCP tool access (same pattern as 02-01)
+- Report.tsx (05-03): useQuery with refetchInterval callback for 4s polling on pending reportStatus with 90s timeout ceiling
+- Report.tsx (05-03): hasNavigationState = !!(locationState?.formState && locationState?.scores) gates fast vs slow path
+- Report.tsx (05-03): AI content priority via nullish coalescing (aiReport?.gaps ?? templateReport.criticalGaps) in all report sections
+- Report.tsx (05-03): pollStartTime useState with Date.now() initializer — persists across re-renders for timeout tracking
+- Report.tsx (05-03): poll timeout check placed before pending spinner in render order — timeout wins over infinite spinner
 
 ### Pending Todos
 
@@ -97,16 +102,17 @@ None.
 
 ### Blockers/Concerns
 
-- EMAIL-02 deferred: user email requires Resend custom domain verification (up to 48h DNS propagation) — should initiate now so it is ready for Phase 5
-- Shareable URL SELECT policy decision deferred to Phase 5 planning: anon policy on UUID vs. fetch-report edge function with service role reads
+- EMAIL-02 deferred: user email requires Resend custom domain verification (up to 48h DNS propagation) — should initiate now so it is ready for Phase 6
+- fetch-report edge function deployment required by orchestrator before Phase 6 end-to-end verification can run
 
 *Resolved:*
 - ~~Migration 20260219120000_add_report_status_to_audits.sql must be applied to remote DB~~ — applied via MCP before 02-02 testing
 - ~~ANTHROPIC_API_KEY must be stored as Supabase secret~~ — confirmed present and working (02-02 curl PASS)
 - ~~Shareable URL SELECT policy decision~~ — resolved: fetch-report edge function with service_role (05-01); no anon SELECT policy needed
+- ~~Phase 5 Report.tsx AI data rendering~~ — resolved: 05-03 complete; dual data source, AI content, polling, 404 all implemented
 
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Completed 05-01 (fetch-report edge function created, fetchReport client helper created, AIReportData types added — deployment pending orchestrator MCP)
-Resume file: .planning/phases/05-frontend-integration/05-03-PLAN.md
+Stopped at: Completed 05-03 (Report.tsx refactored — dual data source, skeleton, polling, 404, AI content rendering) — Phase 5 COMPLETE
+Resume file: .planning/phases/06-end-to-end-verification/ (next phase)

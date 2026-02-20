@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: AI Report Edge Function** - generate-report edge function deployed and tested in isolation (completed 2026-02-19)
 - [x] **Phase 3: Email and Webhook** - send-notification edge function + Database Webhook sending admin email (user email deferred; completed 2026-02-20)
 - [x] **Phase 4: Rate Limiting** - email-based submission rate limiting enforced before frontend goes public (completed 2026-02-20)
-- [ ] **Phase 5: Frontend Integration** - Loading.tsx and Report.tsx wired to backend; shareable report URLs live
+- [x] **Phase 5: Frontend Integration** - Loading.tsx and Report.tsx wired to backend; shareable report URLs live (completed 2026-02-20)
 - [ ] **Phase 6: Verification and Hardening** - end-to-end system verified against all critical pitfalls before launch
 
 ## Phase Details
@@ -104,7 +104,7 @@ Plans:
 Plans:
 - [x] 05-01-PLAN.md — Create fetch-report edge function, fetchReport client helper, and AIReportData type
 - [x] 05-02-PLAN.md — Refactor Loading.tsx: generate-report invocation, rate limit handling, error retry
-- [ ] 05-03-PLAN.md — Refactor Report.tsx: dual data source, skeleton loading, polling, branded 404, AI content rendering
+- [x] 05-03-PLAN.md — Refactor Report.tsx: dual data source, skeleton loading, polling, branded 404, AI content rendering
 
 ### Phase 6: Verification and Hardening
 **Goal**: The complete system is confirmed safe and correct against all known critical failure modes before real user traffic lands
@@ -129,5 +129,5 @@ Note: Phase 3 depends only on Phase 1 and can be worked in parallel with Phase 2
 | 2. AI Report Edge Function | 2/2 | Complete   | 2026-02-19 |
 | 3. Email and Webhook | 3/3 | Complete   | 2026-02-20 |
 | 4. Rate Limiting | 2/2 | Complete   | 2026-02-20 |
-| 5. Frontend Integration | 2/3 | In Progress|  |
+| 5. Frontend Integration | 3/3 | Complete   | 2026-02-20 |
 | 6. Verification and Hardening | 0/? | Not started | - |
