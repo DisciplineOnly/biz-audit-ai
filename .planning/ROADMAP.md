@@ -99,7 +99,12 @@ Plans:
   4. If the AI edge function fails, the report page falls back to displaying template-generated content rather than a blank or error state
 
 **Critical wiring note:** This phase MUST add the `generate-report` edge function invocation to Loading.tsx. Currently Loading.tsx only calls `submitAudit()` (Postgres INSERT) — it never invokes the AI report generation. Adding this call also activates the Phase 4 rate limiting guard (deployed but not yet enforced on user traffic). Handle the 429 rate limit response with a toast notification per CONTEXT.md decisions.
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — Create fetch-report edge function, fetchReport client helper, and AIReportData type
+- [ ] 05-02-PLAN.md — Refactor Loading.tsx: generate-report invocation, rate limit handling, error retry
+- [ ] 05-03-PLAN.md — Refactor Report.tsx: dual data source, skeleton loading, polling, branded 404, AI content rendering
 
 ### Phase 6: Verification and Hardening
 **Goal**: The complete system is confirmed safe and correct against all known critical failure modes before real user traffic lands
