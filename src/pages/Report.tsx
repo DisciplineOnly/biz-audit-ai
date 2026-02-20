@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams, useLocation, useNavigate, Link } from "react-router-dom";
-import { AuditFormState, AuditScores } from "@/types/audit";
-import { computeScores, getScoreColor, getScoreLabel, getBenchmark, generateMockReport } from "@/lib/scoring";
-import { Calendar, Download, Share2, ArrowRight, CheckCircle, AlertTriangle, TrendingUp, BarChart3, Zap } from "lucide-react";
-
-const STORAGE_KEY = "ep_audit_state";
+import { useQuery } from "@tanstack/react-query";
+import { AuditFormState, AuditScores, AIReportData } from "@/types/audit";
+import { getScoreColor, getScoreLabel, getBenchmark, generateMockReport } from "@/lib/scoring";
+import { fetchReport } from "@/lib/fetchReport";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Calendar, Download, Share2, CheckCircle, AlertTriangle, TrendingUp, BarChart3, Zap } from "lucide-react";
 
 function ScoreBar({ score, label }: { score: number; label: string }) {
   const color = getScoreColor(score);
@@ -78,36 +79,129 @@ export default function Report() {
   const { auditId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const [formState, setFormState] = useState<AuditFormState | null>(null);
-  const [scores, setScores] = useState<AuditScores | null>(null);
   const [copied, setCopied] = useState(false);
+  const [pollStartTime] = useState(() => Date.now());
+  const POLL_TIMEOUT_MS = 90_000; // 90 seconds max polling
 
-  useEffect(() => {
-    // Try to get from navigation state first, then localStorage
-    const locationState = location.state as { formState?: AuditFormState; scores?: AuditScores } | null;
+  // Navigation state fast path
+  const locationState = location.state as {
+    formState?: AuditFormState;
+    scores?: AuditScores;
+    auditId?: string;
+    aiReport?: AIReportData;
+  } | null;
 
-    let fs: AuditFormState | null = locationState?.formState || null;
-    let sc: AuditScores | null = locationState?.scores || null;
+  const hasNavigationState = !!(locationState?.formState && locationState?.scores);
 
-    if (!fs) {
-      const savedForm = localStorage.getItem(STORAGE_KEY + "_form");
-      if (savedForm) fs = JSON.parse(savedForm);
-    }
-    if (!sc && fs) {
-      const savedScores = localStorage.getItem(STORAGE_KEY + "_scores");
-      sc = savedScores ? JSON.parse(savedScores) : computeScores(fs);
-    }
+  // Supabase fetch slow path (only when no navigation state)
+  const {
+    data: fetchedData,
+    isLoading,
+    isError,
+    error: fetchError,
+  } = useQuery({
+    queryKey: ["report", auditId],
+    queryFn: () => fetchReport(auditId!),
+    enabled: !hasNavigationState && !!auditId,
+    retry: (failureCount, error) => {
+      // Don't retry 404s
+      if (error instanceof Error && error.message === "not_found") return false;
+      return failureCount < 2;
+    },
+    refetchInterval: (query) => {
+      const data = query.state.data;
+      if (!data) return false;
+      if (data.reportStatus === "pending") {
+        // Stop polling after timeout
+        if (Date.now() - pollStartTime > POLL_TIMEOUT_MS) return false;
+        return 4000; // poll every 4s
+      }
+      return false; // stop when completed or failed
+    },
+    refetchIntervalInBackground: false,
+  });
 
-    if (fs && sc) {
-      setFormState(fs);
-      setScores(sc);
-    }
-  }, [location.state]);
+  // Unified data resolution — navigation state takes priority
+  const formState: AuditFormState | null = locationState?.formState ?? fetchedData?.audit?.form_data ?? null;
+  const scores: AuditScores | null = locationState?.scores ?? fetchedData?.audit?.scores ?? null;
+  const aiReport: AIReportData | null = locationState?.aiReport ?? fetchedData?.aiReport ?? null;
+  const reportStatus = fetchedData?.reportStatus ?? (locationState?.aiReport ? "completed" : null);
 
-  if (!formState || !scores) {
+  // ---- Conditional rendering (in order) ----
+
+  // a. Loading/skeleton state (fetching from Supabase)
+  if (!hasNavigationState && isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        {/* Header skeleton */}
+        <div style={{ backgroundColor: "hsl(var(--navy))" }} className="py-4 px-6">
+          <div className="max-w-5xl mx-auto flex items-center justify-between">
+            <Skeleton className="h-7 w-32 bg-white/10" />
+            <div className="flex gap-3">
+              <Skeleton className="h-5 w-16 bg-white/10" />
+              <Skeleton className="h-5 w-24 bg-white/10" />
+            </div>
+          </div>
+        </div>
+        {/* Hero skeleton */}
+        <div style={{ backgroundColor: "hsl(var(--navy))" }} className="py-12 px-6">
+          <div className="max-w-5xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-8">
+            <div className="space-y-3">
+              <Skeleton className="h-5 w-48 bg-white/10" />
+              <Skeleton className="h-10 w-72 bg-white/10" />
+              <Skeleton className="h-4 w-56 bg-white/10" />
+              <div className="flex gap-2 mt-4">
+                <Skeleton className="h-6 w-20 rounded-full bg-white/10" />
+                <Skeleton className="h-6 w-24 rounded-full bg-white/10" />
+              </div>
+            </div>
+            <Skeleton className="h-40 w-40 rounded-full bg-white/10 mx-auto md:mx-0" />
+          </div>
+        </div>
+        {/* Content skeleton */}
+        <div className="max-w-5xl mx-auto px-4 py-10 space-y-6">
+          <Skeleton className="h-48 w-full rounded-2xl" />
+          <Skeleton className="h-64 w-full rounded-2xl" />
+          <Skeleton className="h-40 w-full rounded-2xl" />
+          <Skeleton className="h-56 w-full rounded-2xl" />
+        </div>
+      </div>
+    );
+  }
+
+  // b. Branded 404 (UUID not found)
+  if (isError && fetchError instanceof Error && fetchError.message === "not_found") {
+    return (
+      <div
+        className="min-h-screen flex flex-col items-center justify-center gap-6 px-6"
+        style={{ backgroundColor: "hsl(var(--navy))" }}
+      >
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold"
+          style={{ backgroundColor: "hsl(var(--coral))" }}
+        >
+          E&P
+        </div>
+        <h1 className="text-2xl font-bold text-white">Report Not Found</h1>
+        <p className="text-white/60 text-center max-w-md">
+          This audit link is invalid or has expired. Start a new audit to generate a fresh report.
+        </p>
+        <Link
+          to="/"
+          className="px-6 py-3 rounded-xl text-white font-semibold transition-all hover:opacity-90"
+          style={{ backgroundColor: "hsl(var(--coral))" }}
+        >
+          Start a New Audit
+        </Link>
+      </div>
+    );
+  }
+
+  // c. Fetch error (non-404)
+  if (isError) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <p className="text-muted-foreground">No report data found.</p>
+        <p className="text-muted-foreground">Failed to load report. Please try again.</p>
         <Link to="/" className="text-sm font-medium" style={{ color: "hsl(var(--coral))" }}>
           Start a New Audit →
         </Link>
@@ -115,7 +209,89 @@ export default function Report() {
     );
   }
 
-  const { criticalGaps, quickWins, strategicRecs } = generateMockReport(formState, scores);
+  // d. Poll timeout (pending > 90s) — check before pending so we show timeout instead of spinner
+  if (fetchedData?.reportStatus === "pending" && Date.now() - pollStartTime > POLL_TIMEOUT_MS) {
+    return (
+      <div
+        className="min-h-screen flex flex-col items-center justify-center gap-6 px-6"
+        style={{ backgroundColor: "hsl(var(--navy))" }}
+      >
+        <h2 className="text-xl font-bold text-white">Taking Longer Than Expected</h2>
+        <p className="text-white/60 text-center max-w-md">
+          Your report is still being generated. Try refreshing the page in a few minutes, or contact support if this persists.
+        </p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-6 py-3 rounded-xl text-white font-semibold transition-all hover:opacity-90"
+          style={{ backgroundColor: "hsl(var(--coral))" }}
+        >
+          Refresh Page
+        </button>
+      </div>
+    );
+  }
+
+  // e. Report generating (pending state with polling)
+  if (fetchedData?.reportStatus === "pending") {
+    return (
+      <div
+        className="min-h-screen flex flex-col items-center justify-center gap-6 px-6"
+        style={{ backgroundColor: "hsl(var(--navy))" }}
+      >
+        <div className="relative w-16 h-16">
+          <div className="absolute inset-0 rounded-full border-4 border-white/10" />
+          <div
+            className="absolute inset-0 rounded-full border-4 border-transparent animate-spin"
+            style={{ borderTopColor: "hsl(var(--coral))" }}
+          />
+        </div>
+        <h2 className="text-xl font-bold text-white">Your Report is Being Generated...</h2>
+        <p className="text-white/60 text-center max-w-md">
+          Our AI is analyzing your audit responses. This usually takes 15-30 seconds.
+        </p>
+      </div>
+    );
+  }
+
+  // f. No data available (neither navigation state nor successful fetch)
+  if (!formState || !scores) {
+    return (
+      <div
+        className="min-h-screen flex flex-col items-center justify-center gap-6 px-6"
+        style={{ backgroundColor: "hsl(var(--navy))" }}
+      >
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold"
+          style={{ backgroundColor: "hsl(var(--coral))" }}
+        >
+          E&P
+        </div>
+        <h1 className="text-2xl font-bold text-white">No Report Data Found</h1>
+        <p className="text-white/60 text-center max-w-md">
+          We couldn't find any report data. Start a new audit to generate a fresh report.
+        </p>
+        <Link
+          to="/"
+          className="px-6 py-3 rounded-xl text-white font-semibold transition-all hover:opacity-90"
+          style={{ backgroundColor: "hsl(var(--coral))" }}
+        >
+          Start a New Audit
+        </Link>
+      </div>
+    );
+  }
+
+  // ---- Full report rendering ----
+
+  // Generate template content as fallback
+  const templateReport = generateMockReport(formState, scores);
+
+  // Resolve which content to render — AI takes priority
+  const gaps = aiReport?.gaps ?? templateReport.criticalGaps ?? [];
+  const quickWins = aiReport?.quickWins ?? templateReport.quickWins ?? [];
+  const strategicRecs = aiReport?.strategicRecommendations ?? templateReport.strategicRecs ?? [];
+  const executiveSummary = aiReport?.executiveSummary ?? null;
+
   const isHS = formState.niche === "home_services";
   const businessName = formState.step1.businessName || "Your Business";
   const overallLabel = getScoreLabel(scores.overall);
@@ -154,7 +330,7 @@ export default function Report() {
       <section style={{ backgroundColor: "hsl(var(--navy))" }} className="py-12 px-6">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center gap-2 mb-4">
-            <span className="text-white/60 text-sm">{isHS ? "🔧 Home Services & Trades" : "🏠 Real Estate"} · AI Business Audit</span>
+            <span className="text-white/60 text-sm">{isHS ? "Home Services & Trades" : "Real Estate"} · AI Business Audit</span>
           </div>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-8">
             <div>
@@ -191,35 +367,41 @@ export default function Report() {
             <BarChart3 className="w-5 h-5" style={{ color: "hsl(var(--coral))" }} />
             Executive Summary
           </h2>
-          <div className="prose prose-sm max-w-none text-muted-foreground leading-relaxed space-y-3">
-            <p>
-              Based on your responses, <strong className="text-foreground">{businessName}</strong> scored{" "}
-              <strong style={{ color: getScoreColor(scores.overall) }}>{scores.overall}/100</strong> overall —
-              placing you in the <strong className="text-foreground">{overallLabel.toLowerCase()}</strong> category for{" "}
-              {isHS ? "home service businesses" : "real estate teams"} of your size.
-            </p>
-            <p>
-              Your strongest areas are in{" "}
-              <strong className="text-foreground">
-                {scores.categories.sort((a, b) => b.score - a.score).slice(0, 2).map(c => c.label).join(" and ")}
-              </strong>
-              , which suggests you have a solid operational foundation to build from.
-            </p>
-            <p>
-              However, significant gaps in{" "}
-              <strong className="text-foreground">
-                {scores.categories.sort((a, b) => a.score - b.score).slice(0, 2).map(c => c.label).join(" and ")}
-              </strong>{" "}
-              represent your biggest opportunities. Businesses that close these gaps typically see{" "}
-              <strong className="text-foreground">20–40% revenue increases</strong> within 12 months through better lead conversion,
-              retention, and operational efficiency.
-            </p>
-            <p>
-              The recommendations in this report are based on your specific answers and industry benchmarks for{" "}
-              {isHS ? `${formState.step1.industry || "home service"} businesses` : "real estate teams"}{" "}
-              {isHS ? `with ${formState.step1.employeeCount || "your"} employees` : `with ${formState.step1.teamSize || "your team size"}`}.
-            </p>
-          </div>
+          {executiveSummary ? (
+            <div className="prose prose-sm max-w-none text-muted-foreground leading-relaxed">
+              <p>{executiveSummary}</p>
+            </div>
+          ) : (
+            <div className="prose prose-sm max-w-none text-muted-foreground leading-relaxed space-y-3">
+              <p>
+                Based on your responses, <strong className="text-foreground">{businessName}</strong> scored{" "}
+                <strong style={{ color: getScoreColor(scores.overall) }}>{scores.overall}/100</strong> overall —
+                placing you in the <strong className="text-foreground">{overallLabel.toLowerCase()}</strong> category for{" "}
+                {isHS ? "home service businesses" : "real estate teams"} of your size.
+              </p>
+              <p>
+                Your strongest areas are in{" "}
+                <strong className="text-foreground">
+                  {scores.categories.sort((a, b) => b.score - a.score).slice(0, 2).map(c => c.label).join(" and ")}
+                </strong>
+                , which suggests you have a solid operational foundation to build from.
+              </p>
+              <p>
+                However, significant gaps in{" "}
+                <strong className="text-foreground">
+                  {scores.categories.sort((a, b) => a.score - b.score).slice(0, 2).map(c => c.label).join(" and ")}
+                </strong>{" "}
+                represent your biggest opportunities. Businesses that close these gaps typically see{" "}
+                <strong className="text-foreground">20-40% revenue increases</strong> within 12 months through better lead conversion,
+                retention, and operational efficiency.
+              </p>
+              <p>
+                The recommendations in this report are based on your specific answers and industry benchmarks for{" "}
+                {isHS ? `${formState.step1.industry || "home service"} businesses` : "real estate teams"}{" "}
+                {isHS ? `with ${formState.step1.employeeCount || "your"} employees` : `with ${formState.step1.teamSize || "your team size"}`}.
+              </p>
+            </div>
+          )}
         </section>
 
         {/* Category Scorecard */}
@@ -242,7 +424,7 @@ export default function Report() {
             Top 3 Critical Gaps
           </h2>
           <div className="space-y-4">
-            {criticalGaps.map((gap, i) => (
+            {gaps.map((gap, i) => (
               <div key={i} className="bg-card rounded-2xl border border-border p-6">
                 <div className="flex items-start gap-4">
                   <div
@@ -261,6 +443,11 @@ export default function Report() {
                       <TrendingUp className="w-3 h-3" />
                       {gap.impact}
                     </div>
+                    {'cta' in gap && gap.cta && (
+                      <p className="text-xs mt-2" style={{ color: "hsl(var(--coral))" }}>
+                        {gap.cta}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -283,6 +470,11 @@ export default function Report() {
                   <h3 className="font-semibold text-foreground mb-1">{win.title}</h3>
                   <p className="text-muted-foreground text-sm leading-relaxed mb-1">{win.description}</p>
                   <span className="text-xs text-muted-foreground italic">{win.timeframe}</span>
+                  {'cta' in win && win.cta && (
+                    <p className="text-xs mt-2" style={{ color: "hsl(var(--coral))" }}>
+                      {win.cta}
+                    </p>
+                  )}
                 </div>
               </div>
             ))}
@@ -308,8 +500,13 @@ export default function Report() {
                 <h3 className="font-bold text-foreground mb-2 text-sm">{rec.title}</h3>
                 <p className="text-muted-foreground text-xs leading-relaxed mb-3">{rec.description}</p>
                 <div className="text-xs font-semibold" style={{ color: "hsl(var(--score-green))" }}>
-                  📈 {rec.roi}
+                  {rec.roi}
                 </div>
+                {'cta' in rec && rec.cta && (
+                  <p className="text-xs mt-2" style={{ color: "hsl(var(--coral))" }}>
+                    {rec.cta}
+                  </p>
+                )}
               </div>
             ))}
           </div>
