@@ -73,13 +73,15 @@ Plans:
 - [ ] 03-03-PLAN.md — Deploy, configure Database Webhook, and verify end-to-end email delivery
 
 ### Phase 4: Rate Limiting
-**Goal**: The audit submission endpoint rejects abuse before any user traffic reaches it
+**Goal**: The generate-report edge function contains a deployed, tested rate limiting guard that rejects abuse — verified via direct curl testing; enforcement on real user traffic activates automatically when Phase 5 wires the frontend
 **Depends on**: Phase 2
 **Requirements**: SEC-01
 **Success Criteria** (what must be TRUE):
-  1. Submitting four audits from the same email address within 24 hours causes the fourth request to receive a 429 response
-  2. Submitting audits from different email addresses succeeds without restriction
-  3. Rate limit counters reset after 24 hours so a previously blocked email can submit again
+  1. Sending four requests to the generate-report edge function with the same email address within 24 hours causes the fourth to receive a 429 response (verified via curl)
+  2. Sending requests with different email addresses succeeds without restriction (verified via curl)
+  3. Rate limit counters reset after 24 hours so a previously blocked email can submit again (verified by fixedWindow TTL code inspection)
+
+**Note:** Loading.tsx does not call generate-report yet (Phase 5 scope). Rate limiting is deployed and proven via direct HTTP testing. Once Phase 5 adds the generate-report invocation to the submission flow, the guard enforces automatically with zero additional work.
 **Plans**: 2 plans
 
 Plans:
@@ -95,6 +97,8 @@ Plans:
   2. Copying the /report/:uuid URL, opening it in a fresh incognito browser window with localStorage cleared, and loading it shows the full report
   3. The report page shows AI-generated personalized text (not template-generated text) for the gaps, quick wins, and strategic recommendations sections
   4. If the AI edge function fails, the report page falls back to displaying template-generated content rather than a blank or error state
+
+**Critical wiring note:** This phase MUST add the `generate-report` edge function invocation to Loading.tsx. Currently Loading.tsx only calls `submitAudit()` (Postgres INSERT) — it never invokes the AI report generation. Adding this call also activates the Phase 4 rate limiting guard (deployed but not yet enforced on user traffic). Handle the 429 rate limit response with a toast notification per CONTEXT.md decisions.
 **Plans**: TBD
 
 ### Phase 6: Verification and Hardening
