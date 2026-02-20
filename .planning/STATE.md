@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-19)
 
 **Core value:** Business owners complete the audit and receive a personalized, AI-driven analysis that makes them want to book a consultation
-**Current focus:** Phase 4 — Rate Limiting
+**Current focus:** Phase 5 — Frontend Integration
 
 ## Current Position
 
-Phase: 4 of 6 (Rate Limiting)
-Plan: 2 of 2 in current phase — 04-02 COMPLETE
-Status: Phase 4 COMPLETE — all 2 plans done; next: Phase 5 (Frontend Integration)
-Last activity: 2026-02-20 — Completed 04-02: Upstash Redis configured in Supabase secrets; SEC-01 satisfied; curl verification deferred by user
+Phase: 5 of 6 (Frontend Integration)
+Plan: 2 of 3 in current phase — 05-02 COMPLETE
+Status: In progress — 05-02 done; next: 05-03 (Report.tsx AI data rendering)
+Last activity: 2026-02-20 — Completed 05-02: Loading.tsx refactored with generate-report invocation, rate limit handling, retry/skip UX
 
-Progress: [█████████░] 67%
+Progress: [█████████░] 75%
 
 ## Performance Metrics
 
@@ -31,6 +31,7 @@ Progress: [█████████░] 67%
 | 02-ai-report-edge-function | 2/2 COMPLETE | ~55 min | ~27 min |
 | 03-email-webhook | 3/3 COMPLETE | ~78 min | ~26 min |
 | 04-rate-limiting | 2/2 COMPLETE | ~17 min | ~8 min |
+| 05-frontend-integration | 2/3 in progress | ~15 min (05-02) | ~15 min |
 
 **Recent Trend:**
 - Last 5 plans: 01-03 (~10 min), 02-01 (~25 min), 02-02 (~30 min), 03-01 (~8 min)
@@ -81,6 +82,11 @@ Recent decisions affecting current work:
 - Rate limit (04-01): Email matching is case-sensitive — email passed directly to limit() without normalization
 - Rate limit (04-02): Curl verification of live 429 behavior deferred by user — code inspection of fixedWindow(3, '24 h') satisfies Criterion 3; live test deferred to Phase 5 or manual QA
 - Rate limit (04-02): SEC-01 satisfied — guard enforces automatically on real traffic once Phase 5 wires generate-report into Loading.tsx
+- Loading.tsx (05-02): Promise.all([generateCall, minTimer]) with MIN_WAIT_MS=8000 — 8s minimum animation guaranteed regardless of API speed
+- Loading.tsx (05-02): 429 rate limit blocks user on loading screen — no fallback navigation shown (locked decision)
+- Loading.tsx (05-02): Retry re-calls only generate-report — auditIdRef preserved, no duplicate DB rows
+- Loading.tsx (05-02): mountedRef pattern for async cleanup safety — async flow not cancellable but results discarded after unmount
+- Loading.tsx (05-02): AIReportData interface added to types/audit.ts to type the edge function success response shape
 
 ### Pending Todos
 
@@ -98,5 +104,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Completed 04-02 (Phase 4 complete — Upstash Redis configured, SEC-01 satisfied)
-Resume file: .planning/phases/05-frontend-integration/ (Phase 5)
+Stopped at: Completed 05-02 (Loading.tsx refactored — generate-report wired, rate limit handling, retry/skip UX)
+Resume file: .planning/phases/05-frontend-integration/05-03-PLAN.md

@@ -102,8 +102,8 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — Create fetch-report edge function, fetchReport client helper, and AIReportData type
-- [ ] 05-02-PLAN.md — Refactor Loading.tsx: generate-report invocation, rate limit handling, error retry
+- [x] 05-01-PLAN.md — Create fetch-report edge function, fetchReport client helper, and AIReportData type
+- [x] 05-02-PLAN.md — Refactor Loading.tsx: generate-report invocation, rate limit handling, error retry
 - [ ] 05-03-PLAN.md — Refactor Report.tsx: dual data source, skeleton loading, polling, branded 404, AI content rendering
 
 ### Phase 6: Verification and Hardening
@@ -129,5 +129,5 @@ Note: Phase 3 depends only on Phase 1 and can be worked in parallel with Phase 2
 | 2. AI Report Edge Function | 2/2 | Complete   | 2026-02-19 |
 | 3. Email and Webhook | 3/3 | Complete   | 2026-02-20 |
 | 4. Rate Limiting | 2/2 | Complete   | 2026-02-20 |
-| 5. Frontend Integration | 0/? | Not started | - |
+| 5. Frontend Integration | 2/3 | In progress | - |
 | 6. Verification and Hardening | 0/? | Not started | - |
