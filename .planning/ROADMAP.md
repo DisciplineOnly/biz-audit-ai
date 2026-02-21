@@ -42,7 +42,12 @@
   3. Navigating through the full audit flow (Steps 1-8 → Generating → Report) in Bulgarian never drops the `/bg/` prefix from the URL
   4. Form selections (dropdowns, checkboxes) store stable English strings as values regardless of which language is active — scoring lookups return the same score in English and Bulgarian for the same selection
   5. A shared report URL (`/bg/report/:id`) opens in Bulgarian for the recipient
-**Plans**: TBD
+**Plans:** 4 plans
+Plans:
+- [ ] 06-01-PLAN.md — i18next setup, URL routing, LangLayout, useLang hook
+- [ ] 06-02-PLAN.md — Value/label refactor for StyledSelect and MultiCheckbox
+- [ ] 06-03-PLAN.md — Navigation prefix updates and LanguageToggle component
+- [ ] 06-04-PLAN.md — Human verification checkpoint
 
 ### Phase 7: English Translation Pass
 **Goal**: Every hardcoded string in the app is extracted into English JSON namespaces and the English experience is byte-for-byte identical to pre-v1.1
@@ -107,7 +112,7 @@
 | 3. Email and Webhook | v1.0 | 3/3 | Complete | 2026-02-20 |
 | 4. Rate Limiting | v1.0 | 2/2 | Complete | 2026-02-20 |
 | 5. Frontend Integration | v1.0 | 3/3 | Complete | 2026-02-20 |
-| 6. i18n Infrastructure and Routing | v1.1 | 0/? | Not started | - |
+| 6. i18n Infrastructure and Routing | v1.1 | 0/4 | In Progress | - |
 | 7. English Translation Pass | v1.1 | 0/? | Not started | - |
 | 8. Sub-Niche Config and Selection UI | v1.1 | 0/? | Not started | - |
 | 9. Scoring Engine Sub-Niche Weights | v1.1 | 0/? | Not started | - |
