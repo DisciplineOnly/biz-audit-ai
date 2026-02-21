@@ -1,35 +1,35 @@
 import {
   FormField, StepHeader, StyledSelect, MultiCheckbox,
-  StyledTextarea, RatingButtons, StepProps
+  StyledTextarea, RatingButtons, StepProps, toOptions
 } from "./AuditFormComponents";
 
-const HS_CRMS = [
+const HS_CRMS = toOptions([
   "ServiceTitan", "Housecall Pro", "Jobber", "FieldEdge", "ServiceM8",
   "Successware", "No CRM/Software", "Other",
-];
+]);
 
-const RE_CRMS = [
+const RE_CRMS = toOptions([
   "Follow Up Boss", "KVCore/Inside Real Estate", "Lofty (formerly Chime)",
   "Sierra Interactive", "LionDesk", "Wise Agent", "HubSpot", "Salesforce",
   "No CRM", "Other",
-];
+]);
 
-const HS_TOOLS = [
+const HS_TOOLS = toOptions([
   "Business Website", "Online Booking/Scheduling", "Google Business Profile",
   "Social Media Accounts", "Email Marketing (Mailchimp etc.)", "Call Tracking (CallRail etc.)",
   "GPS/Fleet Tracking", "Accounting Software (QuickBooks etc.)", "Business Texting/SMS Platform",
   "Reputation Management Software", "Website Chat/Chatbot", "Proposal/Estimate Software",
   "Inventory/Parts Management", "Project Management Tool", "AI Tools (ChatGPT etc.)",
   "Automation (Zapier, Make, etc.)",
-];
+]);
 
-const RE_TOOLS = [
+const RE_TOOLS = toOptions([
   "IDX Website", "Landing Page Builder", "Email Marketing/Drip Campaigns",
   "Social Media Management Tool", "Call Tracking", "Business Texting/SMS",
   "Video Email (BombBomb etc.)", "Transaction Management (Dotloop, SkySlope etc.)",
   "E-Signature (DocuSign, Dotloop)", "Virtual Tour/3D Tools", "AI Tools (ChatGPT etc.)",
   "Automation (Zapier, Make, etc.)", "Team Communication (Slack, Teams)", "Accounting Software",
-];
+]);
 
 export function Step2Technology({ state, dispatch, isHS }: StepProps) {
   const { step2 } = state;

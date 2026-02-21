@@ -1,44 +1,44 @@
-import { FormField, StepHeader, StyledSelect, MultiCheckbox, StyledTextarea, StepProps } from "./AuditFormComponents";
+import { FormField, StepHeader, StyledSelect, MultiCheckbox, StyledTextarea, StepProps, toOptions } from "./AuditFormComponents";
 
-const HS_ESTIMATE = [
+const HS_ESTIMATE = toOptions([
   "Software-generated with digital approval", "PDF/email quotes",
   "Paper/verbal estimates", "No standard process",
-];
-const HS_PRICING = ["Flat rate pricing", "Time & materials", "Mix of both", "No standardized pricing"];
-const HS_INVOICE_TIMING = [
+]);
+const HS_PRICING = toOptions(["Flat rate pricing", "Time & materials", "Mix of both", "No standardized pricing"]);
+const HS_INVOICE_TIMING = toOptions([
   "Immediately on-site (digital)", "Same day", "Within a few days", "It varies a lot",
-];
-const HS_PAYMENT_METHODS = [
+]);
+const HS_PAYMENT_METHODS = toOptions([
   "Credit/Debit in the field", "Online payment portal", "Customer financing options",
   "Check", "Cash", "ACH/Bank transfer", "Auto-pay for recurring services",
-];
-const HS_COLLECTIONS = [
+]);
+const HS_COLLECTIONS = toOptions([
   "Automated reminders + escalation", "Manual follow-up",
   "We chase when we remember", "We write off a lot of receivables",
-];
-const FINANCIAL_REVIEW = [
+]);
+const FINANCIAL_REVIEW = toOptions([
   "Monthly P&L and KPI review", "Quarterly review",
   "Annual with accountant", "We check the bank account",
-];
+]);
 
-const RE_EXPENSE = [
+const RE_EXPENSE = toOptions([
   "Team/brokerage software", "Spreadsheet", "Accounting software",
   "Agents handle their own", "No system",
-];
-const RE_PNL = [
+]);
+const RE_PNL = toOptions([
   "Monthly financial review with bookkeeper/accountant", "Quarterly review",
   "Annual review", "We don't track team P&L",
-];
-const RE_COMMISSION = [
+]);
+const RE_COMMISSION = toOptions([
   "Automated through transaction management software", "Manual but systematic", "Ad hoc",
-];
-const RE_MARKETING_BUDGET = [
+]);
+const RE_MARKETING_BUDGET = toOptions([
   "Yes — detailed per-channel tracking", "Yes — total spend tracked",
   "We spend but don't track ROI", "No formal marketing budget",
-];
-const RE_PAYMENT_METHODS = [
+]);
+const RE_PAYMENT_METHODS = toOptions([
   "Credit/Debit", "Online portal", "ACH/Bank transfer", "Check", "Wire transfer",
-];
+]);
 
 export function Step8Financial({ state, dispatch, isHS }: StepProps) {
   const { step8 } = state;
@@ -162,7 +162,7 @@ export function Step8Financial({ state, dispatch, isHS }: StepProps) {
             background: "linear-gradient(135deg, hsl(var(--navy)) 0%, hsl(var(--navy-dark)) 100%)",
           }}
         >
-          <div className="text-2xl mb-2">⚡</div>
+          <div className="text-2xl mb-2">&#9889;</div>
           <p className="text-white font-semibold text-lg mb-1">You're almost done!</p>
           <p className="text-white/60 text-sm">
             Click "Generate My AI Audit Report" below to get your personalized business audit with scores,

@@ -1,55 +1,55 @@
-import { FormField, StepHeader, StyledSelect, MultiCheckbox, StepProps } from "./AuditFormComponents";
+import { FormField, StepHeader, StyledSelect, MultiCheckbox, StepProps, toOptions } from "./AuditFormComponents";
 
-const HS_PERFORMANCE = [
+const HS_PERFORMANCE = toOptions([
   "KPIs tracked in software (revenue per tech, callback rate, etc.)",
   "We review numbers quarterly", "Manager observation", "No formal measurement",
-];
-const HS_JOB_COSTING = [
+]);
+const HS_JOB_COSTING = toOptions([
   "Tracked per job in software", "Estimated but not tracked precisely",
   "We mostly guess", "We don't track job costs",
-];
-const HS_INVENTORY = [
+]);
+const HS_INVENTORY = toOptions([
   "Inventory management software", "Spreadsheet tracking",
   "Techs manage their own trucks", "No formal tracking",
-];
-const HS_TIME = [
+]);
+const HS_TIME = toOptions([
   "GPS + software time tracking", "Manual time sheets",
   "Clock in/clock out", "They don't log time",
-];
-const HS_QUALITY = [
+]);
+const HS_QUALITY = toOptions([
   "QA checklist + customer survey", "Customer feedback reviewed regularly",
   "Handle complaints as they come", "No formal process",
-];
-const HS_KPIS = [
+]);
+const HS_KPIS = toOptions([
   "Average Ticket/Job Value", "Close/Conversion Rate", "Revenue Per Technician",
   "Callback/Redo Rate", "Customer Acquisition Cost", "Membership/Service Plan Count",
   "Customer Satisfaction Score", "Average Lead Response Time",
   "Profit Margins Per Job Type", "We don't track any KPIs",
-];
+]);
 
-const RE_PERFORMANCE = [
+const RE_PERFORMANCE = toOptions([
   "CRM dashboards with KPIs", "Spreadsheet tracking",
   "Monthly production reports", "No formal measurement",
-];
-const RE_ACCOUNTABILITY = [
+]);
+const RE_ACCOUNTABILITY = toOptions([
   "Daily/weekly activity minimums tracked in CRM", "Weekly team meetings with accountability",
   "Informal check-ins", "No accountability system",
-];
-const RE_TRANSACTION = [
+]);
+const RE_TRANSACTION = toOptions([
   "Transaction management software (Dotloop, SkySlope, etc.)",
   "Checklists in CRM", "Spreadsheet/Google Docs", "No standardized process",
-];
-const RE_ONBOARDING = [
+]);
+const RE_ONBOARDING = toOptions([
   "Documented training program + mentorship", "Informal training",
   "Shadow other agents", "Figure it out yourself",
-];
-const RE_KPIS = [
+]);
+const RE_KPIS = toOptions([
   "Leads generated per agent", "Appointments set per agent",
   "Conversion rate (lead → client)", "Average days to close",
   "Cost per lead by source", "GCI per agent",
   "Client satisfaction score", "Average list-to-sale price ratio",
   "We don't track any KPIs",
-];
+]);
 
 export function Step7Operations({ state, dispatch, isHS }: StepProps) {
   const { step7 } = state;

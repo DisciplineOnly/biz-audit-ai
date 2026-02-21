@@ -1,43 +1,43 @@
-import { FormField, StepHeader, StyledSelect, StepProps } from "./AuditFormComponents";
+import { FormField, StepHeader, StyledSelect, StepProps, toOptions } from "./AuditFormComponents";
 
-const HS_REMINDERS = [
+const HS_REMINDERS = toOptions([
   "Yes — text and email", "Yes — email only", "Yes — text only",
   "No — we call manually", "No reminders sent",
-];
-const HS_ONWAY = ["Yes — automated", "Sometimes manually", "No"];
-const HS_JOB_COMPLETE = [
+]);
+const HS_ONWAY = toOptions(["Yes — automated", "Sometimes manually", "No"]);
+const HS_JOB_COMPLETE = toOptions([
   "Digital summary/invoice sent immediately", "We explain verbally",
   "Paper invoice left behind", "No formal communication",
-];
-const HS_INTERNAL = [
+]);
+const HS_INTERNAL = toOptions([
   "Field service app/software", "Group text/chat app", "Phone calls", "Mixed/inconsistent",
-];
-const HS_AFTERHOURS = [
+]);
+const HS_AFTERHOURS = toOptions([
   "AI chatbot or auto-responder", "Answering service",
   "Voicemail with next-day callback", "After-hours calls go unanswered",
-];
-const HS_PORTAL = ["Yes", "No but we want one", "No and not a priority"];
+]);
+const HS_PORTAL = toOptions(["Yes", "No but we want one", "No and not a priority"]);
 
-const RE_AGENT_COMMS = [
+const RE_AGENT_COMMS = toOptions([
   "CRM-based communication (logged)", "Personal phone/text (not logged)",
   "Mix of both", "Varies by agent",
-];
-const RE_TRANSACTION_UPDATES = [
+]);
+const RE_TRANSACTION_UPDATES = toOptions([
   "Yes — key milestones automated", "Some manual updates",
   "No — agents handle individually",
-];
-const RE_PAST_CLIENT = [
+]);
+const RE_PAST_CLIENT = toOptions([
   "Automated long-term drip", "Annual check-ins/market updates",
   "Holiday cards/occasional emails", "We don't maintain contact consistently",
-];
-const RE_INTERNAL = [
+]);
+const RE_INTERNAL = toOptions([
   "Team app (Slack, Teams, etc.)", "Group text", "Email", "In-person meetings only",
-];
-const RE_AFTERHOURS = [
+]);
+const RE_AFTERHOURS = toOptions([
   "Auto-responder with info", "AI chatbot", "Agents handle on personal phones",
   "Goes unanswered until next day",
-];
-const RE_PORTAL = ["Yes — through our software", "No but we'd like one", "No and not a priority"];
+]);
+const RE_PORTAL = toOptions(["Yes — through our software", "No but we'd like one", "No and not a priority"]);
 
 export function Step5Communication({ state, dispatch, isHS }: StepProps) {
   const { step5 } = state;

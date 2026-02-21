@@ -1,36 +1,36 @@
-import { FormField, StepHeader, StyledSelect, StepProps } from "./AuditFormComponents";
+import { FormField, StepHeader, StyledSelect, StepProps, toOptions } from "./AuditFormComponents";
 
-const HS_POST_JOB = [
+const HS_POST_JOB = toOptions([
   "Automated follow-up sequence (thank you + review request + maintenance reminder)",
   "We send a review request", "Nothing formal", "Depends on the tech",
-];
-const HS_MAINTENANCE = ["Yes — automated", "Yes — manually/sometimes", "No"];
-const HS_AGREEMENTS = ["Yes — actively sold", "Yes — but rarely sell them", "No"];
-const HS_ESTIMATE_FU = [
+]);
+const HS_MAINTENANCE = toOptions(["Yes — automated", "Yes — manually/sometimes", "No"]);
+const HS_AGREEMENTS = toOptions(["Yes — actively sold", "Yes — but rarely sell them", "No"]);
+const HS_ESTIMATE_FU = toOptions([
   "Automated follow-up sequence", "Manual follow-up within a week",
   "We follow up if we remember", "We don't follow up",
-];
-const HS_WARRANTY = ["Tracked in software", "Tracked in spreadsheets", "We don't track this"];
-const REPEAT_PERCENT = ["Over 50%", "30–50%", "10–30%", "Under 10%", "We don't know"];
+]);
+const HS_WARRANTY = toOptions(["Tracked in software", "Tracked in spreadsheets", "We don't track this"]);
+const REPEAT_PERCENT = toOptions(["Over 50%", "30–50%", "10–30%", "Under 10%", "We don't know"]);
 
-const RE_POST_CLOSE = [
+const RE_POST_CLOSE = toOptions([
   "Automated post-close nurture sequence", "Manual thank-you and check-in",
   "Closing gift and that's about it", "Nothing formal",
-];
-const RE_PAST_CLIENT = [
+]);
+const RE_PAST_CLIENT = toOptions([
   "CRM-based annual touchpoint plan", "Occasional emails/newsletters",
   "Social media only", "We don't have a system",
-];
-const RE_REFERRAL = [
+]);
+const RE_REFERRAL = toOptions([
   "Yes — automated asks at key milestones", "Yes — manual but consistent",
   "We ask occasionally", "No formal process",
-];
-const RE_LOST_LEAD = [
+]);
+const RE_LOST_LEAD = toOptions([
   "Automated long-term nurture", "Manual follow-up for a few weeks",
   "We mostly move on", "No process",
-];
-const RE_ANNIVERSARY = ["Yes — automated", "Yes — manual", "No"];
-const RE_REPEAT = ["Over 50%", "30–50%", "10–30%", "Under 10%", "We don't track this"];
+]);
+const RE_ANNIVERSARY = toOptions(["Yes — automated", "Yes — manual", "No"]);
+const RE_REPEAT = toOptions(["Over 50%", "30–50%", "10–30%", "Under 10%", "We don't track this"]);
 
 export function Step6FollowUp({ state, dispatch, isHS }: StepProps) {
   const { step6 } = state;

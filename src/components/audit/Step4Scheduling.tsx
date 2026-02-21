@@ -1,43 +1,43 @@
-import { FormField, StepHeader, StyledSelect, StepProps } from "./AuditFormComponents";
+import { FormField, StepHeader, StyledSelect, StepProps, toOptions } from "./AuditFormComponents";
 
 // Home Services options
-const HS_SCHEDULING = [
+const HS_SCHEDULING = toOptions([
   "Software with drag-and-drop board", "Google/Outlook Calendar",
   "Phone calls and a whiteboard", "Paper schedule", "No real system",
-];
-const HS_DISPATCH = [
+]);
+const HS_DISPATCH = toOptions([
   "Automated through software", "Manual — office calls/texts techs",
   "Techs check a shared calendar", "Mixed approach",
-];
-const HS_ROUTE = ["Yes — software optimized", "We try to cluster jobs manually", "No"];
-const HS_TRACKING = ["Yes — GPS tracking", "No"];
-const HS_CAPACITY = [
+]);
+const HS_ROUTE = toOptions(["Yes — software optimized", "We try to cluster jobs manually", "No"]);
+const HS_TRACKING = toOptions(["Yes — GPS tracking", "No"]);
+const HS_CAPACITY = toOptions([
   "Software manages availability", "We eyeball it", "We often overbook or underbook",
-];
-const HS_EMERGENCY = [
+]);
+const HS_EMERGENCY = toOptions([
   "Dedicated slots held open", "We shuffle the schedule",
   "We usually can't accommodate them", "It's chaotic",
-];
+]);
 
 // Real Estate options
-const RE_FOLLOW_UP = [
+const RE_FOLLOW_UP = toOptions([
   "Yes — automated drip campaigns", "Yes — manual but documented",
   "Sort of — agents do their own thing", "No formal plan",
-];
-const RE_NURTURE = [
+]);
+const RE_NURTURE = toOptions([
   "30 days or less", "1–3 months", "3–6 months", "6–12 months",
   "We nurture indefinitely", "Agents decide for themselves",
-];
-const RE_DRIP = ["Yes — fully automated", "Yes — partially automated", "No"];
-const RE_TEMP = [
+]);
+const RE_DRIP = toOptions(["Yes — fully automated", "Yes — partially automated", "No"]);
+const RE_TEMP = toOptions([
   "CRM lead scoring", "Manual tags/labels in CRM",
   "Agents keep mental notes", "We don't differentiate",
-];
-const RE_LOGGING = ["Yes — consistently", "Sometimes", "Rarely", "We don't require it"];
-const RE_COLD = [
+]);
+const RE_LOGGING = toOptions(["Yes — consistently", "Sometimes", "Rarely", "We don't require it"]);
+const RE_COLD = toOptions([
   "Long-term automated nurture", "Manual follow-up for 2+ weeks",
   "A few attempts then move on", "We mostly give up",
-];
+]);
 
 export function Step4Scheduling({ state, dispatch, isHS }: StepProps) {
   const { step4 } = state;

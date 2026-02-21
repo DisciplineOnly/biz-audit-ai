@@ -1,19 +1,19 @@
-import { FormField, StepHeader, StyledInput, StyledSelect, StepProps } from "./AuditFormComponents";
+import { FormField, StepHeader, StyledInput, StyledSelect, StepProps, toOptions } from "./AuditFormComponents";
 
-const HS_INDUSTRIES = [
+const HS_INDUSTRIES = toOptions([
   "HVAC", "Plumbing", "Electrical", "Roofing", "Landscaping",
   "Pest Control", "Garage Doors", "Painting", "General Contracting", "Other",
-];
-const HS_EMPLOYEE_COUNTS = ["Solo", "2–5", "6–15", "16–30", "31–50", "50+"];
-const HS_REVENUES = ["Under $250K", "$250K–$500K", "$500K–$1M", "$1M–$3M", "$3M–$5M", "$5M+"];
-const HS_YEARS = ["Less than 1", "1–3", "3–5", "5–10", "10+"];
-const HS_SERVICE_AREAS = ["Single city/town", "Multiple cities", "Entire metro area", "Multiple metros/statewide"];
+]);
+const HS_EMPLOYEE_COUNTS = toOptions(["Solo", "2–5", "6–15", "16–30", "31–50", "50+"]);
+const HS_REVENUES = toOptions(["Under $250K", "$250K–$500K", "$500K–$1M", "$1M–$3M", "$3M–$5M", "$5M+"]);
+const HS_YEARS = toOptions(["Less than 1", "1–3", "3–5", "5–10", "10+"]);
+const HS_SERVICE_AREAS = toOptions(["Single city/town", "Multiple cities", "Entire metro area", "Multiple metros/statewide"]);
 
-const RE_ROLES = ["Team Lead", "Broker/Owner", "Operations Manager", "Individual Agent", "Other"];
-const RE_TEAM_SIZES = ["Solo agent", "2–5 agents", "6–15 agents", "16–30 agents", "30+"];
-const RE_VOLUMES = ["Under 25 deals", "25–50 deals", "50–100 deals", "100–250 deals", "250+"];
-const RE_GCI = ["Under $250K", "$250K–$500K", "$500K–$1M", "$1M–$3M", "$3M+"];
-const RE_MARKETS = ["Residential resale", "New construction", "Luxury", "Commercial", "Mixed"];
+const RE_ROLES = toOptions(["Team Lead", "Broker/Owner", "Operations Manager", "Individual Agent", "Other"]);
+const RE_TEAM_SIZES = toOptions(["Solo agent", "2–5 agents", "6–15 agents", "16–30 agents", "30+"]);
+const RE_VOLUMES = toOptions(["Under 25 deals", "25–50 deals", "50–100 deals", "100–250 deals", "250+"]);
+const RE_GCI = toOptions(["Under $250K", "$250K–$500K", "$500K–$1M", "$1M–$3M", "$3M+"]);
+const RE_MARKETS = toOptions(["Residential resale", "New construction", "Luxury", "Commercial", "Mixed"]);
 
 export function Step1BusinessInfo({ state, dispatch, isHS }: StepProps) {
   const { step1 } = state;
