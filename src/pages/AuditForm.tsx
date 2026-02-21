@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Zap, Save } from "lucide-react";
 import { AuditFormState, auditReducer, initialFormState, Niche } from "@/types/audit";
 import { useLang } from "@/hooks/useLang";
+import { LanguageToggle } from "@/components/LanguageToggle";
 import { Step1BusinessInfo } from "@/components/audit/Step1BusinessInfo";
 import { Step2Technology } from "@/components/audit/Step2Technology";
 import { Step3LeadFunnel } from "@/components/audit/Step3LeadFunnel";
@@ -186,13 +187,16 @@ export default function AuditForm() {
             <div className="text-white/50 text-xs">{tabLabels[currentStep - 1]}</div>
           </div>
 
-          <button
-            onClick={handleSave}
-            className="flex items-center gap-1.5 text-white/60 hover:text-white text-xs transition-colors"
-          >
-            <Save className="w-3.5 h-3.5" />
-            {savedToast ? "Saved!" : "Save Progress"}
-          </button>
+          <div className="flex items-center gap-3">
+            {currentStep === 1 && <LanguageToggle />}
+            <button
+              onClick={handleSave}
+              className="flex items-center gap-1.5 text-white/60 hover:text-white text-xs transition-colors"
+            >
+              <Save className="w-3.5 h-3.5" />
+              {savedToast ? "Saved!" : "Save Progress"}
+            </button>
+          </div>
         </div>
 
         {/* Progress bar */}

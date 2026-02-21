@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Wrench, Home, ArrowRight, CheckCircle, Star, BarChart3, Zap } from "lucide-react";
 import { useLang } from "@/hooks/useLang";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 const STORAGE_KEY = "ep_audit_state";
 
@@ -53,8 +54,11 @@ export default function Index() {
             </div>
             <span className="text-white font-semibold text-lg">E&P Systems</span>
           </div>
-          <div className="text-white/60 text-sm hidden sm:block">
-            Free AI Business Audit Tool
+          <div className="flex items-center gap-4">
+            <span className="text-white/60 text-sm hidden sm:block">
+              Free AI Business Audit Tool
+            </span>
+            <LanguageToggle />
           </div>
         </div>
       </header>
