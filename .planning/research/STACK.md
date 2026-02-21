@@ -1,158 +1,178 @@
-# Stack Research
+# Stack Research — v1.1 Localization & Sub-Niche Specialization
 
-**Domain:** Business Audit SaaS — Supabase backend + AI report generation added to existing React SPA
-**Researched:** 2026-02-19
-**Confidence:** HIGH (Supabase/client integration), MEDIUM (LLM model selection), HIGH (email)
+**Domain:** i18n infrastructure + Bulgarian translation + sub-niche data modeling for existing React/Vite/TypeScript SPA
+**Researched:** 2026-02-21
+**Confidence:** HIGH (i18n library choices), HIGH (routing pattern), MEDIUM (TypeScript type-safe setup), HIGH (AI report language param)
 
-> **Scope note:** This document covers only the *new* backend/AI layer being added. The existing React 18 / Vite 5 / TypeScript 5 / Tailwind 3 / shadcn/ui frontend is already in place and not re-researched here.
+> **Scope note:** This document covers ONLY new additions for v1.1. The existing stack
+> (React 18 / Vite 5 / TypeScript 5 / Tailwind 3 / shadcn/ui / Supabase / Claude Haiku 4.5 /
+> react-router-dom v6.30.1) is validated and not re-researched.
 
 ---
 
 ## Recommended Stack
 
-### Core Backend — Supabase
+### Core New Dependencies
 
 | Technology | Version | Purpose | Why Recommended |
 |------------|---------|---------|-----------------|
-| @supabase/supabase-js | ^2.97.0 | Client-side SDK — database reads/writes, edge function invocation | Official client; v2 is the current stable major. The singleton pattern (`createClient` exported once from a module) prevents multiple instances during React render cycles. Latest as of 2026-02-19. |
-| Supabase Edge Functions | Deno runtime (managed) | Server-side TypeScript — AI report generation, email dispatch | Runs on Deno V8 isolates; no Node.js server to manage. Deployed via Supabase CLI. Free tier: 500K invocations/month. Paid: 400s wall-clock timeout. |
-| Supabase Postgres | 15.x (managed) | Persistent storage for audit submissions, generated reports, lead emails | Already included in Supabase project. No separate database to provision. Row Level Security (RLS) enforces per-row access without application-layer guards. |
-| Supabase Database Webhooks | pg_net extension (managed) | Trigger edge functions automatically on INSERT | Thin wrapper around pg_net; fires *after* a DB change, asynchronously — does not block the insert. Configured via Supabase Dashboard without writing raw trigger SQL. |
+| i18next | ^25.8.13 | Core i18n engine — translation lookup, interpolation, pluralization, namespace management | Industry standard. 11M+ weekly downloads. Works in browser, Deno, and Node.js without configuration differences. The rest of the i18n stack is built on top of it. TypeScript v5 required (already satisfied). |
+| react-i18next | ^16.5.4 | React bindings for i18next — `useTranslation()` hook, `<Trans>` component, `I18nextProvider` | Official React integration. v16 added React Compiler compatibility and React.memo support. Peer deps: React >=16.8.0, i18next >=23.2.3 — both satisfied. |
+| i18next-resources-to-backend | ^1.2.1 | Lazy-load translation JSON files via Vite dynamic imports | Replaces i18next-http-backend for Vite projects. Uses `import('./locales/${lang}/${ns}.json')` — Vite code-splits the JSON files at build time so Bulgarian translations are NOT included in the initial bundle for English users. Avoids a public/locales HTTP fetch on every page load. |
+| i18next-browser-languagedetector | ^8.2.1 | Detect language from URL path segment | Configured with `order: ['path', 'localStorage']` and `lookupFromPathIndex: 0`. Reads the `/bg/` prefix automatically, syncs to localStorage for persistence across navigations. |
 
-### AI Report Generation
+### No New Backend Dependencies
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| openai (npm) | ^6.22.0 | OpenAI API client inside Edge Functions | Official SDK; supports both Node.js and Deno runtimes. Vercel AI SDK is NOT recommended here — it requires Vercel Edge Runtime, which is incompatible with Supabase's Deno environment. |
-| GPT-4.1 mini (model) | gpt-4.1-mini | LLM for generating personalized audit report text | Released April 2025. Beats GPT-4o on most benchmarks, 1M token context window (vs 128K for gpt-4o-mini), 83% cheaper than full GPT-4.1. Knowledge cutoff June 2024. Better instruction-following than gpt-4o-mini. At ~$0.40/$1.60 per M tokens (input/output), a 2000-token report costs < $0.004. |
-| OpenAI Structured Outputs | response_format: json_schema | Guarantee valid JSON from LLM (section-by-section report) | Supported on gpt-4.1-mini. Eliminates JSON parse errors that plague prompt-only approaches. Use for the report schema; free-text sections can still contain rich prose within the schema fields. |
+The Supabase edge function `generate-report` does NOT need a new library. Bulgarian report generation is achieved by passing `language: 'bg'` in the request body and adding a single instruction line to the existing `buildPrompt()` system prompt. Claude Haiku 4.5 has strong Bulgarian capability — MEDIUM confidence (not benchmarked specifically for Bulgarian business prose, but Anthropic's multilingual support covers Bulgarian per their documentation).
 
-### Email
+### No New Routing Library
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| Resend (npm) | ^6.9.2 | Transactional email from Edge Functions | Official Supabase integration partner. The Supabase docs use Resend in all email examples. Free tier: 3,000 emails/month, 100/day. Can call via raw fetch (no npm needed in Deno) or via `npm:resend` import. Requires verified sender domain. |
+React Router v6 (already installed at ^6.30.1) handles language-prefixed URLs natively via optional segments (`/:lang?`). No additional library needed.
 
-### Supporting Libraries (Frontend additions)
+---
 
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| @tanstack/react-query | ^5.83.0 | Already in package.json — use for Supabase async calls | Already installed. Wrap Supabase calls in `useQuery`/`useMutation`. Provides caching, loading states, and error handling without manual `useState`. |
-| zod | ^3.25.76 | Already in package.json — validate audit form data before DB insert | Already installed. Define a `AuditSubmissionSchema` and validate client-side before calling Supabase. |
+## Supporting Setup (No npm install)
 
-### Development Tools
+### TypeScript Type Augmentation
 
-| Tool | Purpose | Notes |
-|------|---------|-------|
-| Supabase CLI | Local Edge Function dev, migrations, secrets management | `npx supabase init` if not already done. `supabase functions serve --env-file .env.local` for local function testing. Required for deployment: `supabase functions deploy`. |
-| Supabase Dashboard | Database webhooks config, RLS policy editor, secrets UI | Configure DB webhooks via Dashboard rather than raw SQL — simpler for INSERT→edge-function patterns. |
-| .env.local | Store `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` | Vite reads `VITE_` prefixed vars. Do NOT commit. The publishable key (formerly "anon key") is safe to expose client-side — RLS is the security layer. |
-| supabase/functions/.env | Store `OPENAI_API_KEY`, `RESEND_API_KEY` | Edge Function secrets. Local: passed via `--env-file`. Production: `supabase secrets set OPENAI_API_KEY=...`. Never exposed to browser. |
+Create `src/types/i18next.d.ts` to make `useTranslation()` type-safe with autocompletion:
+
+```typescript
+// src/types/i18next.d.ts
+import "i18next";
+import en from "../locales/en/common.json";
+import en_form from "../locales/en/form.json";
+import en_report from "../locales/en/report.json";
+
+declare module "i18next" {
+  interface CustomTypeOptions {
+    defaultNS: "common";
+    resources: {
+      common: typeof en;
+      form: typeof en_form;
+      report: typeof en_report;
+    };
+  }
+}
+```
+
+This approach provides compile-time errors when translation keys don't exist, and IDE autocompletion on `t('key')` calls. Only the English (source) locale is typed — Bulgarian translations are structurally identical JSON so no separate type declaration needed.
+
+### Translation File Structure
+
+```
+src/locales/
+  en/
+    common.json     # UI chrome: nav, buttons, labels, landing page
+    form.json       # All 8 audit steps, questions, answer options
+    report.json     # Report page labels, section headings, CTA text
+  bg/
+    common.json
+    form.json
+    report.json
+```
+
+Three namespaces match three distinct lazy-load points: the form namespace loads when the user starts the audit, the report namespace loads when the report page renders. Common loads at app init.
+
+### Sub-Niche Data Modeling — No New Library
+
+Sub-niche specialization uses TypeScript discriminated union config objects — no library needed. The existing `isHS: boolean` pattern is expanded to a sub-niche key:
+
+```typescript
+// src/types/subniche.ts
+export type HomeServicesSubNiche =
+  | 'hvac' | 'plumbing' | 'electrical' | 'roofing'
+  | 'landscaping' | 'pest_control' | 'garage_doors'
+  | 'painting' | 'general_contracting' | 'construction'
+  | 'interior_design' | 'cleaning';
+
+export type RealEstateSubNiche =
+  | 'residential_sales' | 'commercial' | 'property_management'
+  | 'new_construction' | 'luxury_resort';
+
+export type SubNiche = HomeServicesSubNiche | RealEstateSubNiche;
+```
+
+Sub-niche-specific question options live in config files (`src/config/subniches/`), not in component JSX. Components read from the config based on active sub-niche. This keeps translation keys consistent — the config maps sub-niche to answer option keys, translations map keys to display strings per language.
 
 ---
 
 ## Installation
 
 ```bash
-# Frontend — Supabase client (add to existing project)
-npm install @supabase/supabase-js
-
-# Supabase CLI (dev dependency or global)
-npm install -D supabase
-
-# Initialize Supabase in project (creates supabase/ folder)
-npx supabase init
-
-# Edge function dependencies are imported inside the Deno functions themselves
-# using npm: specifier — no npm install needed for server-side packages:
-# import OpenAI from "npm:openai@^6";
-# import { Resend } from "npm:resend@^6";
+# i18n core (4 packages total)
+npm install i18next react-i18next i18next-resources-to-backend i18next-browser-languagedetector
 ```
+
+That is the complete set of new frontend npm dependencies for v1.1.
 
 ---
 
-## Client Setup Pattern
+## Integration with Existing React Router v6
 
-```typescript
-// src/lib/supabase.ts — singleton, reused everywhere
-import { createClient } from '@supabase/supabase-js'
+The existing `App.tsx` uses `BrowserRouter` (not `createBrowserRouter`). This matters because `createBrowserRouter` + i18next has a known initialization-order issue when route metadata calls `i18n.t()` before i18next has initialized. `BrowserRouter` avoids this entirely.
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
+### Routing Pattern — Nested Layout with Optional `:lang` Segment
 
-export const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: {
-    persistSession: false,   // no user accounts — disable auth session storage
-    autoRefreshToken: false,
-    detectSessionInUrl: false,
-  },
-})
+```tsx
+// App.tsx (updated)
+<BrowserRouter>
+  <Routes>
+    {/* Language-scoped routes — both /bg/* and /* work */}
+    <Route path="/:lang?" element={<LangLayout />}>
+      <Route index element={<Index />} />
+      <Route path="audit" element={<AuditForm />} />
+      <Route path="generating" element={<Loading />} />
+      <Route path="report/:auditId" element={<Report />} />
+    </Route>
+    <Route path="*" element={<NotFound />} />
+  </Routes>
+</BrowserRouter>
 ```
 
-This SPA has no user accounts, only email capture. Disabling auth session management keeps the client lean and avoids localStorage pollution.
+`LangLayout` is a thin wrapper component that:
+1. Reads `params.lang` via `useParams()`
+2. Validates it against `['bg']` (supported non-default locales)
+3. Calls `i18n.changeLanguage(validLang ?? 'en')` on mount/change
+4. Renders `<Outlet />` — no visible UI
 
-## Edge Function Pattern (AI Report Generation)
+The `:lang?` optional segment means `/` and `/bg/` both match. The `LangLayout` handles the redirect case: if `params.lang` is set but not in the supported list (e.g., `/about` would be misread as lang="about"), redirect to `/`.
+
+**Why not `i18next-browser-languagedetector`'s path detection instead?** The detector reads `window.location.pathname` directly, which doesn't integrate with React Router's routing state. Using `useParams()` in a layout component is the React Router-idiomatic approach and avoids timing issues on client-side navigation.
+
+### i18n Initialization
 
 ```typescript
-// supabase/functions/generate-report/index.ts
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import OpenAI from "npm:openai@^6";
+// src/i18n.ts
+import i18next from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import resourcesToBackend from 'i18next-resources-to-backend';
+import LanguageDetector from 'i18next-browser-languagedetector';
 
-const openai = new OpenAI({ apiKey: Deno.env.get("OPENAI_API_KEY") });
-
-Deno.serve(async (req: Request) => {
-  const { auditData } = await req.json();
-
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4.1-mini",
-    messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: JSON.stringify(auditData) },
-    ],
-    response_format: {
-      type: "json_schema",
-      json_schema: { name: "audit_report", schema: REPORT_SCHEMA },
+i18next
+  .use(LanguageDetector)
+  .use(resourcesToBackend(
+    (language: string, namespace: string) =>
+      import(`./locales/${language}/${namespace}.json`)
+  ))
+  .use(initReactI18next)
+  .init({
+    fallbackLng: 'en',
+    supportedLngs: ['en', 'bg'],
+    defaultNS: 'common',
+    ns: ['common', 'form', 'report'],
+    detection: {
+      order: ['path', 'localStorage'],
+      lookupFromPathIndex: 0,
+      caches: ['localStorage'],
     },
+    interpolation: { escapeValue: false }, // React already escapes
   });
 
-  const report = JSON.parse(completion.choices[0].message.content!);
-
-  return new Response(JSON.stringify(report), {
-    headers: { "Content-Type": "application/json" },
-  });
-});
+export default i18next;
 ```
 
-## RLS Policy for Anonymous Insert (no user accounts)
-
-```sql
--- Enable RLS on audit_submissions table
-ALTER TABLE audit_submissions ENABLE ROW LEVEL SECURITY;
-
--- Allow anon role to INSERT (email capture, audit data)
-CREATE POLICY "anon_can_insert"
-ON audit_submissions
-FOR INSERT
-TO anon
-WITH CHECK (true);
-
--- No SELECT policy for anon = anon cannot read any rows
--- Service role (edge functions) can read all rows — no policy needed for service role
-```
-
-The `anon` role is the publishable key role. Anyone with the key can insert — but cannot read other submissions. Edge functions run as service role and bypass RLS entirely.
-
-## Database Webhook → Edge Function Pattern
-
-```
-User completes audit → React calls supabase.from('audit_submissions').insert(data)
-                      → Postgres INSERT fires
-                      → Database Webhook (pg_net) calls generate-report edge function
-                      → Edge function calls OpenAI, stores report in audit_reports table
-                      → Edge function calls Resend, sends email to user
-```
-
-Configure in Supabase Dashboard: Database → Webhooks → Create new webhook on `audit_submissions` INSERT event, targeting `https://<project>.supabase.co/functions/v1/generate-report`.
+Import `./i18n` in `main.tsx` before rendering `<App />`. The `LangLayout` component takes over runtime language switching from React Router state.
 
 ---
 
@@ -160,13 +180,12 @@ Configure in Supabase Dashboard: Database → Webhooks → Create new webhook on
 
 | Recommended | Alternative | When to Use Alternative |
 |-------------|-------------|-------------------------|
-| GPT-4.1 mini | GPT-4o mini | Only if you need extreme cost minimization and lower intelligence is acceptable. 2.7x cheaper but significantly weaker instruction-following. |
-| GPT-4.1 mini | Claude 3.5 Haiku (@anthropic-ai/sdk ^0.76.0) | If you want Anthropic over OpenAI. Similar capability tier. Requires different SDK (`npm:@anthropic-ai/sdk`) and slightly different API shape. No meaningful advantage for this use case. |
-| GPT-4.1 mini | GPT-4.1 (full) | Only if report quality is demonstrably insufficient after testing mini. ~8-10x more expensive. |
-| Resend | Supabase built-in SMTP | Supabase SMTP is for auth emails only (password reset etc.). Resend is for custom transactional emails from edge functions. |
-| Resend | SendGrid / Postmark | Resend has the tightest Supabase integration, cleaner API, and generous free tier. Use alternatives only if Resend's domain verification is a blocker. |
-| Database Webhooks (pg_net) | Direct client invocation of edge function | Direct call from React works but means the browser waits for LLM generation (~5–15s). Webhook pattern decouples: insert returns immediately, report is generated async. |
-| OpenAI SDK direct | Vercel AI SDK | Vercel AI SDK is optimized for Next.js + Vercel Edge Runtime. Supabase Edge Functions use Deno — the Vercel AI SDK's streaming primitives don't map cleanly. OpenAI SDK supports Deno natively. |
+| i18next + react-i18next | next-intl | Only if you migrate to Next.js. next-intl is Next.js-specific and won't run in Vite. |
+| i18next + react-i18next | react-intl (FormatJS) | Only if you need ICU message format compliance for complex pluralization rules or date/number formatting central to the product. BizAudit has minimal pluralization needs. react-intl is 22KB vs i18next's 15KB but provides less flexible lazy loading for Vite. |
+| i18next + react-i18next | Lingui | Lingui is excellent but requires a Babel/SWC macro for message extraction. The existing Vite setup uses `@vitejs/plugin-react-swc` — Lingui SWC support is documented but less battle-tested than Babel. Adds build complexity for marginal benefit on a 2-language project. |
+| i18next-resources-to-backend | i18next-http-backend | Use http-backend if translations live in `public/locales/` (CDN-served, editable without rebuild). For this project, rebuilding on translation changes is acceptable and the Vite dynamic import approach yields better performance (code-split, no separate HTTP request). |
+| Optional `:lang?` segment in React Router | Separate route trees (`/` and `/bg/` defined separately) | Separate trees avoid the LangLayout validation logic but require duplicating all route definitions. As route count grows (sub-niche pages, more languages), duplication becomes unmaintainable. |
+| TypeScript type augmentation with `i18next.d.ts` | No TypeScript typing (string keys) | Untyped keys allow silent translation misses. With 3 namespaces × 2 languages × ~200 keys per namespace, missing key bugs are common. The type augmentation setup is 20 lines of boilerplate with high payoff. |
 
 ---
 
@@ -174,33 +193,30 @@ Configure in Supabase Dashboard: Database → Webhooks → Create new webhook on
 
 | Avoid | Why | Use Instead |
 |-------|-----|-------------|
-| Vercel AI SDK (`ai` npm package) inside Supabase Edge Functions | Designed for Vercel's Node.js edge runtime. Deno compatibility is partial and undocumented for this use case. Introduces unnecessary abstraction when you only need one LLM provider. | `npm:openai` directly in Deno |
-| LangChain | Massive dependency tree, 20MB bundle limit on edge functions would be a risk, significant overhead for a single-prompt use case. Overkill for structured report generation. | Direct OpenAI SDK |
-| Supabase Auth (user accounts) | Project spec says "no user accounts." Adding auth for email-capture-only flow adds complexity with zero benefit. Email is captured as plain data. | Simple table insert with anon RLS |
-| Server-side PDF generation in Edge Functions | pdf-lib and pdfkit have Deno compatibility issues (file system access blocked). 20MB function size limit is tight with PDF libraries. | Generate HTML report client-side; let browser print/save as PDF if needed. Or use a dedicated PDF API service (Doppio, Puppeteer-based) only if PDF download is a hard requirement. |
-| `@supabase/ssr` package | Only needed for SSR frameworks (Next.js, SvelteKit). This is a Vite SPA — `@supabase/supabase-js` alone is correct. | `@supabase/supabase-js` with `persistSession: false` |
-| OpenAI Assistants API | Deprecated. Shuts down August 26, 2026. | Chat Completions API with structured outputs |
+| `i18next-browser-languagedetector` path detection as the SOLE language source | `window.location.pathname` is not updated after React Router client-side navigation until `window.history` settles. Race condition on fast navigations. | Use it for initial detection only; hand off to `LangLayout` + `i18n.changeLanguage()` for React Router-driven navigation |
+| Separate `basename` per language on `BrowserRouter` (e.g., `basename="/bg"`) | React Router's `BrowserRouter` accepts a single static basename at mount time. You cannot swap basenames to switch languages at runtime — it remounts the entire router. | Optional `:lang?` segment with a layout component |
+| Storing all translations in a single JSON file | One monolithic file means ALL languages load at startup. At 2 languages × 3 namespaces × ~200 keys each, the payload stays small today, but the pattern doesn't scale. | Three-namespace split with `i18next-resources-to-backend` lazy loading |
+| react-router-i18n (npm package) | Low adoption (~500 weekly downloads), last updated 2019, targets React Router v4 API. Not maintained for v6. | Native React Router v6 optional segments + LangLayout |
+| Translation management SaaS (Locize, Phrase, Crowdin) | Unnecessary overhead for a 2-language product where translation quality is manually reviewed. These services add external dependencies and monthly costs. | JSON files in `src/locales/`, translated via AI-assisted workflow reviewed by a native Bulgarian speaker |
 
 ---
 
-## Stack Patterns by Variant
+## Stack Patterns by Scenario
 
-**If report generation must be synchronous (user waits on screen):**
-- Call edge function directly from React using `supabase.functions.invoke('generate-report', { body: auditData })`
-- Show loading state while waiting (~5–15s for GPT-4.1 mini)
-- Skip the database webhook pattern
-- Risk: if user closes tab, report is lost
+**If a third language is added later (e.g., Romanian):**
+- Add `'ro'` to `supportedLngs` in `i18n.ts`
+- Add `src/locales/ro/` JSON files
+- Add `'ro'` to the validation list in `LangLayout`
+- Zero routing changes needed — `:lang?` already matches any path segment
 
-**If report must be delivered only via email (fully async):**
-- Use database webhook pattern (INSERT → webhook → edge function → email)
-- React shows "Check your email" immediately after insert
-- No polling needed
-- Recommended for this use case
+**If sub-niche scoring weights differ significantly:**
+- Keep the config in `src/config/subniches/scoring.ts` (a map of SubNiche → weight overrides)
+- The existing `computeScores()` function in `scoring.ts` accepts a weights parameter — no architectural change, just add an override lookup
 
-**If you need to poll for report readiness (hybrid):**
-- Store report status in `audit_reports` table (`status: 'pending' | 'complete' | 'error'`)
-- React polls with `useQuery` refetchInterval until status is `complete`
-- User stays on page but isn't blocked
+**If the edge function needs to return Bulgarian report content:**
+- Pass `language: 'bg'` (or `'en'`) in the `generate-report` request body
+- Add to system prompt: `"Generate the entire report in ${language === 'bg' ? 'Bulgarian' : 'English'}. Use natural, professional ${language === 'bg' ? 'Bulgarian' : 'English'} business language throughout."`
+- No new packages or Deno dependencies needed — Claude Haiku 4.5 handles Bulgarian generation natively
 
 ---
 
@@ -208,44 +224,31 @@ Configure in Supabase Dashboard: Database → Webhooks → Create new webhook on
 
 | Package | Compatible With | Notes |
 |---------|-----------------|-------|
-| @supabase/supabase-js@^2.97.0 | Node.js 20+, all modern browsers | Node.js 18 support dropped at v2.79.0. Vite SPA doesn't run on Node.js anyway — browser-side only. |
-| openai@^6 (Deno, npm: specifier) | Supabase Edge Functions Deno runtime | Import as `npm:openai@^6` inside edge functions. Do NOT import from `https://deno.land/x/openai` — that pinned version (v4.24.0) in older Supabase docs is outdated. |
-| resend@^6.9.2 | Deno via npm: specifier | Import as `npm:resend@^6` or use raw `fetch` to Resend API — both work in Deno. |
-| GPT-4.1 mini | Structured Outputs (json_schema response_format) | Confirmed supported. gpt-4o-mini also supports structured outputs. |
-
----
-
-## Key Constraints to Design Around
-
-| Constraint | Limit | Impact |
-|-----------|-------|--------|
-| Edge Function wall-clock timeout | 400s (paid) / 150s (free) | GPT-4.1 mini typically responds in 5–15s for a 2000-token report. Well within limits. No streaming needed. |
-| Edge Function CPU time | 2s per request (async I/O excluded) | OpenAI call is async I/O (excluded from CPU time). The 2s limit applies to CPU-bound work only. |
-| Edge Function memory | 256 MB | Not a concern for text-only report generation. |
-| Edge Function bundle size | 20 MB | Avoid LangChain and large libraries. OpenAI SDK + Resend are small. |
-| Resend free tier | 3,000 emails/month, 100/day | Adequate for early traction. Upgrade at ~$20/month for 50K emails. |
-| Supabase free tier | 500K edge function invocations/month | Each audit completion = 1 invocation. 500K audits/month before hitting limit. |
-| Resend sender domain | Must be verified | Cannot use `gmail.com` or unverified domains. Need a real domain with DNS access. |
+| i18next@25.8.13 | TypeScript >=5.0 | TypeScript 5 required. Project is on TS 5.8.3 — satisfied. |
+| react-i18next@16.5.4 | React >=16.8, i18next >=23.2.3 | Project is on React 18.3.1 and i18next 25.x — both satisfied. |
+| i18next-resources-to-backend@1.2.1 | Vite 4+, Webpack 5+, Deno | Vite 5.4.11 — satisfied. Dynamic import syntax `import(\`./locales/${l}/${n}.json\`)` requires template literal string so Vite can analyze the import pattern. |
+| i18next-browser-languagedetector@8.2.1 | Browser only (window, document) | Not used in edge functions. Import only in `src/i18n.ts`. |
+| react-router-dom@6.30.1 | Optional segment `/:lang?` syntax | Optional segments were added in React Router v6.5.0. v6.30.1 is well past this. |
 
 ---
 
 ## Sources
 
-- [supabase/supabase-js GitHub](https://github.com/supabase/supabase-js) — v2.97.0 latest confirmed
-- [Supabase React Quickstart](https://supabase.com/docs/guides/getting-started/quickstarts/reactjs) — official setup pattern
-- [Supabase Edge Functions docs](https://supabase.com/docs/guides/functions) — Deno runtime, architecture
-- [Supabase Edge Function Limits](https://supabase.com/docs/guides/functions/limits) — 400s timeout, 256MB memory, 20MB bundle (HIGH confidence, fetched directly)
-- [Supabase Send Emails example](https://supabase.com/docs/guides/functions/examples/send-emails) — Resend pattern (HIGH confidence, fetched directly)
-- [Supabase OpenAI example](https://supabase.com/docs/guides/ai/examples/openai) — edge function + OpenAI pattern (HIGH confidence, fetched directly)
-- [Supabase Database Webhooks](https://supabase.com/docs/guides/database/webhooks) — pg_net webhook on INSERT (HIGH confidence, fetched directly)
-- [Supabase RLS docs](https://supabase.com/docs/guides/database/postgres/row-level-security) — anon INSERT policy (HIGH confidence, fetched directly)
-- [openai npm](https://www.npmjs.com/package/openai) — v6.22.0 confirmed current (HIGH confidence)
-- [resend npm](https://www.npmjs.com/package/resend) — v6.9.2 confirmed current (HIGH confidence)
-- [GPT-4.1 mini launch](https://openai.com/index/gpt-4-1/) — model capabilities, pricing (MEDIUM confidence — search-verified)
-- [OpenAI SDK vs Vercel AI SDK comparison](https://strapi.io/blog/openai-sdk-vs-vercel-ai-sdk-comparison) — runtime compatibility analysis (MEDIUM confidence)
-- [Supabase + TanStack Query pattern](https://makerkit.dev/blog/saas/supabase-react-query) — integration approach (MEDIUM confidence)
+- [react-i18next npm](https://www.npmjs.com/package/react-i18next) — v16.5.4 current version (verified via `npm info` command, HIGH confidence)
+- [i18next npm](https://www.npmjs.com/package/i18next) — v25.8.13 current version (verified via `npm info`, HIGH confidence)
+- [i18next-browser-languagedetector npm](https://www.npmjs.com/package/i18next-browser-languagedetector) — v8.2.1 (verified via `npm info`, HIGH confidence)
+- [i18next-resources-to-backend npm](https://www.npmjs.com/package/i18next-resources-to-backend) — v1.2.1 (verified via `npm info`, HIGH confidence)
+- [i18next-browser-languageDetector README](https://github.com/i18next/i18next-browser-languageDetector) — `lookupFromPathIndex` configuration, detection order (HIGH confidence, official repo)
+- [i18next TypeScript docs](https://www.i18next.com/overview/typescript) — CustomTypeOptions augmentation pattern (HIGH confidence, official docs)
+- [react-i18next TypeScript docs](https://react.i18next.com/latest/typescript) — TypeScript >=5 requirement, augmentation approach (HIGH confidence, official docs)
+- [react-i18next CHANGELOG](https://github.com/i18next/react-i18next/blob/master/CHANGELOG.md) — v16 breaking changes review (HIGH confidence, official repo)
+- [React Router i18n discussion #10510](https://github.com/remix-run/react-router/discussions/10510) — optional segment pattern for language prefix (MEDIUM confidence, community discussion, maintainer participated)
+- [i18next-resources-to-backend GitHub](https://github.com/i18next/i18next-resources-to-backend) — dynamic import usage pattern (HIGH confidence, official repo)
+- [Lingui vs i18next comparison](https://lingui.dev/misc/i18next) — Lingui's own comparison (MEDIUM confidence, biased source but technically accurate)
+- WebSearch: react-i18next vs react-intl vs Lingui comparison, npm-compare.com bundle sizes (MEDIUM confidence)
+- WebSearch: BrowserRouter + language segment patterns, createBrowserRouter initialization ordering issue (MEDIUM confidence)
 
 ---
 
-*Stack research for: BizAudit — Supabase backend + AI report generation added to existing React/Vite SPA*
-*Researched: 2026-02-19*
+*Stack research for: BizAudit v1.1 — i18n infrastructure, Bulgarian translation, sub-niche data modeling*
+*Researched: 2026-02-21*

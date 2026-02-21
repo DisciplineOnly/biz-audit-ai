@@ -1,502 +1,804 @@
 # Architecture Research
 
-**Domain:** Supabase backend integration with existing React/Vite SPA
-**Researched:** 2026-02-19
-**Confidence:** HIGH (primary patterns verified against Supabase official docs; edge function/OpenAI patterns confirmed against official examples)
-
-## Standard Architecture
-
-### System Overview
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                        BROWSER (Vercel/Netlify CDN)              │
-│                                                                  │
-│  ┌──────────────┐  ┌─────────────────┐  ┌───────────────────┐   │
-│  │  AuditForm   │  │    Loading      │  │     Report        │   │
-│  │  (8-step UI) │  │  (fake spinner) │  │   (display)       │   │
-│  └──────┬───────┘  └────────┬────────┘  └─────────┬─────────┘   │
-│         │                   │                     │             │
-│         └──────────┬────────┘                     │             │
-│                    │                              │             │
-│         ┌──────────▼──────────────────────────────▼──────────┐  │
-│         │              supabase-js client                      │  │
-│         │   (publishable key / anon key, no user JWT)         │  │
-│         └──────────────────────┬───────────────────────────────┘  │
-└────────────────────────────────│──────────────────────────────────┘
-                                 │  HTTPS
-┌────────────────────────────────▼──────────────────────────────────┐
-│                        SUPABASE PLATFORM                           │
-│                                                                    │
-│  ┌─────────────────────────────────────────────────────────────┐  │
-│  │                     API Gateway / PostgREST                  │  │
-│  └──────┬────────────────────────────┬───────────────────────┘  │
-│         │ (RLS anon INSERT)          │ (Edge Function invoke)    │
-│  ┌──────▼──────────┐      ┌──────────▼──────────────────────┐   │
-│  │    Postgres DB   │      │           Edge Functions         │   │
-│  │                  │      │                                  │   │
-│  │  audits          │      │  generate-report                 │   │
-│  │  ┌────────────┐  │      │  (calls OpenAI, returns JSON)    │   │
-│  │  │ id (uuid)  │  │      │                                  │   │
-│  │  │ email      │  │      │  send-notification               │   │
-│  │  │ niche      │  │      │  (calls Resend API, admin email) │   │
-│  │  │ form_data  │  │      │                                  │   │
-│  │  │ scores     │  │      └─────────────────────────────────┘   │
-│  │  │ ai_report  │  │                                            │
-│  │  │ partner_cd │  │      ┌─────────────────────────────────┐   │
-│  │  │ created_at │  │      │      Database Webhook            │   │
-│  │  └────────────┘  │◄─────│  ON INSERT to audits            │   │
-│  │                  │      │  → triggers send-notification    │   │
-│  └──────────────────┘      └─────────────────────────────────┘   │
-│                                                                    │
-│  External Services called from Edge Functions:                     │
-│    OpenAI API (GPT-4o / gpt-4o-mini)                              │
-│    Resend API (transactional email)                                │
-└────────────────────────────────────────────────────────────────────┘
-```
-
-### Component Responsibilities
-
-| Component | Responsibility | Typical Implementation |
-|-----------|----------------|------------------------|
-| React SPA (browser) | Form collection, client-side scoring, UX orchestration | Existing AuditForm + Loading + Report pages |
-| supabase-js client | Single interface to all Supabase services from browser | `createClient(url, publishableKey)`, imported once in `src/lib/supabase.ts` |
-| `audits` Postgres table | Persist every completed audit with contact info, scores, AI report | Single table with JSONB columns for `form_data`, `scores`, `ai_report` |
-| `generate-report` Edge Function | Receive form data + scores, call LLM, return personalized report JSON | Deno function invoked directly from browser via `supabase.functions.invoke()` |
-| `send-notification` Edge Function | Send admin email notification when new audit is stored | Deno function triggered by Database Webhook on INSERT to `audits` |
-| Database Webhook | Fire `send-notification` automatically when a row is inserted | Supabase Dashboard webhook, event = INSERT, table = audits |
-| RLS policy on `audits` | Allow anon INSERT (write-only for public), block SELECT for anon | `CREATE POLICY "anon can insert" ON audits FOR INSERT TO anon WITH CHECK (true)` |
+**Domain:** i18n URL routing, sub-niche branching, and Bulgarian AI reports integrated into existing BizAudit React SPA
+**Researched:** 2026-02-21
+**Confidence:** HIGH (patterns derived from direct codebase inspection; i18n routing approach verified against react-i18next official docs and React Router v6 discussion threads; DB patterns are straightforward Postgres ALTER TABLE)
 
 ---
 
-## Recommended Project Structure
+## What This Document Covers
+
+This file answers the v1.1 integration question: how do URL-based language routing, sub-niche form branching, and Bulgarian AI reports plug into the existing architecture without rewriting working code.
+
+The existing v1.0 system overview (Supabase integration, RLS, edge function patterns) lives in the v1.0 research ARCHITECTURE.md and remains valid. This document focuses solely on the delta for v1.1.
+
+---
+
+## System Overview: v1.1 Layer Additions
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                         BROWSER (React SPA)                             │
+│                                                                          │
+│  ┌──────────────────────────────────────────────────────────────────┐   │
+│  │  i18n Layer (react-i18next)                                       │   │
+│  │  - I18nextProvider wraps entire app                               │   │
+│  │  - useTranslation(ns) hook provides t() to all components         │   │
+│  │  - Language detected from URL path prefix (/bg/ vs default en)    │   │
+│  └──────────────────────────────────────────────────────────────────┘   │
+│                                ↓                                         │
+│  ┌────────────────────────────────────────────────────────────────┐     │
+│  │  React Router v6 (BrowserRouter — unchanged)                    │     │
+│  │                                                                  │     │
+│  │  EXISTING routes unchanged:                                      │     │
+│  │    /           → Index                                            │     │
+│  │    /audit      → AuditForm                                        │     │
+│  │    /generating → Loading                                          │     │
+│  │    /report/:id → Report                                           │     │
+│  │                                                                  │     │
+│  │  NEW routes added as siblings:                                    │     │
+│  │    /bg/        → Index (Bulgarian)                                │     │
+│  │    /bg/audit   → AuditForm (Bulgarian)                            │     │
+│  │    /bg/generating → Loading (Bulgarian)                           │     │
+│  │    /bg/report/:id → Report (Bulgarian)                            │     │
+│  └────────────────────────────────────────────────────────────────┘     │
+│                                ↓                                         │
+│  ┌─────────────────────────────────────────────────────────────────┐    │
+│  │  AuditFormState (useReducer — extended)                          │    │
+│  │                                                                   │    │
+│  │  NEW fields added to existing state:                              │    │
+│  │    subNiche: SubNiche | null         (HS sub-niche selection)     │    │
+│  │    language: 'en' | 'bg'            (drives scoring + AI prompt) │    │
+│  │                                                                   │    │
+│  │  isHS boolean stays — niche branching unchanged                   │    │
+│  │  subNiche adds a second branching axis within each niche          │    │
+│  └─────────────────────────────────────────────────────────────────┘    │
+│                                ↓                                         │
+│  ┌────────────────────────────────────────────────────────────────┐     │
+│  │  Scoring Engine (scoring.ts — extended)                         │     │
+│  │                                                                  │     │
+│  │  computeScores(state) signature stays the same                   │     │
+│  │  Sub-niche weight modifiers applied after base scoring           │     │
+│  │  getSubNicheWeights(niche, subNiche) returns weight overrides    │     │
+│  └────────────────────────────────────────────────────────────────┘     │
+└────────────────────────────────────────────────────────────────────────┘
+                               ↓ HTTPS
+┌────────────────────────────────────────────────────────────────────────┐
+│                         SUPABASE BACKEND                                 │
+│                                                                          │
+│  audits table — TWO new columns added via migration:                     │
+│    language TEXT DEFAULT 'en' CHECK (language IN ('en', 'bg'))          │
+│    sub_niche TEXT (nullable — null means "not specified")                │
+│                                                                          │
+│  generate-report edge function — extended:                               │
+│    Receives language + sub_niche in request body                         │
+│    Builds Bulgarian system prompt when language = 'bg'                   │
+│    Includes sub_niche context in user prompt                             │
+│    Claude Haiku 4.5 responds in Bulgarian or English based on prompt     │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Component Responsibilities: New vs Modified
+
+### New Components
+
+| Component | Location | Responsibility |
+|-----------|----------|----------------|
+| `LanguageRouter` | `src/components/LanguageRouter.tsx` | Reads language from URL path, calls `i18n.changeLanguage()`, renders children |
+| `useLanguage` hook | `src/hooks/useLanguage.ts` | Returns current language and `navigateWithLang()` helper for language-aware navigation |
+| Translation namespaces | `src/locales/en/` and `src/locales/bg/` | JSON files keyed by namespace (common, steps, report, landing) |
+| `SubNicheSelector` | `src/components/audit/SubNicheSelector.tsx` | Card grid rendered inside Step 1 after niche selection; dispatches `SET_SUB_NICHE` |
+
+### Modified Components
+
+| Component | What Changes | What Stays the Same |
+|-----------|-------------|---------------------|
+| `App.tsx` | Wraps BrowserRouter with I18nextProvider; adds `/bg/*` route branch | Route structure otherwise identical |
+| `src/types/audit.ts` | Adds `SubNiche` type, `language` field, `subNiche` field to `AuditFormState`; adds `SET_SUB_NICHE` and `SET_LANGUAGE` actions to `AuditAction` | All existing step types, auditReducer cases, AuditScores, AIReportData |
+| `src/lib/scoring.ts` | Adds `getSubNicheWeights()` function; `computeScores()` applies weight overrides from it | All lookup tables, `calcCategory()`, `scoreMap()`, everything else |
+| `Step1BusinessInfo.tsx` | Adds `SubNicheSelector` component below industry dropdown; updates industry list to include Construction, Interior Design, Cleaning for HS | Contact fields, validation, all RE fields |
+| `AuditForm.tsx` | Reads language from URL, stores in state; passes `subNiche` in stepProps; validates sub-niche selected before proceeding from step 1 | Step navigation logic, localStorage persistence, all 8 step renders |
+| `Loading.tsx` | Passes `language` and `subNiche` in the `generate-report` edge function request body | Timer logic, progress bar, retry/skip, all existing error handling |
+| `generate-report/index.ts` | Reads `language` from request body; builds Bulgarian system prompt when `language = 'bg'`; includes `subNiche` in form context sent to Claude | Rate limiting, sanitization, Supabase persistence, all existing logic |
+| `supabase/migrations/` | New migration adds `language` and `sub_niche` columns to `audits` table | All existing columns untouched |
+| `src/lib/submitAudit.ts` | Includes `language` and `sub_niche` in the INSERT payload | All existing fields |
+
+---
+
+## Recommended Project Structure Changes
+
+Only the additions and changes relative to the existing structure:
 
 ```
 src/
+├── locales/
+│   ├── en/
+│   │   ├── common.json       # Shared UI: buttons, nav, errors
+│   │   ├── landing.json      # Landing page: hero, niche cards, how-it-works
+│   │   ├── steps.json        # All 8 step titles, labels, options, placeholders
+│   │   └── report.json       # Report page: section headings, score labels, CTAs
+│   └── bg/
+│       ├── common.json       # Bulgarian translations of common.json
+│       ├── landing.json      # Bulgarian translations of landing.json
+│       ├── steps.json        # Bulgarian translations + BG-market options
+│       └── report.json       # Bulgarian translations of report.json
+│
 ├── lib/
-│   ├── scoring.ts          # existing — client-side scoring engine
-│   ├── utils.ts            # existing — cn() helper
-│   └── supabase.ts         # NEW — createClient singleton
-├── services/
-│   └── audit.ts            # NEW — submitAudit(), fetchReport() wrappers
+│   ├── i18n.ts               # NEW — i18next init, namespace config, language detection
+│   ├── scoring.ts            # MODIFY — add getSubNicheWeights()
+│   ├── submitAudit.ts        # MODIFY — include language and sub_niche in payload
+│   └── (all others unchanged)
+│
+├── hooks/
+│   └── useLanguage.ts        # NEW — language + navigateWithLang()
+│
+├── components/
+│   ├── LanguageRouter.tsx    # NEW — URL-to-i18n sync wrapper
+│   └── audit/
+│       ├── SubNicheSelector.tsx  # NEW — sub-niche card selection inside Step 1
+│       └── (all existing step components modified to use t())
+│
 ├── types/
-│   └── audit.ts            # existing + extend with AuditRecord type
-├── pages/
-│   ├── AuditForm.tsx       # modify — call submitAudit() on completion
-│   ├── Loading.tsx         # modify — await generate-report edge function
-│   └── Report.tsx          # modify — read AI report text if available
-├── components/             # existing — unchanged
-└── hooks/
-    └── use-audit-submit.ts # NEW — loading/error state for submission
+│   └── audit.ts              # MODIFY — add SubNiche, language, SET_SUB_NICHE, SET_LANGUAGE
+│
+└── pages/
+    ├── Index.tsx             # MODIFY — use t() for all text
+    ├── AuditForm.tsx         # MODIFY — language detection, sub-niche validation
+    ├── Loading.tsx           # MODIFY — pass language + subNiche to edge function
+    └── Report.tsx            # MODIFY — use t() for section headings and score labels
 
 supabase/
 ├── functions/
-│   ├── generate-report/
-│   │   └── index.ts        # Edge function: receive form+scores, call LLM, return JSON
-│   └── send-notification/
-│       └── index.ts        # Edge function: receive audit row, send email via Resend
+│   └── generate-report/
+│       └── index.ts          # MODIFY — Bulgarian prompt, sub_niche context
 └── migrations/
-    └── 20260219_create_audits.sql
+    └── [timestamp]_add_language_and_subniche.sql  # NEW
 ```
 
 ### Structure Rationale
 
-- **`src/lib/supabase.ts`:** Single `createClient` call. Import this everywhere instead of constructing the client inline. Prevents duplicate connections.
-- **`src/services/audit.ts`:** Abstracts all Supabase calls behind typed functions. When the API changes, only this file needs to update. Keeps page components free of SDK details.
-- **`supabase/functions/`:** Supabase CLI convention. Each function is a directory with `index.ts`. Deployed via `supabase functions deploy`.
-- **`supabase/migrations/`:** Schema tracked in version control. Applied via `supabase db push` or the MCP `apply_migration` tool.
+- **`src/locales/`:** i18next convention; namespaces map to page/domain boundaries (landing, steps, report, common) rather than components. This allows loading only the namespaces needed per page. Steps translations are one namespace because all 8 steps load together in AuditForm.
+- **`src/lib/i18n.ts`:** Singleton init. Import in `main.tsx` before rendering. Do not import in individual components.
+- **`LanguageRouter.tsx`:** Thin wrapper that reads the `/:lang` URL param and syncs i18n, not a full route — lives inside the existing router structure.
 
 ---
 
 ## Architectural Patterns
 
-### Pattern 1: Direct Edge Function Invocation (LLM Report Generation)
+### Pattern 1: URL Path Prefix for Language (No Subdomain, No Query Param)
 
-**What:** Browser calls the `generate-report` edge function directly and awaits the response before navigating to the report page. The Loading page's existing spinner covers the wait time.
+**What:** English routes at `/`, `/audit`, etc. Bulgarian routes at `/bg/`, `/bg/audit`, etc. The `/bg/` prefix is the single source of truth for language. i18n library is synced to match the URL on every render.
 
-**When to use:** When the result is needed immediately by the user (report content) and the operation is long-running (1–5 seconds).
+**When to use:** Two-language SPA where SEO for both languages matters and the URL should be human-readable and shareable in the correct language. Avoids cookie/localStorage state mismatch on shared links.
 
-**Trade-offs:** The Loading screen already exists and takes ~14 seconds — the LLM call (2–4 seconds) fits inside this window. The user never perceives additional latency.
+**Trade-offs:** Requires duplicating route definitions in App.tsx (four routes become eight). Language switches require a full navigation to the equivalent `/bg/` path. localStorage save/resume must encode language in saved state.
 
-**Example:**
+**Implementation:**
+
 ```typescript
-// src/services/audit.ts
-import { supabase } from "@/lib/supabase";
-import { AuditFormState, AuditScores } from "@/types/audit";
+// src/App.tsx — route duplication pattern
+<BrowserRouter>
+  <I18nextProvider i18n={i18n}>
+    <Routes>
+      {/* English (default) — no prefix */}
+      <Route path="/" element={<Index />} />
+      <Route path="/audit" element={<AuditForm />} />
+      <Route path="/generating" element={<Loading />} />
+      <Route path="/report/:auditId" element={<Report />} />
 
-export async function generateAIReport(
-  formState: AuditFormState,
-  scores: AuditScores
-): Promise<AuditReportContent> {
-  const { data, error } = await supabase.functions.invoke("generate-report", {
-    body: { formState, scores },
-  });
-  if (error) throw error;
-  return data as AuditReportContent;
+      {/* Bulgarian — /bg/ prefix */}
+      <Route path="/bg" element={<LanguageRouter lang="bg" />}>
+        <Route index element={<Index />} />
+        <Route path="audit" element={<AuditForm />} />
+        <Route path="generating" element={<Loading />} />
+        <Route path="report/:auditId" element={<Report />} />
+      </Route>
+
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  </I18nextProvider>
+</BrowserRouter>
+```
+
+```typescript
+// src/components/LanguageRouter.tsx
+import { useEffect } from "react";
+import { Outlet } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+
+export function LanguageRouter({ lang }: { lang: string }) {
+  const { i18n } = useTranslation();
+  useEffect(() => {
+    if (i18n.language !== lang) {
+      i18n.changeLanguage(lang);
+    }
+  }, [lang, i18n]);
+  return <Outlet />;
 }
 ```
 
 ```typescript
-// supabase/functions/generate-report/index.ts
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import OpenAI from "https://deno.land/x/openai@v4.24.0/mod.ts";
+// src/hooks/useLanguage.ts
+import { useTranslation } from "react-i18next";
+import { useNavigate, useLocation } from "react-router-dom";
 
-Deno.serve(async (req: Request) => {
-  // Handle CORS preflight
-  if (req.method === "OPTIONS") {
-    return new Response(null, {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "authorization, content-type",
-      },
-    });
+export function useLanguage() {
+  const { i18n } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const lang = i18n.language as "en" | "bg";
+
+  function navigateWithLang(path: string, options?: Parameters<typeof navigate>[1]) {
+    const prefix = lang === "bg" ? "/bg" : "";
+    navigate(`${prefix}${path}`, options);
   }
 
-  const { formState, scores } = await req.json();
-  const openai = new OpenAI({ apiKey: Deno.env.get("OPENAI_API_KEY") });
+  function switchLanguage(newLang: "en" | "bg") {
+    const currentPath = location.pathname;
+    const withoutPrefix = currentPath.replace(/^\/bg/, "") || "/";
+    const newPath = newLang === "bg" ? `/bg${withoutPrefix}` : withoutPrefix;
+    navigate(newPath);
+  }
 
-  const prompt = buildPrompt(formState, scores); // construct LLM prompt from audit data
-
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [{ role: "user", content: prompt }],
-    response_format: { type: "json_object" }, // structured JSON output
-  });
-
-  const reportContent = JSON.parse(completion.choices[0].message.content!);
-
-  return new Response(JSON.stringify(reportContent), {
-    headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-    },
-  });
-});
-```
-
-**CORS note (HIGH confidence):** Edge functions require manual CORS handling. The OPTIONS preflight response must be returned before any logic runs. This is the most common edge function failure point.
-
----
-
-### Pattern 2: Insert-then-Webhook (Email Notification)
-
-**What:** Browser inserts the completed audit record to Postgres via the supabase-js client. A Supabase Database Webhook fires automatically on INSERT, calling the `send-notification` edge function with the new row's data. The browser does not wait for email delivery.
-
-**When to use:** For side effects (notifications, analytics) that the user does not need to see complete. Decouples email delivery from the user's browser session.
-
-**Trade-offs:** The browser INSERT and email are decoupled — if the edge function fails, the audit is still saved. Email failures can be retried or monitored server-side without affecting the user.
-
-**Example:**
-```typescript
-// src/services/audit.ts
-export async function persistAudit(
-  formState: AuditFormState,
-  scores: AuditScores,
-  aiReport: AuditReportContent
-): Promise<string> {
-  const { data, error } = await supabase
-    .from("audits")
-    .insert({
-      email: formState.step1.email,
-      niche: formState.niche,
-      form_data: formState,        // JSONB
-      scores: scores,              // JSONB
-      ai_report: aiReport,        // JSONB
-      partner_code: formState.partnerCode,
-    })
-    .select("id")
-    .single();
-
-  if (error) throw error;
-  return data.id; // UUID — becomes the shareable report URL
+  return { lang, navigateWithLang, switchLanguage };
 }
 ```
 
+---
+
+### Pattern 2: Namespace-per-Domain Translation Files
+
+**What:** Translation strings split into four namespaces: `common` (shared), `landing` (Index page), `steps` (AuditForm + all step components), `report` (Report page). Each namespace is a separate JSON file per language.
+
+**When to use:** When different parts of the app load independently and content is large enough that a single file becomes unwieldy. `steps.json` will be the largest (all form labels, all answer options, all sub-niche variations).
+
+**Trade-offs:** All namespaces load upfront since this is a SPA (no code splitting at the namespace level). Organizational benefit is clarity of ownership and easier translation workflow, not performance.
+
+**File structure:**
+
+```json
+// src/locales/en/steps.json (abbreviated example)
+{
+  "step1": {
+    "title": "Tell Us About Your Business",
+    "subtitle": "Basic info to personalize your audit report",
+    "businessName": "Business Name",
+    "hs": {
+      "subNiche": {
+        "label": "What type of trade business?",
+        "options": {
+          "hvac": "HVAC",
+          "plumbing": "Plumbing",
+          "electrical": "Electrical"
+        }
+      },
+      "industry": "Industry / Trade",
+      "industries": ["HVAC", "Plumbing", "Electrical", "Roofing", "Landscaping",
+                     "Pest Control", "Garage Doors", "Painting", "General Contracting",
+                     "Construction", "Interior Design", "Cleaning", "Other"]
+    }
+  }
+}
+```
+
+```json
+// src/locales/bg/steps.json (Bulgarian market CRM options example)
+{
+  "step2": {
+    "crm": {
+      "options": ["Salesforce", "HubSpot", "Bitrix24", "AmoCRM", "Zoho CRM",
+                  "Excel/Google Sheets", "Без CRM система", "Друго"]
+    }
+  }
+}
+```
+
+**Usage in components:**
+
 ```typescript
-// supabase/functions/send-notification/index.ts
-Deno.serve(async (req: Request) => {
-  const payload = await req.json();
-  // payload.record contains the inserted audits row
-  const { email, niche, scores } = payload.record;
+// Inside any step component
+import { useTranslation } from "react-i18next";
 
-  await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${Deno.env.get("RESEND_API_KEY")}`,
-    },
-    body: JSON.stringify({
-      from: "audits@yourdomain.com",
-      to: Deno.env.get("ADMIN_EMAIL"),
-      subject: `New audit: ${email} (${niche})`,
-      html: buildAdminEmailHtml({ email, niche, scores }),
-    }),
-  });
-
-  return new Response("ok", { status: 200 });
-});
+export function Step1BusinessInfo({ state, dispatch, isHS }: StepProps) {
+  const { t } = useTranslation("steps");
+  // ...
+  return (
+    <StepHeader
+      step={1}
+      title={t("step1.title")}
+      subtitle={t("step1.subtitle")}
+    />
+  );
+}
 ```
 
 ---
 
-### Pattern 3: Anon INSERT with RLS (No-Auth Data Collection)
+### Pattern 3: Sub-Niche as State Field, Not Route Param
 
-**What:** The browser uses the publishable/anon key to insert records. RLS is enabled with a permissive INSERT policy for the `anon` role, and a restrictive SELECT policy (anon cannot read other users' records).
+**What:** `subNiche` is stored in `AuditFormState` (alongside `niche`), not encoded in the URL. Sub-niche selection happens in Step 1. All subsequent steps read `state.subNiche` to conditionally render sub-niche-specific content.
 
-**When to use:** Any time you accept public submissions without user authentication. This is the correct pattern for lead capture / form submission apps.
+**When to use:** When branching is internal to a multi-step form and does not need to be linkable or shareable at the sub-niche level. The niche is already in the URL (`?niche=home_services`); sub-niche adds detail within that.
 
-**Trade-offs:** Anyone with the publishable key can INSERT rows. This is expected and acceptable — the key is public by design. Rate limiting at the Supabase project level provides additional protection. SELECT access remains locked.
+**Trade-offs:** Sub-niche is not in the URL, so sharing the audit URL mid-flow does not restore sub-niche. This is acceptable because: (a) the audit is not shareable mid-flow; (b) sub-niche is selected in Step 1 and persisted to localStorage via existing auto-save.
 
-**Example:**
-```sql
--- supabase/migrations/20260219_create_audits.sql
+**State extension:**
 
-CREATE TABLE audits (
-  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  email        TEXT NOT NULL,
-  niche        TEXT NOT NULL CHECK (niche IN ('home_services', 'real_estate')),
-  form_data    JSONB NOT NULL,
-  scores       JSONB NOT NULL,
-  ai_report    JSONB,
-  partner_code TEXT,
-  created_at   TIMESTAMPTZ DEFAULT NOW()
-);
+```typescript
+// src/types/audit.ts additions
+export type HSSubNiche =
+  | "hvac" | "plumbing" | "electrical" | "roofing" | "landscaping"
+  | "pest_control" | "garage_doors" | "painting" | "general_contracting"
+  | "construction" | "interior_design" | "cleaning";
 
-ALTER TABLE audits ENABLE ROW LEVEL SECURITY;
+export type RESubNiche =
+  | "residential_sales" | "commercial_office" | "property_management"
+  | "new_construction" | "luxury_resort";
 
--- Allow public (unauthenticated) INSERT — email capture pattern
-CREATE POLICY "public can submit audits"
-  ON audits FOR INSERT
-  TO anon
-  WITH CHECK (true);
+export type SubNiche = HSSubNiche | RESubNiche;
 
--- Block anon SELECT — audit data is not public
--- (Only service_role / admin can read all rows)
--- No SELECT policy needed — RLS with no SELECT policy = blocked for anon
+// Added to AuditFormState
+export interface AuditFormState {
+  // ... existing fields ...
+  subNiche: SubNiche | null;  // NEW
+  language: "en" | "bg";     // NEW
+}
+
+// Added to AuditAction
+export type AuditAction =
+  // ... existing actions ...
+  | { type: "SET_SUB_NICHE"; payload: SubNiche }
+  | { type: "SET_LANGUAGE"; payload: "en" | "bg" }
+```
+
+**StepProps extension:**
+
+```typescript
+// AuditFormComponents.tsx — StepProps gains subNiche
+export interface StepProps {
+  state: AuditFormState;
+  dispatch: React.Dispatch<AuditAction>;
+  isHS: boolean;
+  subNiche: SubNiche | null;  // NEW — passed from AuditForm
+}
+```
+
+---
+
+### Pattern 4: Sub-Niche Weight Modifiers on Top of Base Scoring
+
+**What:** `computeScores()` runs as today (base scores per category). A `getSubNicheWeights()` function returns category weight overrides for a given sub-niche. Only the weights differ — the lookup tables stay the same.
+
+**When to use:** When sub-niches differ in what matters most (e.g., Roofing cares less about scheduling software than HVAC does; Property Management cares more about financial operations than Residential Sales). Research drives which weights to adjust.
+
+**Trade-offs:** Simple to implement and easy to tune after sub-niche research. Does not require separate lookup tables per sub-niche — only the final normalization weights change.
+
+**Implementation:**
+
+```typescript
+// src/lib/scoring.ts additions
+
+export type SubNicheWeightOverrides = Partial<{
+  technology: number;
+  leads: number;
+  scheduling: number;
+  communication: number;
+  followUp: number;
+  operations: number;
+  financial: number;
+}>;
+
+export function getSubNicheWeights(
+  niche: Niche,
+  subNiche: SubNiche | null
+): SubNicheWeightOverrides {
+  if (!subNiche) return {}; // no overrides — use base weights
+
+  const overrides: Record<string, SubNicheWeightOverrides> = {
+    // HS sub-niches — research-driven (Phase 1 research will fill these in)
+    roofing:     { leads: 0.25, scheduling: 0.10 }, // project-based, leads dominate
+    hvac:        { scheduling: 0.20, followUp: 0.20 }, // recurring service, scheduling critical
+    construction: { financial: 0.20, operations: 0.20 }, // contract/margin intensive
+    property_management: { financial: 0.20, communication: 0.15 }, // RE sub-niche
+
+    // Default: no overrides — base weights apply
+  };
+
+  return overrides[subNiche] ?? {};
+}
+
+export function computeScores(state: AuditFormState): AuditScores {
+  // ... existing scoring logic unchanged ...
+
+  // Apply sub-niche weight overrides
+  const subNicheOverrides = getSubNicheWeights(state.niche!, state.subNiche);
+  const weights = {
+    technology:    subNicheOverrides.technology    ?? 0.10,
+    leads:         subNicheOverrides.leads         ?? 0.20,
+    scheduling:    subNicheOverrides.scheduling    ?? 0.15,
+    communication: subNicheOverrides.communication ?? 0.10,
+    followUp:      subNicheOverrides.followUp      ?? 0.15,
+    operations:    subNicheOverrides.operations    ?? 0.15,
+    financial:     subNicheOverrides.financial     ?? 0.15,
+  };
+  // NOTE: weights must sum to 1.0 — validate this in tests when overrides are set
+
+  // ... overall score calculation unchanged ...
+}
+```
+
+---
+
+### Pattern 5: Language-Aware AI Prompt (Edge Function)
+
+**What:** The `generate-report` edge function receives `language` and `subNiche` in the request body. When `language = 'bg'`, the system prompt instructs Claude to respond entirely in Bulgarian. Sub-niche is included in the user prompt as business context.
+
+**When to use:** Always — the language field is required in every request (defaults to 'en' if missing for backward compatibility).
+
+**Trade-offs:** Claude Haiku 4.5 can produce Bulgarian text of acceptable quality. The system prompt language instruction is the single lever — no translation layer needed server-side. The risk is inconsistent Bulgarian output quality; mitigated by a targeted system prompt.
+
+**Implementation:**
+
+```typescript
+// supabase/functions/generate-report/index.ts additions
+
+function buildPrompt(params: {
+  niche: string;
+  subNiche: string | null;
+  language: string;          // NEW
+  businessName: string;
+  scores: AuditScores;
+  formState: FormState;
+  techFrustrations: string;
+  biggestChallenge: string;
+}): { system: string; user: string } {
+  const { language, subNiche } = params;
+  const isBulgarian = language === 'bg';
+
+  const languageInstruction = isBulgarian
+    ? `CRITICAL: Respond ENTIRELY in Bulgarian (Bulgarian language, Cyrillic script).
+       Every word in your JSON response — executiveSummary, titles, descriptions,
+       impacts, timeframes, ROI, and CTAs — must be in Bulgarian. Do not use English.`
+    : `Respond in English.`;
+
+  const subNicheContext = subNiche
+    ? `Sub-niche: ${subNiche.replace(/_/g, ' ')}`
+    : '';
+
+  const system = `You are a business operations advisor generating a personalized audit report.
+${languageInstruction}
+
+Tone: Warm but honest...
+[rest of existing system prompt unchanged]`;
+
+  const user = `Generate a personalized business audit report for the following business.
+
+Business: ${params.businessName}
+Niche: ${params.niche === 'home_services' ? (isBulgarian ? 'Домашни услуги' : 'Home Services Business') : (isBulgarian ? 'Екип по недвижими имоти' : 'Real Estate Team')}
+${subNicheContext}
+Overall Score: ${params.scores.overall}/100
+...
+[rest of existing user prompt unchanged]`;
+
+  return { system, user };
+}
+```
+
+**Request body extension in Loading.tsx:**
+
+```typescript
+// src/pages/Loading.tsx
+const generateCall = supabase.functions.invoke("generate-report", {
+  body: {
+    auditId,
+    formState: formStateRef.current,
+    scores: scoresRef.current,
+    language: formStateRef.current?.language ?? 'en',      // NEW
+    subNiche: formStateRef.current?.subNiche ?? null,      // NEW
+  },
+});
 ```
 
 ---
 
 ## Data Flow
 
-### Audit Submission Flow (Complete Path)
+### Sub-Niche Selection Flow (End-to-End)
 
 ```
-[User clicks "Generate My AI Audit Report"]
-    │
-    ▼
-[AuditForm.tsx: computeScores(state)] — client-side scoring (unchanged)
-    │
-    ▼
-[navigate to /generating with { formState, scores }]
-    │
-    ▼
-[Loading.tsx: supabase.functions.invoke("generate-report", { body: { formState, scores } })]
-    │  (2–4 second LLM call — hidden by existing 14-second loading screen)
-    ▼
-[Edge Function: generate-report]
-    │  builds prompt → calls OpenAI API → parses JSON response
-    ▼
-[aiReport returned to Loading.tsx]
-    │
-    ▼
-[Loading.tsx: supabase.from("audits").insert({ ...formState, scores, aiReport })]
-    │  returns audit UUID
-    ▼
-[Database INSERT committed to Postgres]
-    │
-    ├──► [Database Webhook fires → send-notification edge function]
-    │         calls Resend API → admin email sent (async, browser not waiting)
-    │
-    ▼
-[navigate to /report/[uuid] with { auditId, formState, scores, aiReport }]
-    │
-    ▼
-[Report.tsx: renders AI report text instead of generateMockReport() template text]
+[User lands on / (English) or /bg/ (Bulgarian)]
+    |
+    v
+[Index.tsx: handleNicheSelect() — unchanged]
+    |
+    v
+[navigate to /audit?niche=home_services  OR  /bg/audit?niche=home_services]
+    |
+    v
+[AuditForm.tsx: detects /bg/ prefix from URL, dispatches SET_LANGUAGE 'bg']
+[AuditForm: reads ?niche= param, dispatches SET_NICHE as before]
+    |
+    v
+[Step 1 renders with SubNicheSelector below industry dropdown]
+[User selects "HVAC" as sub-niche]
+[dispatch SET_SUB_NICHE 'hvac']
+    |
+    v
+[Steps 2-8: read state.subNiche — currently no branching needed]
+[Step components render with t() for all labels (English or Bulgarian)]
+[Bulgarian steps.json has BG-market CRM options, local tool names, etc.]
+    |
+    v
+[AuditForm.tsx Step 8: computeScores(state) — scoring.ts reads subNiche]
+[getSubNicheWeights('home_services', 'hvac') returns weight overrides]
+[HVAC gets scheduling: 0.20, followUp: 0.20]
+    |
+    v
+[navigate to /generating OR /bg/generating with { formState, scores }]
+    |
+    v
+[Loading.tsx: submitAudit includes language='bg', sub_niche='hvac' in INSERT]
+[Loading.tsx: generate-report called with language + subNiche in body]
+    |
+    v
+[generate-report edge function: Bulgarian system prompt + HVAC context in user prompt]
+[Claude Haiku 4.5: produces Bulgarian report JSON for HVAC business]
+    |
+    v
+[navigate to /bg/report/:auditId with aiReport in navigation state]
+    |
+    v
+[Report.tsx: renders AI content (Bulgarian text from Claude) + t() for section headings]
 ```
 
-### Report Access Flow (Shareable URL)
+### Language Detection on Route Load
 
 ```
-[User opens /report/[uuid] directly (shared link)]
-    │
-    ▼
-[Report.tsx: no navigation state available]
-    │
-    ▼
-[supabase.from("audits").select("*").eq("id", uuid).single()]
-    │  Note: Requires a SELECT policy for the requesting role, OR
-    │  a server-side fetch via service_role (more secure).
-    │  Recommended: use a separate "fetch-report" edge function
-    │  that validates the UUID and returns the row via service_role.
-    ▼
-[Render report from persisted ai_report JSONB]
+[User opens /bg/audit?niche=home_services&resume=true]
+    |
+    v
+[React Router: matches /bg/* route, renders <LanguageRouter lang="bg">]
+    |
+    v
+[LanguageRouter: useEffect → i18n.changeLanguage('bg')]
+    |
+    v
+[AuditForm: mounts, reads URL location.pathname, checks for /bg/ prefix]
+[dispatch SET_LANGUAGE 'bg' — stored in AuditFormState and localStorage]
+    |
+    v
+[All step components: useTranslation('steps') returns Bulgarian t()]
+[Step options, labels, placeholders all in Bulgarian from bg/steps.json]
 ```
 
-**Note on shareable reports:** The anon RLS SELECT block means the browser cannot read back the audit row using the publishable key unless a SELECT policy is added. Two options: (1) add `FOR SELECT TO anon WITH CHECK (id = <id>)` using a URL-embedded UUID as the credential — acceptable since UUID is unguessable, or (2) create a `fetch-report` edge function that uses the service_role key server-side. Option 1 is simpler for this use case.
+### i18n Initialization
 
-### State Management (What Changes vs. What Stays)
+```typescript
+// src/lib/i18n.ts
+import i18n from "i18next";
+import { initReactI18next } from "react-i18next";
+
+import enCommon from "./locales/en/common.json";
+import enLanding from "./locales/en/landing.json";
+import enSteps from "./locales/en/steps.json";
+import enReport from "./locales/en/report.json";
+
+import bgCommon from "./locales/bg/common.json";
+import bgLanding from "./locales/bg/landing.json";
+import bgSteps from "./locales/bg/steps.json";
+import bgReport from "./locales/bg/report.json";
+
+i18n.use(initReactI18next).init({
+  resources: {
+    en: { common: enCommon, landing: enLanding, steps: enSteps, report: enReport },
+    bg: { common: bgCommon, landing: bgLanding, steps: bgSteps, report: bgReport },
+  },
+  lng: "en",                    // default — LanguageRouter overrides for /bg/ routes
+  fallbackLng: "en",            // falls back to English if Bulgarian key missing
+  defaultNS: "common",
+  interpolation: { escapeValue: false },
+});
+
+export default i18n;
+```
+
+---
+
+## Database Schema Changes
+
+### Migration: Add language and sub_niche columns
+
+```sql
+-- supabase/migrations/[timestamp]_add_language_and_subniche.sql
+
+ALTER TABLE public.audits
+  ADD COLUMN language  TEXT NOT NULL DEFAULT 'en'
+    CHECK (language IN ('en', 'bg')),
+  ADD COLUMN sub_niche TEXT;  -- nullable: null = not specified / pre-v1.1 audits
+
+-- Index for admin queries by language (optional but useful for analytics)
+CREATE INDEX audits_language_idx ON public.audits(language);
+```
+
+**Why nullable sub_niche:** All v1.0 audit rows have no sub-niche. Adding NOT NULL would require a default value that would be inaccurate for existing data. NULL means "user did not specify" and is distinguishable from any specific sub-niche value.
+
+**Why DEFAULT 'en' for language:** Existing rows without the column get 'en' automatically. No backfill needed. New audits without a language in the payload default to 'en' at the DB level.
+
+---
+
+## Build Order
+
+Dependencies are sequential. This order respects them:
 
 ```
-Current (client-only):
-  AuditForm → computeScores → generateMockReport → Report (all in-memory/localStorage)
+Phase 1: i18n Infrastructure
+  1a. Install react-i18next + i18next (npm install)
+  1b. Create src/lib/i18n.ts with English resources (bg stubs can be empty)
+  1c. Wrap App.tsx with I18nextProvider + add /bg/* routes + LanguageRouter
+  1d. Add useLanguage hook + navigateWithLang helper
+  1e. Smoke test: /bg/ route loads, i18n.language = 'bg'
 
-After Supabase integration:
-  AuditForm → computeScores → Loading [invoke generate-report] → [insert to DB] → Report
-                                  ↑ new async path                ↑ new persistence
+  GATE: Route switching works before touching any form content.
 
-  generateMockReport() can be kept as fallback if edge function fails.
+Phase 2: English UI Translation Pass
+  2a. Create en/common.json, en/landing.json, en/steps.json, en/report.json
+       from all hardcoded strings in existing components
+  2b. Replace hardcoded strings in Index.tsx, AuditForm.tsx, all Step components,
+       Report.tsx with t('namespace.key') calls
+  2c. App functions identically to before (en translations = original strings)
+
+  GATE: English app passes all existing behavior — no regressions.
+
+Phase 3: Type System + State Extensions
+  3a. Add SubNiche type, subNiche field, language field to AuditFormState
+  3b. Add SET_SUB_NICHE + SET_LANGUAGE actions to AuditAction + auditReducer
+  3c. Extend StepProps to include subNiche
+  3d. AuditForm.tsx: language detection from URL + dispatch SET_LANGUAGE on mount
+  3e. AuditForm.tsx: pass subNiche in stepProps
+
+  GATE: TypeScript compiles, existing form still works.
+
+Phase 4: Sub-Niche Selection UI (Step 1)
+  4a. Build SubNicheSelector component (card grid with niche-conditional options)
+  4b. Add to Step1BusinessInfo below industry dropdown
+  4c. Add validation: sub-niche required before advancing from Step 1
+  4d. Add sub-niche question wording to en/steps.json
+
+  GATE: Sub-niche selection works in English. State persists to localStorage.
+
+Phase 5: Scoring Engine Sub-Niche Weights
+  5a. Implement getSubNicheWeights() in scoring.ts (start with empty overrides)
+  5b. Integrate weight application into computeScores()
+  5c. Add unit tests: base weights unchanged when no sub-niche; overrides apply correctly
+  5d. Research phase populates actual weight overrides per sub-niche
+
+  GATE: Scoring engine compiles and existing test suite passes.
+
+Phase 6: Database Migration + Backend Extension
+  6a. Write and apply migration (add language + sub_niche columns)
+  6b. Update submitAudit.ts to include language and sub_niche in INSERT payload
+  6c. Update Loading.tsx to pass language + subNiche to generate-report
+  6d. Update generate-report/index.ts: Bulgarian system prompt + sub_niche context
+
+  GATE: English audit with sub-niche submits and generates English report. Database rows have correct language/sub_niche values.
+
+Phase 7: Bulgarian Content
+  7a. Create bg/common.json, bg/landing.json, bg/report.json translations
+  7b. Create bg/steps.json with Bulgarian labels + BG-market options
+      (BG-specific CRMs, local tools, BGN price ranges, local regulations)
+  7c. Test complete Bulgarian flow: /bg/ → /bg/audit → /bg/generating → /bg/report
+  7d. Verify Claude produces Bulgarian report output
+
+  GATE: Full Bulgarian flow produces correct Bulgarian report.
+
+Phase 8: User Email (EMAIL-02 carryover)
+  8a. Custom Resend domain verification must complete before this phase
+  8b. Update send-notification edge function to also send user email
+  8c. User email uses language field to determine template language
+
+  GATE: User receives email in correct language.
 ```
+
+**Rationale for this order:**
+
+- Phase 1 and 2 before any state changes — prove routing and t() work before touching form logic
+- Phase 2 (English pass) before Phase 7 (Bulgarian content) — translation structure must be correct in English before duplicating to Bulgarian; bugs in key names are cheap to fix before the BG file exists
+- Phase 3 (types) before Phase 4 (UI) — TypeScript will catch integration errors at compile time
+- Phase 5 (scoring) can overlap with Phase 4 — no dependency
+- Phase 6 (database + backend) before Phase 7 (Bulgarian) — must verify English pipeline works before adding language complexity to the edge function
+- Phase 8 last — depends on external DNS verification outside the team's control
 
 ---
 
 ## Integration Points
 
-### External Services
+### What AuditForm.tsx Must Do Differently
 
-| Service | Integration Pattern | Notes |
-|---------|---------------------|-------|
-| OpenAI API | Called from `generate-report` edge function via Deno fetch / openai npm package | API key stored as Supabase secret (`OPENAI_API_KEY`), never exposed to browser |
-| Resend API | Called from `send-notification` edge function via fetch | API key stored as Supabase secret (`RESEND_API_KEY`); admin email in `ADMIN_EMAIL` secret |
-| Supabase Postgres | Accessed via supabase-js `from().insert()` in browser and via `createClient` with service_role in edge functions | anon key for browser writes; service_role key for edge function reads/writes |
-| Supabase Edge Functions | Invoked from browser via `supabase.functions.invoke()` | CORS headers required in every edge function response |
+| Concern | Current Behavior | v1.1 Behavior |
+|---------|-----------------|---------------|
+| Language detection | Not present | Reads `location.pathname`, checks `/bg/` prefix, dispatches `SET_LANGUAGE` on mount |
+| Navigation | `navigate('/generating', ...)` | `navigateWithLang('/generating', ...)` to preserve language prefix |
+| Sub-niche validation | Not present | Step 1 must have `subNiche` set before advancing |
+| stepProps | `{ state, dispatch, isHS }` | `{ state, dispatch, isHS, subNiche: state.subNiche }` |
 
-### Internal Boundaries
+### What Report.tsx Must Handle
 
-| Boundary | Communication | Notes |
-|----------|---------------|-------|
-| Browser → Postgres | supabase-js INSERT via PostgREST REST API | Publishable/anon key, RLS enforced |
-| Browser → Edge Function | `supabase.functions.invoke()` (HTTP POST) | Publishable/anon key in Authorization header; CORS required |
-| Postgres → Edge Function | Database Webhook (pg_net HTTP POST) | Configured in Supabase Dashboard; fires on INSERT event; no browser involved |
-| Edge Function → OpenAI | Deno `fetch()` or openai npm package | API key from `Deno.env.get("OPENAI_API_KEY")` |
-| Edge Function → Resend | Deno `fetch()` to `https://api.resend.com/emails` | API key from `Deno.env.get("RESEND_API_KEY")` |
-| Edge Function → Postgres | supabase-js with service_role key (if needed) | Edge functions have `SUPABASE_SERVICE_ROLE_KEY` auto-injected |
+The AI-generated report text (`aiReport.executiveSummary`, gaps, quickWins, strategicRecommendations) is already the correct language — Claude wrote it in Bulgarian or English. No t() needed for AI content. Use t() only for structural labels: "Critical Gaps", "Quick Wins", "Strategic Recommendations", score labels, CTA button text.
 
----
+### localStorage Persistence
 
-## Build Order (Dependencies)
+`AuditFormState` already serializes to localStorage. Adding `subNiche` and `language` fields means they persist automatically via the existing `RESTORE` action. Resume works correctly for both languages.
 
-The components have a strict dependency chain. Build in this order:
-
-```
-1. Postgres schema (audits table + RLS policies)
-        ↓ required by
-2. supabase-js client singleton (src/lib/supabase.ts)
-        ↓ required by
-3. generate-report edge function (LLM call)
-        ↓ tested and working before
-4. send-notification edge function (Resend email)
-        ↓ wired via
-5. Database Webhook (INSERT on audits → send-notification)
-        ↓ all backend ready, then
-6. Audit submission service (src/services/audit.ts)
-        ↓ integrated into
-7. Loading.tsx modification (invoke generate-report, then insert)
-        ↓ final piece
-8. Report.tsx modification (display AI report text; fallback to template)
-```
-
-**Rationale for this order:**
-- The schema must exist before any code can write to it.
-- The edge functions must be deployed before the frontend can call them.
-- The webhook must be configured after `send-notification` is deployed (the dashboard webhook list only shows deployed functions).
-- The frontend modifications are last — they depend on all backend components being testable in isolation first.
-- Report.tsx is last because it is the lowest-risk change: the existing `generateMockReport()` can remain as a fallback, making this a progressive enhancement rather than a breaking change.
+One edge case: if a user starts an audit in English (`/audit`), saves, then navigates to `/bg/audit?resume=true`, the restored state has `language: 'en'` but the URL is `/bg/`. AuditForm should override the restored language with the current URL's language on resume.
 
 ---
 
-## Scalability Considerations
+## Scaling Considerations
 
 | Scale | Architecture Adjustments |
 |-------|--------------------------|
-| 0–500 audits/month | No changes needed. Single `audits` table, free Supabase tier handles it comfortably. Edge function cold starts are 50–200ms and irrelevant at this volume. |
-| 500–10k audits/month | Add an index on `email` and `created_at` for admin queries. Consider Supabase Pro tier for increased edge function invocation limits. |
-| 10k+ audits/month | Add `niche` index. Consider separating `ai_report` into its own table if JSONB column bloat becomes an issue. Evaluate OpenAI cost per completion at scale. |
-
-### Scaling Priorities
-
-1. **First bottleneck:** OpenAI API latency/cost. The LLM call is the slowest and most expensive operation. Mitigate with `gpt-4o-mini` (fast, cheap, sufficient quality for structured JSON) and a tight `max_tokens` budget. Cache common prompt segments.
-2. **Second bottleneck:** Edge function cold starts under burst traffic. Supabase Edge Functions use Deno V8 isolates — cold starts are fast (~50ms) but warm up takes a few hundred ms under sudden load. Not a concern at BizAudit's expected volume.
+| Current (2 languages, ~20 sub-niches) | Static JSON imports — all translations bundled. No lazy loading needed. Total translation bundle is small (<50KB). |
+| 5+ languages | Switch to lazy-loaded translations via `i18next-http-backend`. Fetch only the active language's JSON files at runtime. |
+| 50+ sub-niches | Sub-niche weights stay in scoring.ts (no DB needed). Sub-niche-specific question branching would benefit from a config-driven question schema rather than hardcoded conditionals. |
 
 ---
 
 ## Anti-Patterns
 
-### Anti-Pattern 1: Calling OpenAI from the Browser
+### Anti-Pattern 1: Storing Language in a Cookie or localStorage Instead of the URL
 
-**What people do:** Put the OpenAI API key in the frontend environment variables (`.env`) and call the OpenAI API directly from the browser.
+**What people do:** Detect browser language or save language preference in localStorage, then ignore the URL.
 
-**Why it's wrong:** `VITE_OPENAI_API_KEY` is bundled into the JavaScript that ships to every user. The API key is fully exposed. Any visitor can extract it and run arbitrary completions on your bill.
+**Why it's wrong:** Shareable report links (`/report/:auditId`) lose language context. A Bulgarian user shares their report URL with someone else, who sees it in English because their localStorage has `lang=en`. The URL is the only reliable source of truth for shared content.
 
-**Do this instead:** All LLM calls go through the `generate-report` edge function. The key lives in Supabase Secrets and is only accessible server-side via `Deno.env.get("OPENAI_API_KEY")`.
-
----
-
-### Anti-Pattern 2: Skipping RLS on the audits Table
-
-**What people do:** Create the `audits` table, do not enable RLS, and use the publishable/anon key from the browser. This "works" in development.
-
-**Why it's wrong:** Without RLS, any user with the anon key (which is public) can SELECT, UPDATE, or DELETE any audit record. All collected business data, email addresses, and scores are world-readable via the PostgREST endpoint.
-
-**Do this instead:** Enable RLS immediately after `CREATE TABLE`. Add only the policies you need: `FOR INSERT TO anon WITH CHECK (true)`. Anon SELECT remains blocked (no policy = no access).
+**Do this instead:** URL is authoritative. `/bg/report/:id` always renders in Bulgarian. LanguageRouter syncs i18n to match the URL. Language in AuditFormState is derived from the URL on mount, not from a stored preference.
 
 ---
 
-### Anti-Pattern 3: Using the Service Role Key in the Frontend
+### Anti-Pattern 2: Translating Form Answer Option Values Stored in State
 
-**What people do:** Use `SUPABASE_SERVICE_ROLE_KEY` as the client key in supabase-js to bypass RLS and simplify development.
+**What people do:** Store translated option strings (e.g., "Под 5 минути" in Bulgarian) directly in AuditFormState and scoring lookup tables.
 
-**Why it's wrong:** The service role key bypasses all RLS policies and grants admin-level database access. Exposing it in the browser is equivalent to giving every user root access to your database.
+**Why it's wrong:** The scoring lookup tables use English option strings as keys (`responseSpeedScore["Under 5 minutes"]`). If Bulgarian answers are stored as Bulgarian strings, every lookup returns `undefined` (falls back to score 1). The scoring engine breaks silently.
 
-**Do this instead:** Browser uses the publishable/anon key only. Service role key is used exclusively inside edge functions (auto-injected by Supabase runtime as `SUPABASE_SERVICE_ROLE_KEY`) or server-side scripts.
+**Do this instead:** Store option values as language-neutral keys or English strings in state. Translate only the display labels in t(). The scoring lookup tables stay in English. Example: `StyledSelect` receives `options` as `{ value: "Under 5 minutes", label: t("step3.responseSpeed.under5") }` pairs instead of plain strings.
 
----
-
-### Anti-Pattern 4: Putting All Logic in Loading.tsx
-
-**What people do:** Add all supabase calls inline in the Loading page component alongside the existing timer and navigation logic.
-
-**Why it's wrong:** Loading.tsx already manages a fake timer, progress state, and navigation redirect. Adding async API calls inline makes error handling fragile (what if the LLM call fails at second 3 of 14?) and makes the code untestable.
-
-**Do this instead:** Extract API calls to `src/services/audit.ts`. Loading.tsx imports `generateAIReport()` and `persistAudit()` and handles loading/error state cleanly. The service layer can be tested independently.
+This is the most critical structural decision for the entire i18n implementation. Every dropdown and multi-checkbox in the 8 step components must separate display label from stored value.
 
 ---
 
-## Key API Keys: Anon Key vs. Publishable Key
+### Anti-Pattern 3: Building Sub-Niche as a Separate Route
 
-Supabase is transitioning from JWT-based `anon` keys to a new `sb_publishable_...` format (HIGH confidence — verified against Supabase changelog). For new projects created after this change:
+**What people do:** Encode sub-niche in the URL (`/audit/hvac` or `/audit?sub=hvac`) and create separate route components per sub-niche.
 
-- `sb_publishable_...` key replaces the old `anon` JWT key
-- Both work identically with supabase-js `createClient()`
-- RLS still applies — the same `anon` Postgres role is assumed
-- Use whichever key your project provides; behavior is the same for this architecture
+**Why it's wrong:** 12 HS sub-niches + 5 RE sub-niches = 17 route variants times 8 steps = massive duplication. The sub-niche only changes a fraction of each step's content. It belongs in state, not the URL.
 
-```typescript
-// src/lib/supabase.ts
-import { createClient } from "@supabase/supabase-js";
+**Do this instead:** Sub-niche in `AuditFormState`. Step components read `state.subNiche` for conditional rendering. This is the same pattern already used for `niche` (isHS branching), just one level deeper.
 
-export const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY  // or VITE_SUPABASE_ANON_KEY for older projects
-);
-```
+---
+
+### Anti-Pattern 4: Sending Bulgarian Form Answer Strings to the AI Prompt Unchanged
+
+**What people do:** Pass the raw Bulgarian form answers (from BG translation options) directly to the `generate-report` edge function, mixed with English scoring metadata.
+
+**Why it's wrong:** The AI prompt context is a mix of languages. Claude may produce inconsistent output — sometimes English, sometimes Bulgarian, sometimes mixed. The prompt becomes harder to reason about.
+
+**Do this instead:** The edge function builds its AI prompt from the form context using English-equivalent values (the neutral stored values, not the display strings). The language instruction in the system prompt tells Claude what language to respond in. The human-readable context (industry, sub-niche) is translated to the target language in `buildPrompt()` directly, not pulled from form state strings.
 
 ---
 
 ## Sources
 
-- [Supabase Edge Functions Architecture](https://supabase.com/docs/guides/functions/architecture) — verified 2026-02-19
-- [Supabase JavaScript: functions.invoke()](https://supabase.com/docs/reference/javascript/functions-invoke) — verified 2026-02-19
-- [Supabase: Sending Emails with Edge Functions and Resend](https://supabase.com/docs/guides/functions/examples/send-emails) — verified 2026-02-19
-- [Supabase: OpenAI GPT completions from Edge Functions](https://supabase.com/docs/guides/ai/examples/openai) — verified 2026-02-19
-- [Supabase: Row Level Security](https://supabase.com/docs/guides/database/postgres/row-level-security) — verified 2026-02-19
-- [Supabase: Database Webhooks](https://supabase.com/docs/guides/database/webhooks) — verified 2026-02-19
-- [Supabase: Securing Edge Functions](https://supabase.com/docs/guides/functions/auth) — verified 2026-02-19
-- [Supabase API Keys Discussion (publishable key transition)](https://github.com/orgs/supabase/discussions/29260) — MEDIUM confidence (GitHub Discussion, not official doc)
-- [Bejamas: Send emails with Supabase database triggers](https://bejamas.com/hub/guides/send-emails-supabase-edge-functions-database-triggers) — MEDIUM confidence (community guide, patterns verified against official docs)
-- [Resend: Send emails with Supabase Edge Functions](https://resend.com/docs/send-with-supabase-edge-functions) — HIGH confidence (Resend official docs)
+- [react-i18next GitHub Issues #325 — language in URL path](https://github.com/i18next/react-i18next/issues/325) — MEDIUM confidence (community discussion, approach sound)
+- [react-i18next official docs — Multiple namespaces](https://react.i18next.com/guides/multiple-translation-files) — HIGH confidence
+- [i18next Namespaces documentation](https://www.i18next.com/principles/namespaces) — HIGH confidence
+- [React Router v6 Discussion #10510 — Routing and i18n](https://github.com/remix-run/react-router/discussions/10510) — MEDIUM confidence (community discussion)
+- [Supabase Postgres — JSONB and migrations](https://supabase.com/docs/guides/database/json) — HIGH confidence
+- [Phrase Blog — Localizing React apps with i18next](https://phrase.com/blog/posts/localizing-react-apps-with-i18next/) — MEDIUM confidence (community guide, patterns standard)
 
 ---
 
-*Architecture research for: Supabase backend integration with BizAudit React SPA*
-*Researched: 2026-02-19*
+*Architecture research for: v1.1 i18n, sub-niche branching, and Bulgarian AI reports — BizAudit*
+*Researched: 2026-02-21*

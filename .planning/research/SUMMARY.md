@@ -1,249 +1,263 @@
 # Project Research Summary
 
-**Project:** BizAudit — Supabase Backend + AI Report Generation
-**Domain:** Lead-generation assessment SaaS — adding backend persistence, AI report generation, and email notifications to an existing React/Vite SPA
-**Researched:** 2026-02-19
+**Project:** BizAudit v1.1 — Localization & Sub-Niche Specialization
+**Domain:** i18n retrofit + Bulgarian market localization + sub-niche form branching for an existing React SPA
+**Researched:** 2026-02-21
 **Confidence:** HIGH
 
 ## Executive Summary
 
-BizAudit is an existing React 18 / Vite 5 / TypeScript SPA with a complete 8-step audit form, client-side scoring engine, and report display — all running on localStorage with a mock report generator. The milestone covered by this research adds a real backend layer: Supabase Postgres for persistence, Supabase Edge Functions for server-side LLM report generation and email dispatch, and Resend for transactional email delivery. This is a well-understood integration pattern; Supabase's official documentation covers each component individually, and the combination has been validated across dozens of community implementations. The recommended approach is: browser inserts completed audit to Supabase, a directly-invoked Edge Function calls GPT-4.1 mini with structured outputs and returns the AI report JSON synchronously (hidden inside the existing 14-second loading screen), that JSON is stored with the insert, and a Database Webhook triggers a second Edge Function to send admin and user emails via Resend.
+BizAudit v1.1 adds two orthogonal capabilities to a working v1.0 product: URL-based language routing with full Bulgarian translation, and sub-niche specialization of form answer options across 17 sub-niches (12 Home Services + 5 Real Estate). The existing architecture is well-suited to both additions — the React Router v6 BrowserRouter, Supabase backend, and Claude Haiku 4.5 edge function all accommodate the changes without replacement. The recommended approach is i18next + react-i18next for i18n, optional URL path segments (`/bg/*`) for language routing, and a config-driven sub-niche data model rather than conditional branching. The key recommendation: establish the i18n infrastructure and type-safe sub-niche config layer before writing any translated or sub-niche-specific content, because retrofitting either after content exists is significantly more expensive.
 
-The key architectural decision is whether LLM report generation is synchronous (browser waits) or fully async (webhook-triggered). The existing Loading.tsx already presents a 14-second simulated wait, which is longer than a typical GPT-4.1 mini call (2–8 seconds). This makes synchronous invocation via `supabase.functions.invoke()` the most practical pattern — it avoids the complexity of polling infrastructure while exploiting existing UX cover. Email notifications should remain async via Database Webhook regardless, since the browser has no need to wait for email delivery. The single-table schema (`audits`) with JSONB columns for `form_data`, `scores`, and `ai_report` covers all MVP needs and allows shareable report URLs immediately via the Postgres-generated UUID primary key.
+The primary risk is the scoring engine breaking silently for Bulgarian users. The existing `scoring.ts` stores English answer strings as both display labels and state values — when Bulgarian labels replace them, every lookup in `scoreMap()` returns the fallback score of 1, producing uniform ~33/100 scores for all Bulgarian audits with no visible error. This must be resolved in the first phase by separating display labels from stored values in `StyledSelect` and `MultiCheckbox` before any translation work begins. A second structural risk is adding sub-niche branching as boolean flags (extending the existing `isHS` pattern), which produces an unmaintainable 136+ conditional branch tree across 8 step components and scoring logic; a typed config object per sub-niche prevents this.
 
-The primary risks are all security- and infrastructure-related rather than product risks: RLS must be enabled on day one (a real CVE in 2025 exposed 170+ apps that skipped it), API keys must never touch `VITE_` environment variables, rate limiting must be in place before the edge function is publicly reachable, and email domain DNS records must be configured days before launch (SPF/DKIM/DMARC propagation takes up to 48 hours). These are all preventable with known patterns — none require architectural re-work if addressed at the right phase.
-
----
+The Bulgarian market has distinct platform requirements that English-default option lists miss entirely: Viber dominates messaging at 35.7% market share (versus WhatsApp at 19.1%), OLX.bg has 4M monthly active users for home service discovery, and Bulgarian real estate buyers use imot.bg/homes.bg rather than Zillow. Revenue tiers must be expressed in BGN at meaningfully lower absolute values than US benchmarks. Bulgarian AI report generation is achievable by passing a language parameter to the existing `generate-report` edge function — no new infrastructure needed — but the existing `sanitizeText()` regex strips Cyrillic characters and must be updated before any Bulgarian text reaches the AI prompt.
 
 ## Key Findings
 
 ### Recommended Stack
 
-The backend layer uses Supabase as its single platform: Postgres for storage, Edge Functions (Deno runtime) for server-side logic, and Database Webhooks for async event triggering. All three are managed services with no infrastructure to provision. The frontend already has `@tanstack/react-query` and `zod` installed; both should be used for Supabase async calls and form validation respectively. No new frontend frameworks are needed.
+The v1.0 stack (React 18 / Vite 5 / TypeScript 5 / Tailwind 3 / shadcn/ui / Supabase / Claude Haiku 4.5) requires no changes. Four npm packages are the complete addition for v1.1 i18n: `i18next`, `react-i18next`, `i18next-resources-to-backend`, and `i18next-browser-languagedetector`. The existing React Router v6.30.1 handles language-prefixed URLs natively via optional route segments — no additional routing library needed. Bulgarian AI reports require only a system prompt instruction added to the existing `buildPrompt()` function in the edge function.
 
-For AI generation, GPT-4.1 mini is strongly recommended over GPT-4o-mini: it has a 1M token context window, significantly better instruction-following, and costs ~$0.004 per 2,000-token report. Structured Outputs (`response_format: json_schema`) guarantee parseable JSON responses and eliminate the prompt-only JSON parsing failures that plague simpler implementations. The OpenAI SDK (`npm:openai@^6` via Deno's npm specifier) is the correct client — the Vercel AI SDK is incompatible with Supabase's Deno runtime.
+See: `.planning/research/STACK.md`
 
 **Core technologies:**
-- `@supabase/supabase-js ^2.97.0`: Client SDK for browser — database writes and edge function invocation via singleton pattern
-- `Supabase Edge Functions (Deno)`: Server-side TypeScript for LLM calls and email; no Node.js server to manage; 400s wall-clock timeout on paid tier
-- `Supabase Postgres 15.x`: Persistent storage with RLS; single `audits` table with JSONB columns handles all MVP data
-- `Supabase Database Webhooks (pg_net)`: Async INSERT→edge-function trigger for email notifications; decouples email from browser session
-- `GPT-4.1 mini (gpt-4.1-mini)`: LLM for report generation; structured outputs via `json_schema` response_format; ~$0.004/report
-- `Resend (npm:resend@^6)`: Transactional email — official Supabase partner; free tier 3,000 emails/month; HTTP API (SMTP blocked in edge functions)
+- `i18next@^25.8.13`: Core i18n engine — industry standard, 11M weekly downloads, TypeScript 5 compatible
+- `react-i18next@^16.5.4`: React bindings — official integration, React 18 peer dep satisfied
+- `i18next-resources-to-backend@^1.2.1`: Vite-native lazy loading via dynamic imports — preferred over http-backend for this setup
+- `i18next-browser-languagedetector@^8.2.1`: Language detection — configured to prioritize URL path over localStorage (critical ordering)
+- React Router v6 optional `/:lang?` segment: Language routing — no new library; `BrowserRouter` preferred over `createBrowserRouter` to avoid i18next initialization ordering issues
+- TypeScript `i18next.d.ts` augmentation: Compile-time key checking on all `t()` calls — 20 lines of boilerplate with high payoff across ~200 keys per namespace
+
+**No new backend dependencies.** Bulgarian report generation uses a prompt instruction added to the existing `buildPrompt()` function in the `generate-report` edge function.
 
 ### Expected Features
 
-The feature research distinguishes sharply between features that are table stakes for this milestone (P1), features that add value after the core loop is validated (P2), and features that belong to a future milestone (P3).
+See: `.planning/research/FEATURES.md`
 
-**Must have — v1 launch (table stakes):**
-- Audit persistence via Supabase INSERT — without this, nothing else exists
-- Shareable report URL from Postgres UUID — client-only localStorage URLs are dead ends
-- AI-generated personalized report text (GPT-4.1 mini) — the core value proposition; templates feel generic
-- Admin notification email on completion — leads need to reach a human within hours
-- User report-ready email with report link — closes the funnel loop; enables re-access and sharing
-- Rate limiting (email-based, 3 per 24 hours) — non-negotiable before production; protects OpenAI budget
+**Must have — v1.1 launch (table stakes):**
+- i18n infrastructure with `/bg/` URL routing — foundation for all locale work; everything else depends on this
+- Full Bulgarian translation of all UI strings, form steps, and landing page — without this, the Bulgarian market offering does not exist
+- Sub-niche CRM option branching (3 HS groups + 5 RE sub-niches) — users immediately recognize the form is not built for them if irrelevant software names appear
+- Sub-niche lead source options (all 17 sub-niches) — most visible trust signal for specialized users
+- Sub-niche KPI option lists (Step 7) — current generic list misrepresents all non-HVAC trades
+- Bulgarian real estate portals (imot.bg, homes.bg, property.bg, suprimmo.net) in `/bg/` locale
+- Bulgarian HS lead sources (OLX.bg, bazar.bg, Facebook groups) in `/bg/` locale
+- Viber in Bulgarian communication options (Step 5) — 35.7% market share; absence signals the product is not built for Bulgaria
+- AI report generation in Bulgarian — English report for a Bulgarian business defeats personalization goal
 
-**Should have — add after validation (competitive differentiators):**
-- Niche-specific AI prompt context (home_services vs real_estate) — already available in form data; zero additional API cost
-- Score-aware AI recommendations — AI references actual scores in prose; already computed client-side
-- Async polling on `/generating` page — polls `audit_reports.status` so user stays in funnel until report is ready
-- Partner attribution in admin email — activates referral tracking; simple URL parameter passthrough
+**Should have — v1.x after validation:**
+- Sub-niche pricing model options (milestone billing for construction, service agreements for pest control)
+- Sub-niche scoring weight adjustments — validate option branching with real data first
+- BGN revenue/price tiers in Step 1 for `/bg/` locale
+- Property management Step 4/8 reframe (owner acquisition framing vs current lead nurture framing)
+- Commercial RE extended nurture duration options (12–24 months)
+- Sub-niche tools checklist additions (FF&E tools for interior design, aerial measurement for roofing)
 
-**Defer — v2+ only:**
-- Admin lead dashboard — justified at ~20+ audits/day; Supabase Dashboard covers the gap until then
-- CRM integration (Zapier/HubSpot) — manual copy from email is acceptable at MVP volume
-- PDF download — browser `window.print()` can be added as a v1.x CSS-only enhancement with no backend work
-- Multi-step email sequences — requires a real marketing automation platform; not a feature to build custom
+**Defer to v2+:**
+- Third language expansion (Romanian, Greek) — no validated demand
+- Admin analytics dashboard by sub-niche
+- Bulgarian regulatory content in AI reports (requires legal review)
+- Per-sub-niche AI prompt tuning beyond passing context
+
+**Grouping strategy for HS sub-niches (reduces 12 sub-niches to 3 config groups):**
+- Group A — Reactive Service: HVAC, Plumbing, Electrical, Garage Doors (ServiceTitan/FieldEdge ecosystem)
+- Group B — Recurring/Scheduled: Pest Control, Landscaping, Cleaning (GorillaDesk/ZenMaid ecosystem)
+- Group C — Project-Based: Roofing, Painting, GC, Construction, Interior Design (Buildertrend/Procore ecosystem)
 
 ### Architecture Approach
 
-The architecture follows a clean two-tier pattern: browser-side React SPA talks exclusively to Supabase (PostgREST for DB writes, Functions API for edge function invocation), and all third-party services (OpenAI, Resend) are called exclusively from inside Edge Functions where secrets are protected. The browser never holds or transmits API keys. Two Edge Functions handle separate concerns: `generate-report` (called synchronously by Loading.tsx, returns AI JSON immediately) and `send-notification` (triggered asynchronously by Database Webhook on INSERT, sends admin and user emails). This separation ensures that email delivery failures never affect the user-facing report flow.
+The v1.1 architecture adds three new layers over the unchanged v1.0 foundation: an i18n layer (react-i18next wrapping the entire app), a `LanguageRouter` component that syncs URL path prefix to i18n state, and a sub-niche config layer that replaces inline option arrays in step components. The database gains two columns (`language`, `sub_niche`) via migration. The edge function gains a language parameter that controls the AI prompt language. No existing routes, components, or state management patterns are replaced — only extended.
 
-**Major components:**
-1. `src/lib/supabase.ts` — singleton Supabase client; `persistSession: false` since there are no user accounts
-2. `src/services/audit.ts` — typed wrapper functions (`generateAIReport()`, `persistAudit()`, `fetchReport()`); keeps page components free of SDK details
-3. `supabase/functions/generate-report/` — receives `{formState, scores}` from browser; calls OpenAI with structured outputs; returns parsed report JSON
-4. `supabase/functions/send-notification/` — receives INSERT payload from Database Webhook; sends admin + user emails via Resend
-5. `supabase/migrations/20260219_create_audits.sql` — `audits` table with UUID PK, JSONB columns, RLS enabled on creation
-6. Modified `Loading.tsx` — calls `generateAIReport()` then `persistAudit()`; navigates to `/report/:uuid` with all data in navigation state
-7. Modified `Report.tsx` — renders AI report text from navigation state; falls back to `generateMockReport()` if LLM data absent; fetches from DB when opened via shareable URL
+See: `.planning/research/ARCHITECTURE.md`
 
-**Key patterns:**
-- Direct Edge Function invocation for synchronous LLM generation (fits inside existing 14s loading screen)
-- Insert-then-Webhook for async email notifications (decoupled from browser session)
-- Anon INSERT / blocked anon SELECT for no-auth data collection (UUID-as-credential for report access)
-- Service abstraction in `src/services/audit.ts` (page components never touch the Supabase SDK directly)
-- CORS OPTIONS handler required in every edge function called from the browser
+**Major components (new/modified):**
+1. `src/lib/i18n.ts` (new): i18next singleton init, 4 namespaces (common, landing, steps, report), English resources bundled statically
+2. `src/components/LanguageRouter.tsx` (new): Thin wrapper reads `/:lang` URL param, calls `i18n.changeLanguage()`, renders `<Outlet />`
+3. `src/hooks/useLanguage.ts` (new): `navigateWithLang()` helper that prepends `/bg` prefix — prevents locale prefix loss on every `navigate()` call
+4. `src/locales/en/` + `src/locales/bg/` (new): 4 JSON namespaces per language; `steps.json` carries all sub-niche option variants
+5. `src/components/audit/SubNicheSelector.tsx` (new): Card grid rendered in Step 1 after niche selection, dispatches `SET_SUB_NICHE`
+6. `src/config/subniches.ts` (new): Typed `SubNicheConfig` objects per sub-niche with option arrays, scoring weight overrides, and i18n label keys
+7. `src/types/audit.ts` (modified): Adds `SubNiche` discriminated union, `subNiche: SubNiche | null`, `language: 'en' | 'bg'` to `AuditFormState`
+8. `src/lib/scoring.ts` (modified): Adds `getSubNicheWeights()` — config-driven weight overrides applied after base scoring; no inline conditionals
+9. `generate-report/index.ts` (modified): Reads `language` from request body; constructs Bulgarian system prompt when `language === 'bg'`; includes sub-niche context in user prompt
+10. DB migration (new): `ALTER TABLE audits ADD COLUMN language TEXT DEFAULT 'en', ADD COLUMN sub_niche TEXT` (nullable)
+
+**Critical structural decision — separate display from stored values:**
+`StyledSelect` and `MultiCheckbox` must be updated to accept `{value: string, label: string}` pairs. The `value` (stable English string) is stored in `AuditFormState` and scored against; the `label` is displayed via `t()`. This must happen before any translation work begins.
 
 ### Critical Pitfalls
 
-1. **RLS disabled on `audits` table** — anyone with the anon key (which is in the JS bundle by design) can dump all audit data. CVE-2025-48757 exposed 170+ apps this way in 2025. Enable RLS and write an explicit `USING(false)` SELECT policy for the anon role before inserting any data. Verify with Supabase Security Advisor.
+See: `.planning/research/PITFALLS.md`
 
-2. **Edge Function timeout killing LLM generation** — 150s request idle timeout means a slow or long-context LLM call returns a 504 silently. GPT-4.1 mini at 2,000 tokens is typically 2–8s, well within limits, but prompt engineering must keep total token count controlled. Never combine the INSERT and LLM call in a single synchronous handler — use the two-function split.
+1. **Scoring engine breaks silently for Bulgarian users** — `scoreMap()` uses English display strings as lookup keys; Bulgarian-stored answers return the fallback score of 1, producing uniform ~33/100 scores with no error. Fix: update `StyledSelect` and `MultiCheckbox` to `{value, label}` API before writing any translations. This is the single highest-risk item.
 
-3. **Service role key in client code** — the service role key bypasses all RLS. If it ever gets a `VITE_` prefix or ends up committed to git, the entire database is exposed. Set up `.gitignore` before creating any `.env` files; service role key goes into Supabase project secrets only.
+2. **Navigation drops `/bg/` prefix mid-flow** — every `navigate('/generating')` call is a locale-stripping hole. There are 4 navigate calls in `Loading.tsx` alone. Fix: implement `useLocalizedNavigate()` hook in Phase 1; all navigate calls use it, never raw `navigate()`.
 
-4. **No rate limiting before going live** — unprotected anonymous submission endpoint can be bot-flooded. At $0.004/report, 10,000 bot submissions = $40 in API costs plus database bloat. Add email-based rate limiting (3 per 24 hours) in the edge function before deploying to production. Consider Cloudflare Turnstile as a CAPTCHA layer.
+3. **localStorage and i18next detection conflict** — i18next's `languageDetector` defaults to checking localStorage before URL path, causing a `/bg/` URL to render in English if `i18nextLng` localStorage key says `'en'`. Fix: configure `detection.order: ['path', 'htmlTag', 'localStorage']` during i18next init.
 
-5. **Email deliverability from cold domain** — SPF/DKIM/DMARC DNS records take up to 48 hours to propagate and must be in place before a single production email is sent. Resend handles DKIM signing automatically post-domain-verification. Test against Gmail and Outlook (not just developer's own address) before launch.
+4. **Sub-niche as boolean flags creates unmaintainable branching** — extending the `isHS` pattern with `isHVAC`, `isPlumbing` etc. produces 136+ conditional branches across 8 step components and scoring logic. Fix: define a typed `SubNicheConfig` schema before writing any sub-niche-specific content; all branching reads from config, not inline conditionals.
 
-6. **Prompt injection via free-text form fields** — user-supplied text in `biggestChallenge`, `techFrustrations`, and business name fields is interpolated into the LLM prompt. Sanitize all free-text inputs (strip control characters, truncate to reasonable lengths) and use XML/JSON delimiters to separate user data from instructions. This is OWASP LLM Top 10 #1 (2025).
+5. **AI prompt does not enforce Bulgarian output; Cyrillic gets stripped** — without an explicit language instruction, Claude Haiku 4.5 defaults to English when the prompt is in English. The existing `sanitizeText()` regex strips Cyrillic entirely, so Bulgarian free-text fields reach the AI as empty strings. Fix: add language instruction to `buildPrompt()`; update `sanitizeText()` to use Unicode-aware regex (`\p{L}\p{N}`).
 
----
+6. **Rate limit error message is hardcoded English** — the 429 response from the edge function always reads in English regardless of UI language. Fix: return a machine-readable code (`code: 'RATE_LIMIT_DAILY'`) that the frontend translates via i18n.
 
 ## Implications for Roadmap
 
-Based on research, the build order is driven by hard dependencies: schema must exist before any code writes to it, edge functions must be deployed before the frontend calls them, and the Database Webhook can only target already-deployed functions. The frontend integration is always last — it depends on all backend components being testable in isolation first.
+Based on research, the build order is driven by hard dependencies: i18n infrastructure must exist before translation content; component API must change before translation values are written; English namespaces must be correct before Bulgarian content is duplicated into them; sub-niche config schema must exist before sub-niche-specific option arrays are written.
 
-### Phase 1: Environment and Schema Foundation
+### Phase 1: i18n Infrastructure and Routing
 
-**Rationale:** Security and schema decisions made here are irreversible without data migration. Setting up `.gitignore`, environment variable structure, and the `audits` table schema with RLS enabled day-one prevents the most dangerous pitfalls (key exposure, data exposure) from ever occurring.
+**Rationale:** Every other piece of work depends on this phase. Translation files cannot be written without a namespace structure. Sub-niche content cannot be localized without i18n in place. The `StyledSelect`/`MultiCheckbox` component API change must happen here — before any translation content — because fixing it after translations are written requires auditing every option array in all 8 steps.
 
-**Delivers:** Working Supabase project connected to the React SPA; `audits` table accepting anonymous INSERTs; Supabase Security Advisor showing no warnings; `.env` structure with only `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in client variables.
+**Delivers:** Working `/bg/*` route branch; i18next initialized with English resources; `useLocalizedNavigate()` hook; `LanguageRouter` component; `StyledSelect`/`MultiCheckbox` updated to `{value, label}` API; `SubNiche` and `language` types added to `AuditFormState`; i18next detection order configured correctly; smoke test confirms `/bg/` route loads with `i18n.language === 'bg'`
 
-**Addresses (from FEATURES.md):** Audit persistence foundation; shareable URL prerequisite (UUID PK).
+**Features addressed:** i18n infrastructure (P1 foundation)
 
-**Avoids (from PITFALLS.md):** RLS disabled (Pitfall 1); service role key in client (Pitfall 3); environment setup mistakes.
+**Pitfalls addressed:** Pitfall 1 (scoring silent failure), Pitfall 2 (navigation prefix loss), Pitfall 3 (localStorage/URL conflict)
 
-**Research flag:** Standard patterns — skip research-phase. Supabase schema and RLS setup are fully documented with official examples.
+**Research flag:** Standard patterns — well-documented react-i18next + React Router v6 integration; skip research-phase
 
-### Phase 2: AI Report Generation Edge Function
+### Phase 2: English UI Translation Pass
 
-**Rationale:** The `generate-report` edge function is the core value-add and the most complex component. It should be built and tested in isolation (via Postman/curl) before any frontend integration touches it. Getting structured outputs, prompt engineering, and CORS headers right in isolation is far easier than debugging through the full browser flow.
+**Rationale:** Must come before Bulgarian content. Extracting all hardcoded strings into `en/*.json` files ensures the namespace structure and key naming conventions are correct in English. Bugs in key names are cheap to fix before the Bulgarian file exists. The app must function identically after this phase — English translations equal the original strings with zero regressions.
 
-**Delivers:** Deployed `generate-report` edge function that accepts `{formState, scores}`, calls GPT-4.1 mini with structured outputs (json_schema), returns parseable report JSON. Tested end-to-end via direct HTTP call before frontend is wired.
+**Delivers:** Four English translation namespaces (common, landing, steps, report) fully populated; all hardcoded strings in Index, AuditForm, all 8 step components, and Report replaced with `t()` calls; English app behavior verified identical to pre-v1.1
 
-**Addresses (from FEATURES.md):** AI-generated personalized report text (P1); niche-specific prompt context (P1 zero-cost add-on); score-aware AI recommendations (P1 zero-cost add-on).
+**Features addressed:** Full English translation (prerequisite for all Bulgarian work)
 
-**Avoids (from PITFALLS.md):** LLM timeout (Pitfall 2) — prompt token budget is defined here; prompt injection (Pitfall 5) — sanitization built into the prompt template from the start; OpenAI key in client code (anti-pattern from ARCHITECTURE.md).
+**Pitfalls addressed:** Pitfall 6 (translation key explosion — namespace structure and stable key naming established before BG content is written)
 
-**Research flag:** Standard patterns — Supabase + OpenAI pattern is documented with official examples. GPT-4.1 mini structured outputs are confirmed supported. No additional research phase needed.
+**Research flag:** Standard patterns — mechanical string extraction; skip research-phase
 
-### Phase 3: Email Notification Edge Function and Database Webhook
+### Phase 3: Sub-Niche Config Layer and Selection UI
 
-**Rationale:** `send-notification` is simpler than `generate-report` (no LLM, just Resend API call) but requires advance DNS work that has a hard 48-hour lead time. This phase must begin early enough that domain verification completes before any phase tests against real inboxes.
+**Rationale:** The config schema must be defined before any sub-niche-specific content is written. Writing sub-niche content into components and then extracting it to config is 2x the work. The `SubNicheSelector` UI is low-complexity but gates all subsequent sub-niche branching in Steps 2–8. The HS 3-group strategy (Reactive / Recurring / Project-Based) reduces 12 sub-niches to 3 config entries, making this phase tractable.
 
-**Delivers:** Deployed `send-notification` edge function sending admin and user emails via Resend; Database Webhook configured on `audits` INSERT event targeting `send-notification`; SPF/DKIM/DMARC records verified via MXToolbox; test emails confirmed in Gmail and Outlook inboxes (not spam).
+**Delivers:** `src/config/subniches.ts` with typed `SubNicheConfig` per sub-niche; `SubNicheSelector` card grid in Step 1; sub-niche validation before advancing from Step 1; sub-niche option arrays for CRMs (3 HS groups + 5 RE sub-niches), lead sources (all 17), and KPIs (all sub-niches) populated in English; step components read from config rather than inline arrays
 
-**Addresses (from FEATURES.md):** Admin notification email (P1); user report-ready email with report link (P1).
+**Features addressed:** Sub-niche CRM options (P1), sub-niche lead sources (P1), sub-niche KPI options (P1)
 
-**Avoids (from PITFALLS.md):** Email deliverability from cold domain (Pitfall 6) — DNS setup must start here, not at launch; Database Webhook JWT issue (PITFALLS integration gotcha — set `verify_jwt: false` on the edge function or pass service role key in webhook header).
+**Pitfalls addressed:** Pitfall 4 (boolean flag explosion), Pitfall 7 (subNiche missing from AuditFormState)
 
-**Research flag:** Standard patterns for Resend + Supabase webhook. DNS propagation timing is a process constraint, not a research gap.
+**Research flag:** No additional research needed — FEATURES.md contains complete option lists for all 17 sub-niches across all relevant fields
 
-### Phase 4: Rate Limiting
+### Phase 4: Scoring Engine Sub-Niche Weights
 
-**Rationale:** Rate limiting is a non-negotiable prerequisite before the submission endpoint is publicly reachable. It should be added as a discrete phase rather than bolted on to the edge function implementation, to ensure it is tested independently before the frontend goes live.
+**Rationale:** Depends on Phase 3 (sub-niche config schema). Can partially overlap with Phase 3. Scoring weight overrides are read from the same config objects defined in Phase 3. The `getSubNicheWeights()` function is low-complexity; the research-informed initial weight values will need tuning after real audit data accumulates.
 
-**Delivers:** Email-based rate limiting (3 submissions per 24 hours per email) implemented in the `generate-report` edge function; verified by submitting 4 requests from the same email address and confirming the 4th returns 429. Optionally: Cloudflare Turnstile CAPTCHA on the final submission step.
+**Delivers:** `getSubNicheWeights()` in `scoring.ts`; weight overrides applied in `computeScores()`; unit tests verifying base weights unchanged without sub-niche, overrides apply correctly with sub-niche; weights sum to 1.0 validated in tests
 
-**Addresses (from FEATURES.md):** Rate limiting (P1 risk mitigation).
+**Features addressed:** Sub-niche scoring weight adjustments (initial P2 placeholder values; tuned post-launch with real data)
 
-**Avoids (from PITFALLS.md):** Bot flooding / OpenAI cost drain (Pitfall 4).
+**Pitfalls addressed:** Pitfall 4 (config-driven scoring, no conditional branching in scoring.ts)
 
-**Research flag:** Standard patterns — Supabase docs provide a rate limiting example using Upstash Redis. Email-based approach (simpler, no Redis dependency) is documented in community sources. No research phase needed.
+**Research flag:** Weight values need post-launch validation with real sub-niche audit data — initial values are research-informed estimates. Flag for `/gsd:research-phase` only if differentiated weights are required before launch.
 
-### Phase 5: Frontend Integration
+### Phase 5: Database Migration and Backend Extension
 
-**Rationale:** All backend components are independently tested before a single line of frontend code changes. This is the risk-reduction strategy from ARCHITECTURE.md's build order. Frontend integration is a connection phase, not a discovery phase.
+**Rationale:** Depends on Phases 1 and 3 (language and sub_niche fields defined in state must exist before being persisted). Must complete before Phase 6 to verify the English pipeline works end-to-end with new fields before adding Bulgarian language complexity to the edge function. The `sanitizeText()` Cyrillic fix belongs here as well — it gates all Bulgarian free-text input.
 
-**Delivers:** Modified `Loading.tsx` that calls `generateAIReport()` then `persistAudit()` and navigates to `/report/:uuid`; modified `Report.tsx` that renders AI report content from navigation state and falls back to `generateMockReport()` on failure; shareable `/report/:uuid` URL that fetches from Supabase when opened directly; `src/services/audit.ts` with typed service functions; `src/lib/supabase.ts` singleton; `src/hooks/use-audit-submit.ts` for loading/error state.
+**Delivers:** Supabase migration adding `language` and `sub_niche` columns to `audits` table; `submitAudit.ts` includes both fields in INSERT; `Loading.tsx` passes `language` and `subNiche` to `generate-report`; `sanitizeText()` updated to Unicode-aware regex; English audit with sub-niche submits correctly; database rows have correct language/sub_niche values
 
-**Addresses (from FEATURES.md):** All P1 features wired end-to-end; shareable report URL via UUID; report accessible without authentication.
+**Features addressed:** Backend persistence of language and sub-niche (prerequisite for AI report, analytics, and email language)
 
-**Avoids (from PITFALLS.md):** Multiple Supabase client instances (singleton pattern); all logic in Loading.tsx (service abstraction); CORS failures (OPTIONS handler in edge functions, confirmed in Phase 2/3); share URL returning blank report (UUID from DB, not localStorage).
+**Pitfalls addressed:** Pitfall 5 (Cyrillic stripped by sanitizeText), Pitfall 2 (language parameter flows through to edge function)
 
-**Research flag:** Standard patterns — no additional research needed. The integration points are fully defined by Phases 1–4 outputs.
+**Research flag:** Standard Supabase migration and edge function extension patterns; skip research-phase
 
-### Phase 6: Verification and Launch Hardening
+### Phase 6: Bulgarian Content and AI Report
 
-**Rationale:** The "Looks Done But Isn't" checklist from PITFALLS.md captures a set of integration checks that individually look complete but have silent failure modes. This phase exists to execute those checks systematically before any real user traffic.
+**Rationale:** Last because it depends on all prior phases. The English namespace files must be correct (Phase 2), the sub-niche option arrays must exist in English (Phase 3), the edge function must receive the language parameter (Phase 5). Writing Bulgarian translations before the English namespace structure is finalized means rewriting translation files. Native-speaker review of generated Bulgarian reports is a hard quality gate before launch.
 
-**Delivers:** All PITFALLS.md verification checks passed: RLS curl test, fresh incognito report URL load, rate limit 429 test, LLM API key absent from built JS bundle, CORS confirmed from production domain, email confirmed in Gmail/Outlook. Full end-to-end audit completion flow tested with a real submission.
+**Delivers:** Four Bulgarian translation namespaces (bg/common.json, bg/landing.json, bg/steps.json, bg/report.json); BG-market option variants (imot.bg/homes.bg RE portals, OLX.bg/bazar.bg HS leads, Viber communications, BGN currency display); Bulgarian system prompt instruction in `generate-report` edge function; 429 rate-limit code returned as machine-readable for frontend translation; verified end-to-end flow at `/bg/` producing Bulgarian AI reports; Cyrillic preserved through sanitization
 
-**Addresses (from PITFALLS.md):** All six critical pitfalls verified; "Looks Done But Isn't" checklist completed.
+**Features addressed:** Full Bulgarian UI translation (P1), Bulgarian RE portals (P1), Bulgarian HS lead sources (P1), Viber communication options (P1), AI report in Bulgarian (P1)
 
-**Research flag:** No research needed — this is a structured verification phase against known checklists.
+**Pitfalls addressed:** Pitfall 5 (AI prompt language enforcement), Pitfall 6 (rate limit message locale)
+
+**Research flag:** Bulgarian AI output quality is MEDIUM confidence — Anthropic does not benchmark Bulgarian specifically. Manual QA of generated Bulgarian reports is required. Engage a native Bulgarian business-domain speaker for translation review before launch sign-off. This is a quality gate, not a technical unknown.
 
 ### Phase Ordering Rationale
 
-- Schema before code: the `audits` table UUID is the foundation of shareable URLs, the webhook target, and the INSERT that triggers email — nothing else can be built or tested without it.
-- Edge functions before frontend: both `generate-report` and `send-notification` must be deployed and independently tested before `Loading.tsx` or `Report.tsx` touch them. Debugging through the browser adds noise.
-- Rate limiting before frontend goes public: the endpoint becomes reachable the moment frontend is deployed; rate limiting must be in place before that moment.
-- DNS before email testing: 48-hour propagation is a hard constraint; the Resend domain verification should be started in Phase 3 regardless of whether email is fully tested then.
-- Verification last: the system must be complete before the verification checklist is meaningful.
+- Phases 1 and 2 before any state changes: prove routing and `t()` work end-to-end in English before touching form logic; zero regressions before adding complexity
+- `StyledSelect`/`MultiCheckbox` API change in Phase 1: the highest retrofit cost if deferred; touching every option in all 8 steps is cheaper before translations exist
+- Phase 3 (config schema) before Phase 4 (scoring): scoring reads from config — the schema must exist first
+- Phase 2 (English translations) before Phase 6 (Bulgarian): translation key naming bugs are cheapest to fix before the Bulgarian file duplicates them
+- Phase 5 (database/backend) before Phase 6 (Bulgarian AI): verify English pipeline end-to-end with new fields before adding language complexity to the edge function
+- Phase 4 can partially overlap with Phase 3 — no blocking dependency, both read from the same config schema
 
 ### Research Flags
 
-Phases needing deeper research during planning:
-- None identified. All components have official Supabase documentation with working examples. The stack is narrow and well-documented.
+**Phases needing deeper research during planning:**
+- **Phase 4 (scoring weights):** Weight values per sub-niche are research-informed estimates, not empirically validated. Implement with placeholder parity weights and tune in v1.x based on real audit outcomes. Only escalate to `/gsd:research-phase` if differentiated weights are a hard v1.1 requirement.
+- **Phase 6 (Bulgarian content):** Bulgarian business terminology for CRM/tool names and KPI descriptions requires native-speaker review. Machine translation is acceptable as a first draft only. Budget translation review time into the phase estimate.
 
-Phases with standard patterns (skip research-phase):
-- **Phase 1 (Schema):** Supabase table creation, RLS policies, and environment variable setup are fully documented.
-- **Phase 2 (AI Edge Function):** Supabase + OpenAI integration documented with official examples; GPT-4.1 mini structured outputs confirmed.
-- **Phase 3 (Email + Webhook):** Resend + Supabase edge function documented with official examples; Database Webhook configuration in dashboard.
-- **Phase 4 (Rate Limiting):** Supabase rate limiting example in official docs; email-based approach is a simpler variant.
-- **Phase 5 (Frontend):** supabase-js `from().insert()` and `functions.invoke()` are well-documented; integration points fully defined.
-- **Phase 6 (Hardening):** Checklist-driven; no research needed.
-
----
+**Phases with standard patterns (skip research-phase):**
+- **Phase 1:** react-i18next + React Router v6 optional segments — official documentation with maintained examples; community pattern confirmed by React Router maintainer in GitHub discussion
+- **Phase 2:** String extraction and `t()` replacement — mechanical; no novel patterns
+- **Phase 3:** Config-driven option branching — standard TypeScript discriminated union pattern
+- **Phase 5:** Supabase migration + edge function extension — established patterns already used in v1.0 codebase
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | All library versions fetched directly from npm and Supabase official docs. Edge function limits verified via official Supabase docs. GPT-4.1 mini pricing and capability: MEDIUM (search-verified, not from official changelog page). |
-| Features | HIGH (table stakes) / MEDIUM (differentiators) | Table stakes based on direct competitor analysis (My Web Audit, ScoreApp, Outgrow) and Supabase constraint verification. Differentiator prioritization based on quiz funnel research — single primary source for 40% conversion benchmark. |
-| Architecture | HIGH | All patterns verified against official Supabase documentation. Component boundaries and data flow confirmed against multiple official examples. CORS requirement confirmed. Publishable key transition (anon → sb_publishable) is MEDIUM (GitHub Discussion, not official doc). |
-| Pitfalls | HIGH | Critical pitfalls backed by official Supabase security docs, OWASP LLM Top 10 (2025), and a real CVE (CVE-2025-48757). Integration gotchas confirmed via official docs and reproducible community reports. |
+| Stack | HIGH | All 4 npm packages verified via `npm info`; React Router v6 optional segment pattern confirmed in official GitHub discussions with maintainer participation; version compatibility verified against existing package.json |
+| Features | HIGH (HS/RE sub-niches), MEDIUM (Bulgarian market specifics) | HS/RE sub-niche CRM and KPI data from authoritative domain sources (ServiceTitan blog, Buildium, FieldRoutes, etc.). Bulgarian market: Viber dominance confirmed via SensorTower + Messaggio (two independent sources); OLX.bg MAU confirmed via Balkan eCommerce Summit data; Bulgarian construction software adoption LOW confidence — no Bulgaria-specific data found |
+| Architecture | HIGH | Patterns derived from direct inspection of existing BizAudit source code (`scoring.ts`, `AuditFormComponents.tsx`, `App.tsx`, `Loading.tsx`, `generate-report/index.ts`); all component-level decisions verified against actual code, not assumptions |
+| Pitfalls | HIGH (retrofit i18n and scoring pitfalls), MEDIUM (Bulgarian AI output quality) | Scoring/navigation/localStorage pitfalls confirmed by direct source code analysis of `scoreMap()`, `StyledSelect`, and `navigate()` calls; Bulgarian AI quality inferred from Anthropic multilingual docs (Bulgarian not in benchmarked set) and peer-reviewed multilingual LLM survey |
 
-**Overall confidence:** HIGH
+**Overall confidence:** HIGH for implementation approach and architecture decisions; MEDIUM for Bulgarian content quality (requires post-implementation native-speaker validation) and sub-niche weight values (requires post-launch data validation)
 
 ### Gaps to Address
 
-- **Shareable URL SELECT policy decision:** ARCHITECTURE.md identifies two valid options for enabling anon reads of a specific audit row: (1) `FOR SELECT TO anon USING (id = <uuid>)` — simple but requires a policy change, or (2) a `fetch-report` edge function with service role reads. Decision deferred to Phase 5 planning; option 1 is recommended for simplicity given that UUIDs are not guessable.
+- **Bulgarian construction software adoption:** No Bulgaria-specific CRM data found. Assumption is international tools (Procore/Buildertrend) or Excel/Google Sheets dominate. Include generic options prominently; validate with Bulgarian user feedback post-launch.
 
-- **GPT-4.1 mini report quality:** The LLM model is research-recommended but the prompt template is not yet written. Report quality is not validatable until the edge function is built and tested against real form submissions. Plan for one prompt iteration cycle after first real outputs are reviewed.
+- **BGN revenue tier calibration:** No published Bulgarian SMB revenue benchmark data found. BGN tiers in FEATURES.md are estimates based on EUR/BGN fixed peg (1 EUR = 1.95583 BGN) and general market scale awareness. Flag for validation with Bulgarian business users before launch.
 
-- **Resend sender domain:** The sending domain must be owned and DNS-accessible. If the project does not yet have a domain, this blocks email delivery entirely. Confirm domain availability in Phase 3 setup — this is a business dependency, not a technical one.
+- **Bulgarian AI report quality:** Anthropic does not publish Bulgarian benchmark scores. Claude Haiku 4.5 generates Bulgarian, but quality relative to English output is unverified. Mandate native-speaker review of 3–5 generated Bulgarian reports before launch sign-off. This is a process gap, not a technical blocker.
 
-- **Async polling (v1.x):** FEATURES.md marks async polling on `/generating` as P2 (after validation). If user testing reveals that the existing 14-second fake loading screen plus direct edge function invocation causes noticeable UX issues (e.g., report arrives before loading screen ends, or LLM occasionally exceeds 14s), the polling approach becomes P1. This should be validated with real LLM response times during Phase 2.
+- **Sub-niche scoring weight values:** Initial overrides in ARCHITECTURE.md are directionally informed but not empirically validated. Treat as v1.1 placeholders; tune in v1.x based on actual audit score distributions.
 
-- **Free tier vs. paid tier Supabase:** PITFALLS.md notes that the free tier pauses after 7 days of inactivity and has a lower edge function timeout (150s vs 400s). If production launch is planned, a paid Supabase tier is needed. This is a cost/infrastructure decision to confirm before Phase 1.
-
----
+- **Property management Step 4/8 misalignment:** Research flags that Step 4 (lead nurture for buyers/sellers) and Step 8 financial questions do not fit property management firms. Scoped out of v1.1 due to form restructuring complexity. PM audits will produce lower-quality results until addressed in v1.x.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- [Supabase Edge Functions docs](https://supabase.com/docs/guides/functions) — runtime, architecture, limits, CORS
-- [Supabase Edge Function Limits](https://supabase.com/docs/guides/functions/limits) — 400s timeout, 256MB memory, 20MB bundle
-- [Supabase Send Emails example](https://supabase.com/docs/guides/functions/examples/send-emails) — Resend + edge function pattern
-- [Supabase OpenAI example](https://supabase.com/docs/guides/ai/examples/openai) — edge function + OpenAI integration
-- [Supabase Database Webhooks](https://supabase.com/docs/guides/database/webhooks) — pg_net INSERT webhook
-- [Supabase Row Level Security](https://supabase.com/docs/guides/database/postgres/row-level-security) — anon INSERT/SELECT policy patterns
-- [Supabase Hardening the Data API](https://supabase.com/docs/guides/database/hardening-data-api) — security practices
-- [Supabase Securing Edge Functions](https://supabase.com/docs/guides/functions/auth) — JWT verification, service role
-- [Supabase Rate Limiting Edge Functions](https://supabase.com/docs/guides/functions/examples/rate-limiting) — Upstash Redis pattern
-- [openai npm v6.22.0](https://www.npmjs.com/package/openai) — version confirmed
-- [resend npm v6.9.2](https://www.npmjs.com/package/resend) — version confirmed
-- [Resend: Send emails with Supabase Edge Functions](https://resend.com/docs/send-with-supabase-edge-functions) — official Resend docs
-- [OWASP LLM Top 10 2025: Prompt Injection (LLM01)](https://genai.owasp.org/llmrisk/llm01-prompt-injection/) — injection risk ranking
+- [i18next npm](https://www.npmjs.com/package/i18next) — v25.8.13 current version; TypeScript 5 compatibility
+- [react-i18next npm](https://www.npmjs.com/package/react-i18next) — v16.5.4 current version; React 18 peer dep
+- [i18next-resources-to-backend GitHub](https://github.com/i18next/i18next-resources-to-backend) — dynamic import usage pattern for Vite
+- [i18next TypeScript docs](https://www.i18next.com/overview/typescript) — CustomTypeOptions augmentation
+- [react-i18next official docs](https://react.i18next.com/guides/multiple-translation-files) — namespace usage
+- [i18next Best Practices](https://www.i18next.com/principles/best-practices) — namespace structure and key naming
+- [i18next Language Detector GitHub Issue #250](https://github.com/i18next/i18next-browser-languageDetector/issues/250) — localStorage vs path ordering conflict
+- [ServiceTitan HVAC KPIs](https://www.servicetitan.com/blog/hvac-key-performance-indicators) — Group A KPI data
+- [FieldRoutes Pest Control KPIs](https://www.fieldroutes.com/blog/pest-control-kpis) — Group B pest control KPI data
+- [Buildium Property Management KPIs](https://www.buildium.com/blog/property-management-kpis-to-track/) — RE property management sub-niche data
+- [Pearl Collective Interior Design KPIs](https://thepearlcollective.com/kpis-interior-design-firms/) — Group C interior design KPI data
+- [4Degrees Commercial RE CRMs 2025](https://www.4degrees.ai/blog/the-best-commercial-real-estate-crms-of-2025) — commercial RE sub-niche CRM data
+- [imot.bg](https://www.imot.bg/) — confirmed Bulgaria RE portal #1
+- [OLX Bulgaria 4M MAU — Balkan eCommerce Summit](https://balkanecommerce.com/partners/olx-bulgaria/) — classified platform market data
+- [Viber Bulgaria — SensorTower Q2 2025](https://sensortower.com/blog/2025-q2-unified-top-5-communication%20apps-units-bg-6070aae1241bc16eb81f5bab) — 35.7% Viber market share confirmed
+- [Messaggio Viber Bulgaria](https://messaggio.com/messaging/bulgaria/viber/) — corroborating Viber market dominance
+- [Flat Manager BG](https://flatmanager.bg/en/) — Bulgarian property management software confirmed
+- [Roomspilot](https://roomspilot.com/) — Bulgarian STR channel manager confirmed
+- [Anthropic Multilingual Support](https://platform.claude.com/docs/en/build-with-claude/multilingual-support) — Bulgarian not in benchmarked language set
+- BizAudit source code (direct analysis): `src/lib/scoring.ts`, `src/components/audit/AuditFormComponents.tsx`, `src/App.tsx`, `src/pages/Loading.tsx`, `supabase/functions/generate-report/index.ts`
 
 ### Secondary (MEDIUM confidence)
-- [GPT-4.1 mini launch blog](https://openai.com/index/gpt-4-1/) — model capabilities, pricing, benchmark claims
-- [Interact Quiz Conversion Rate Report 2026](https://www.tryinteract.com/blog/quiz-conversion-rate-report/) — 40.1% start-to-lead conversion benchmark
-- [ScoreApp features](https://www.scoreapp.com/features/) — AI feedback, CRM sync patterns
-- [My Web Audit features](https://www.mywebaudit.com/features) — real-time notifications, shareable links
-- [Outgrow review — Blogging Wizard](https://bloggingwizard.com/outgrow-review/) — lead forms, admin notifications
-- [CVE-2025-48757 / Lovable apps RLS exposure](https://byteiota.com/supabase-security-flaw-170-apps-exposed-by-missing-rls/) — real-world RLS omission consequence
-- [Supabase API Keys Discussion (publishable key transition)](https://github.com/orgs/supabase/discussions/29260) — anon key → sb_publishable format
-- [Multiple GoTrueClient instances — Supabase GitHub](https://github.com/orgs/supabase/discussions/37755) — singleton requirement
+- [React Router i18n discussion #10510](https://github.com/remix-run/react-router/discussions/10510) — optional segment pattern for language prefix; React Router maintainer participated
+- [Procore Construction KPIs](https://www.procore.com/library/construction-kpis) — Group C construction KPI data
+- [Successware HVAC/Plumbing/Electrical KPIs](https://www.successware.com/blog/2024/july/mastering-metrics-kpis-for-hvac-plumbing-electri/) — Group A KPI corroboration
+- [Lasso CRM for new construction](https://www.ecisolutions.com/products/lasso-crm/) — new construction RE sub-niche CRM data
+- [Centrarium Bulgarian RE market 2025](https://centrarium.com/en/blog/rynok-nedvizhimosti-bolgarii-2025-goda-358.html) — Bulgarian market context
+- [Multilingual LLM Survey — Patterns journal 2024](https://www.cell.com/patterns/fulltext/S2666-3899(24)00290-3) — non-English prompt performance degradation patterns
 
 ### Tertiary (LOW confidence)
-- Joe Muller (@BosonJoe) X post — documented OpenAI budget drain via unprotected Supabase edge function (single source, but corroborates the rate limiting necessity)
+- Bulgarian construction software adoption — no Bulgaria-specific data found; assumption based on general SMB patterns; requires validation with Bulgarian users
+- Bulgarian SMB revenue tier calibration — estimated from EUR/BGN fixed rate and general market scale awareness; no published benchmark
 
 ---
-
-*Research completed: 2026-02-19*
+*Research completed: 2026-02-21*
 *Ready for roadmap: yes*
