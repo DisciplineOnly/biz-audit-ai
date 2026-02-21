@@ -4,6 +4,19 @@
 
 A multi-step business audit tool that walks business owners through 8 steps of questions about their operations, then generates a personalized AI-driven analysis report with shareable URLs. Targets two niches — Home Services and Real Estate Teams. Claude Haiku 4.5 writes niche-specific recommendations based on actual scores. The report ends with a Cal.com embed to book a consultation call, making the audit both a diagnostic tool and a lead generation funnel.
 
+## Current Milestone: v1.1 Localization & Sub-Niche Specialization
+
+**Goal:** Add Bulgarian language support with market-adapted content, and specialize questions per sub-niche across both languages.
+
+**Target features:**
+- i18n infrastructure with URL-based language routing (`/bg/` for Bulgarian)
+- Full Bulgarian translation of UI, form steps, and AI-generated reports
+- Bulgarian-market answer options (local CRMs, tools, price ranges, regulations)
+- Sub-niche specialization in both languages — research-driven question/option adaptation
+  - Home Services: HVAC, Plumbing, Electrical, Roofing, Landscaping, Pest Control, Garage Doors, Painting, General Contracting, Construction, Interior Design, Cleaning
+  - Real Estate: Residential Sales, Commercial/Office, Property Management, New Construction, Luxury/Resort
+- Scoring engine adaptation per sub-niche where research indicates different weights
+
 ## Core Value
 
 Business owners complete the audit and receive a personalized, AI-driven analysis that makes them want to book a consultation — the report must feel specific to *their* business, not generic.
@@ -29,15 +42,20 @@ Business owners complete the audit and receive a personalized, AI-driven analysi
 
 ### Active
 
-- [ ] User email with report link after AI generation (EMAIL-02 — blocked on custom Resend domain)
-- [ ] Custom Resend domain for production email deliverability
-- [ ] End-to-end verification with real submissions (Phase 6 scope — dropped from v1.0)
+- [ ] i18n infrastructure with URL-based language routing
+- [ ] Full Bulgarian localization (UI, form steps, landing page, report)
+- [ ] Bulgarian-market content adaptation (CRMs, tools, pricing, regulations)
+- [ ] Sub-niche specialization with research-driven question adaptation (both languages)
+- [ ] AI report generation in Bulgarian
+- [ ] Scoring engine adaptation per sub-niche
+- [ ] User email with report link after AI generation (EMAIL-02 — carried from v1.0)
+- [ ] Custom Resend domain for production email deliverability (carried from v1.0)
 
 ### Out of Scope
 
 - User accounts / authentication — email capture only, no login system
 - Admin dashboard — v2 consideration, email notifications sufficient for now
-- Additional niches beyond home services and real estate — not this milestone
+- Additional niches beyond home services and real estate — two niches, multiple sub-niches
 - Mobile app — web-first
 - Real-time chat or messaging — not relevant to audit flow
 - Server-side PDF generation — browser print-to-PDF sufficient
@@ -76,5 +94,8 @@ Known limitation: user email (EMAIL-02) deferred pending custom Resend domain ve
 | Defer EMAIL-02 (user email) | Requires custom Resend domain verification (DNS propagation); not blocking for MVP | ⚠️ Revisit — initiate domain verification |
 | Drop Phase 6 (Verification) | Manual QA and audit sufficient for MVP launch | ⚠️ Revisit — consider for v1.1 |
 
+| URL-based i18n routing | /bg/ path prefix for Bulgarian, default for English; avoids subdomain complexity | — Pending |
+| Research-driven sub-niche questions | Let domain research determine which questions/options differ per sub-niche rather than guessing | — Pending |
+
 ---
-*Last updated: 2026-02-21 after v1.0 milestone*
+*Last updated: 2026-02-21 after v1.1 milestone started*
