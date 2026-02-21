@@ -47,8 +47,8 @@ Progress: [██░░░░░░░░] 8% (v1.1) — 2/24 plans
 Decisions are logged in PROJECT.md Key Decisions table.
 
 Key v1.1 architectural decisions (from research):
-- i18next + react-i18next for i18n (4 npm packages total, no backend changes)
-- URL-based language routing: `/bg/*` optional segment via React Router v6
+- i18next + react-i18next for i18n (2 npm packages) — DONE (06-01), URL-driven detection only, no browser-languagedetector
+- URL-based language routing: `/:lang?` optional segment via React Router v6 — DONE (06-01), LangLayout syncs i18n with URL
 - `{value, label}` API for StyledSelect/MultiCheckbox in Phase 6 — DONE (06-02), toOptions() bridge in place
 - Config-driven sub-niche branching (TypeScript discriminated union) — never boolean flags
 - Phase 9 (scoring weights) can partially overlap with Phase 8 — same config schema
@@ -59,7 +59,7 @@ None.
 
 ### Blockers/Concerns
 
-- Phase 6 pitfall: i18next detection order must be `['path', 'htmlTag', 'localStorage']` — localStorage before path causes `/bg/` to render English
+- ~~Phase 6 pitfall: i18next detection order~~ — RESOLVED (06-01): no browser-languagedetector used, URL is sole source of truth
 - Phase 10 pitfall: `sanitizeText()` currently strips all Cyrillic — must fix before Phase 11 Bulgarian content
 - Phase 11 quality gate: Bulgarian AI report output requires native-speaker review of 3-5 generated reports before launch sign-off (process gap, not technical blocker)
 - Resend sandbox sender (onboarding@resend.dev) needs custom domain for production (carried from v1.0)
@@ -67,5 +67,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-21
-Stopped at: Completed 06-02-PLAN.md
+Stopped at: Completed 06-01-PLAN.md
 Resume file: None

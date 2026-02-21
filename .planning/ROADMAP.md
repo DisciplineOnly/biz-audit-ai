@@ -44,8 +44,8 @@
   5. A shared report URL (`/bg/report/:id`) opens in Bulgarian for the recipient
 **Plans:** 4 plans
 Plans:
-- [ ] 06-01-PLAN.md — i18next setup, URL routing, LangLayout, useLang hook
-- [ ] 06-02-PLAN.md — Value/label refactor for StyledSelect and MultiCheckbox
+- [x] 06-01-PLAN.md — i18next setup, URL routing, LangLayout, useLang hook
+- [x] 06-02-PLAN.md — Value/label refactor for StyledSelect and MultiCheckbox
 - [ ] 06-03-PLAN.md — Navigation prefix updates and LanguageToggle component
 - [ ] 06-04-PLAN.md — Human verification checkpoint
 
