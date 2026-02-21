@@ -6,7 +6,7 @@ import { Ratelimit } from 'npm:@upstash/ratelimit'
 import { Redis } from 'npm:@upstash/redis'
 
 const MODEL = 'claude-haiku-4-5-20251001'
-const MAX_TOKENS = 2048
+const MAX_TOKENS = 4096
 
 // --- Sanitization (SEC-04) ---
 
@@ -452,6 +452,11 @@ Deno.serve(async (req: Request) => {
       system,
       messages: [{ role: 'user', content: user }],
     })
+
+    // Guard against truncated responses — incomplete JSON is unparseable
+    if (message.stop_reason === 'max_tokens') {
+      throw new Error('AI response was truncated (max_tokens). Report too long for token limit.')
+    }
 
     // Extract and parse response
     let responseText = (message.content[0] as { type: string; text: string }).text
