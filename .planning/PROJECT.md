@@ -39,6 +39,8 @@ Business owners complete the audit and receive a personalized, AI-driven analysi
 - ✓ Admin email notification on audit completion — v1.0
 - ✓ AI-generated personalized report content via Claude Haiku 4.5 — v1.0
 - ✓ Shareable report URLs (persisted reports accessible via link) — v1.0
+- ✓ User email with report link after AI generation — v1.0 (EMAIL-02)
+- ✓ Custom Resend domain for production email deliverability — v1.0
 
 ### Active
 
@@ -48,8 +50,6 @@ Business owners complete the audit and receive a personalized, AI-driven analysi
 - [ ] Sub-niche specialization with research-driven question adaptation (both languages)
 - [ ] AI report generation in Bulgarian
 - [ ] Scoring engine adaptation per sub-niche
-- [ ] User email with report link after AI generation (EMAIL-02 — carried from v1.0)
-- [ ] Custom Resend domain for production email deliverability (carried from v1.0)
 
 ### Out of Scope
 
@@ -68,7 +68,7 @@ Tech stack: React/Vite/TypeScript SPA + Supabase (Postgres, Edge Functions) + Cl
 Backend: 3 edge functions (generate-report, send-notification, fetch-report), 3 migrations, RLS security.
 Rate limiting: dual-vector (3/email/24h + 10/IP/24h) via Upstash Redis fixedWindow.
 Email: admin notifications via Resend sandbox domain (onboarding@resend.dev).
-Known limitation: user email (EMAIL-02) deferred pending custom Resend domain verification.
+EMAIL-02 and custom Resend domain completed post-v1.0.
 
 ## Constraints
 
@@ -91,7 +91,7 @@ Known limitation: user email (EMAIL-02) deferred pending custom Resend domain ve
 | Database Webhook for email trigger | Edge Function webhook type eliminates manual URL/auth config | ✓ Good — automatic on INSERT |
 | Dual-vector rate limiting (email + IP) | Prevents abuse from both vectors; fixedWindow for predictable reset | ✓ Good — deployed and enforced |
 | fetch-report edge function (service_role) | Preserves SEC-02 (no anon SELECT policy) while enabling shareable URLs | ✓ Good — security preserved |
-| Defer EMAIL-02 (user email) | Requires custom Resend domain verification (DNS propagation); not blocking for MVP | ⚠️ Revisit — initiate domain verification |
+| Defer EMAIL-02 (user email) | Requires custom Resend domain verification (DNS propagation); not blocking for MVP | ✓ Good — implemented post-v1.0 |
 | Drop Phase 6 (Verification) | Manual QA and audit sufficient for MVP launch | ⚠️ Revisit — consider for v1.1 |
 
 | URL-based i18n routing | /bg/ path prefix for Bulgarian, default for English; avoids subdomain complexity | — Pending |
