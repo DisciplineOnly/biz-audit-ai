@@ -5,6 +5,7 @@ import { submitAudit } from "@/lib/submitAudit";
 import { supabase } from "@/lib/supabase";
 import { FunctionsHttpError } from "@supabase/supabase-js";
 import type { AuditFormState, AuditScores, AIReportData } from "@/types/audit";
+import { useLang } from "@/hooks/useLang";
 
 const MIN_WAIT_MS = 8000;
 
@@ -22,6 +23,7 @@ const steps = [
 export default function Loading() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { prefix } = useLang();
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +54,7 @@ export default function Loading() {
         if (!mountedRef.current) return;
         apiResolvedRef.current = true;
         setProgress(100);
-        navigate(`/report/${auditId}`, {
+        navigate(`${prefix}/report/${auditId}`, {
           state: { formState: formStateRef.current, scores: scoresRef.current, auditId },
         });
         return;
@@ -93,7 +95,7 @@ export default function Loading() {
         apiResolvedRef.current = true;
         setAiReport(data.report as AIReportData);
         setProgress(100);
-        navigate(`/report/${auditId}`, {
+        navigate(`${prefix}/report/${auditId}`, {
           state: {
             formState: formStateRef.current,
             scores: scoresRef.current,
@@ -107,7 +109,7 @@ export default function Loading() {
         // Show Retry + Skip buttons — user can retry or skip to template report
       }
     },
-    [navigate]
+    [navigate, prefix]
   );
 
   const handleRetry = useCallback(() => {
@@ -117,10 +119,10 @@ export default function Loading() {
 
   const handleSkipToReport = useCallback(() => {
     const auditId = auditIdRef.current || "demo-" + Date.now();
-    navigate(`/report/${auditId}`, {
+    navigate(`${prefix}/report/${auditId}`, {
       state: { formState: formStateRef.current, scores: scoresRef.current, auditId },
     });
-  }, [navigate]);
+  }, [navigate, prefix]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -132,13 +134,13 @@ export default function Loading() {
     // Validate required data
     if (!formState || !scores) {
       setError("Missing form data. Please start over.");
-      setTimeout(() => { if (mountedRef.current) navigate("/"); }, 3000);
+      setTimeout(() => { if (mountedRef.current) navigate(prefix || "/"); }, 3000);
       return;
     }
 
     if (!formState.niche) {
       setError("Missing niche selection. Please start over.");
-      setTimeout(() => { if (mountedRef.current) navigate("/"); }, 3000);
+      setTimeout(() => { if (mountedRef.current) navigate(prefix || "/"); }, 3000);
       return;
     }
 
@@ -200,7 +202,7 @@ export default function Loading() {
       clearInterval(stepInterval);
       if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
     };
-  }, [navigate, callGenerateReport]);
+  }, [navigate, callGenerateReport, prefix]);
 
   return (
     <div

@@ -6,6 +6,7 @@ import { getScoreColor, getScoreLabel, getBenchmark, generateMockReport } from "
 import { fetchReport } from "@/lib/fetchReport";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar, Download, Share2, CheckCircle, AlertTriangle, TrendingUp, BarChart3, Zap } from "lucide-react";
+import { useLang } from "@/hooks/useLang";
 
 function ScoreBar({ score, label }: { score: number; label: string }) {
   const color = getScoreColor(score);
@@ -79,6 +80,7 @@ export default function Report() {
   const { auditId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  const { prefix } = useLang();
   const [copied, setCopied] = useState(false);
   const [pollStartTime] = useState(() => Date.now());
   const POLL_TIMEOUT_MS = 90_000; // 90 seconds max polling
@@ -187,7 +189,7 @@ export default function Report() {
           This audit link is invalid or has expired. Start a new audit to generate a fresh report.
         </p>
         <Link
-          to="/"
+          to={prefix || "/"}
           className="px-6 py-3 rounded-xl text-white font-semibold transition-all hover:opacity-90"
           style={{ backgroundColor: "hsl(var(--coral))" }}
         >
@@ -202,7 +204,7 @@ export default function Report() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
         <p className="text-muted-foreground">Failed to load report. Please try again.</p>
-        <Link to="/" className="text-sm font-medium" style={{ color: "hsl(var(--coral))" }}>
+        <Link to={prefix || "/"} className="text-sm font-medium" style={{ color: "hsl(var(--coral))" }}>
           Start a New Audit →
         </Link>
       </div>
@@ -271,7 +273,7 @@ export default function Report() {
           We couldn't find any report data. Start a new audit to generate a fresh report.
         </p>
         <Link
-          to="/"
+          to={prefix || "/"}
           className="px-6 py-3 rounded-xl text-white font-semibold transition-all hover:opacity-90"
           style={{ backgroundColor: "hsl(var(--coral))" }}
         >
@@ -309,7 +311,7 @@ export default function Report() {
       {/* Header */}
       <header style={{ backgroundColor: "hsl(var(--navy))" }} className="py-4 px-6 print:hidden">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <button onClick={() => navigate("/")} className="flex items-center gap-2 text-white/80 hover:text-white">
+          <button onClick={() => navigate(prefix || "/")} className="flex items-center gap-2 text-white/80 hover:text-white">
             <div className="w-7 h-7 rounded-md flex items-center justify-center text-white font-bold text-xs" style={{ backgroundColor: "hsl(var(--coral))" }}>E&P</div>
             <span className="font-semibold hidden sm:block">E&P Systems</span>
           </button>
@@ -562,7 +564,7 @@ export default function Report() {
 
         {/* Footer */}
         <div className="text-center py-4 print:hidden">
-          <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <Link to={prefix || "/"} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
             ← Start a New Audit
           </Link>
         </div>

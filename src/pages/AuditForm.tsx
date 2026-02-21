@@ -2,6 +2,7 @@ import { useEffect, useReducer, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Zap, Save } from "lucide-react";
 import { AuditFormState, auditReducer, initialFormState, Niche } from "@/types/audit";
+import { useLang } from "@/hooks/useLang";
 import { Step1BusinessInfo } from "@/components/audit/Step1BusinessInfo";
 import { Step2Technology } from "@/components/audit/Step2Technology";
 import { Step3LeadFunnel } from "@/components/audit/Step3LeadFunnel";
@@ -51,6 +52,7 @@ function validateStep(step: number, state: AuditFormState): string[] {
 export default function AuditForm() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { prefix } = useLang();
   const nicheParam = searchParams.get("niche") as Niche | null;
   const isResume = searchParams.get("resume") === "true";
 
@@ -78,9 +80,9 @@ export default function AuditForm() {
     if (nicheParam) {
       dispatch({ type: "SET_NICHE", payload: nicheParam });
     } else {
-      navigate("/");
+      navigate(prefix || "/");
     }
-  }, [nicheParam, isResume, navigate]);
+  }, [nicheParam, isResume, navigate, prefix]);
 
   // Auto-save to localStorage on every state change
   useEffect(() => {
@@ -122,7 +124,7 @@ export default function AuditForm() {
       const auditId = "demo-" + Date.now();
       localStorage.setItem(STORAGE_KEY + "_scores", JSON.stringify(scores));
       localStorage.setItem(STORAGE_KEY + "_form", JSON.stringify(state));
-      navigate("/generating", { state: { auditId, scores, formState: state } });
+      navigate(`${prefix}/generating`, { state: { auditId, scores, formState: state } });
       return;
     }
 
@@ -133,7 +135,7 @@ export default function AuditForm() {
 
   const handleBack = () => {
     if (currentStep === 1) {
-      navigate("/");
+      navigate(prefix || "/");
       return;
     }
     setErrors([]);
@@ -165,7 +167,7 @@ export default function AuditForm() {
       <header style={{ backgroundColor: "hsl(var(--navy))" }} className="sticky top-0 z-40">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate(prefix || "/")}
             className="flex items-center gap-2 text-white/80 hover:text-white transition-colors"
           >
             <div

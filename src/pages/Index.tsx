@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Wrench, Home, ArrowRight, CheckCircle, Star, BarChart3, Zap } from "lucide-react";
+import { useLang } from "@/hooks/useLang";
 
 const STORAGE_KEY = "ep_audit_state";
 
@@ -15,6 +16,7 @@ const benefits = [
 export default function Index() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { prefix } = useLang();
   const partnerCode = searchParams.get("ref") || searchParams.get("partner");
 
   useEffect(() => {
@@ -30,10 +32,10 @@ export default function Index() {
 
     if (saved && saved.niche === niche && saved.currentStep > 1) {
       // Resume existing session
-      navigate(`/audit?niche=${niche}&resume=true`);
+      navigate(`${prefix}/audit?niche=${niche}&resume=true`);
     } else {
       localStorage.removeItem(STORAGE_KEY);
-      navigate(`/audit?niche=${niche}`);
+      navigate(`${prefix}/audit?niche=${niche}`);
     }
   };
 
