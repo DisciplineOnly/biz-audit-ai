@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 6 of 11 (i18n Infrastructure and Routing)
-Plan: 4 plans created (06-01 through 06-04)
-Status: Planned — ready to execute
-Last activity: 2026-02-21 — Phase 6 planned (4 plans in 3 waves)
+Plan: 2 of 4 complete (06-01 and 06-02 done, next: 06-03)
+Status: Executing
+Last activity: 2026-02-21 — 06-01 i18n infrastructure and routing setup complete
 
-Progress: [░░░░░░░░░░] 0% (v1.1)
+Progress: [██░░░░░░░░] 8% (v1.1) — 2/24 plans
 
 ## Performance Metrics
 
@@ -33,7 +33,12 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | 4. Rate Limiting | 2 | Complete |
 | 5. Frontend Integration | 3 | Complete |
 
-*v1.1 metrics will populate as plans complete*
+**v1.1:**
+
+| Phase | Plan | Duration | Tasks | Files |
+|-------|------|----------|-------|-------|
+| 6 | 06-01 | 8min | 2 | 10 |
+| 6 | 06-02 | 8min | 2 | 9 |
 
 ## Accumulated Context
 
@@ -44,7 +49,7 @@ Decisions are logged in PROJECT.md Key Decisions table.
 Key v1.1 architectural decisions (from research):
 - i18next + react-i18next for i18n (4 npm packages total, no backend changes)
 - URL-based language routing: `/bg/*` optional segment via React Router v6
-- `{value, label}` API for StyledSelect/MultiCheckbox in Phase 6 — highest retrofit cost if deferred
+- `{value, label}` API for StyledSelect/MultiCheckbox in Phase 6 — DONE (06-02), toOptions() bridge in place
 - Config-driven sub-niche branching (TypeScript discriminated union) — never boolean flags
 - Phase 9 (scoring weights) can partially overlap with Phase 8 — same config schema
 
@@ -62,5 +67,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-21
-Stopped at: Phase 6 planned — ready to execute
+Stopped at: Completed 06-02-PLAN.md
 Resume file: None

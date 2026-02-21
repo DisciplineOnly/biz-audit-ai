@@ -13,7 +13,7 @@ Requirements for v1.1 Localization & Sub-Niche Specialization. Each maps to road
 - [ ] **I18N-02**: User can switch between English and Bulgarian from any page via a language toggle
 - [ ] **I18N-03**: User's language selection persists across page navigation within the same session
 - [ ] **I18N-04**: All internal navigation links preserve the current language prefix
-- [ ] **I18N-05**: Form components store language-neutral values (not translated labels) so scoring works regardless of language
+- [x] **I18N-05**: Form components store language-neutral values (not translated labels) so scoring works regardless of language
 - [ ] **I18N-06**: Shareable report URLs include language context so recipients see the report in the original language
 
 ### Translation
@@ -88,7 +88,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | I18N-02 | Phase 6 | Pending |
 | I18N-03 | Phase 6 | Pending |
 | I18N-04 | Phase 6 | Pending |
-| I18N-05 | Phase 6 | Pending |
+| I18N-05 | Phase 6 | Complete |
 | I18N-06 | Phase 6 | Pending |
 | TRANS-01 | Phase 11 | Pending |
 | TRANS-02 | Phase 7 | Pending |
