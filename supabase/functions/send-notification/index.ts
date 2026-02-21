@@ -259,6 +259,116 @@ function buildAdminEmailHtml(record: AuditRecord, aiReport: AiReport | null): st
 </html>`
 }
 
+function buildUserEmailHtml(record: AuditRecord, aiReport: AiReport | null): string {
+  const nicheLabel = record.niche === 'home_services' ? 'Home Services' : 'Real Estate'
+  const scoreColor = getScoreColor(record.overall_score)
+  const reportUrl = `https://bizaudit.epsystems.dev/report/${record.id}`
+  const categoryScoresHtml = buildCategoryScoresHtml(record.scores)
+
+  // Show executive summary if available
+  const summarySection = aiReport?.executiveSummary
+    ? `<tr>
+        <td style="padding: 24px 0; border-bottom: 1px solid #e5e7eb;">
+          <div style="font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">Executive Summary</div>
+          <div style="font-size: 14px; color: #374151; line-height: 1.6;">${escapeHtml(aiReport.executiveSummary)}</div>
+        </td>
+      </tr>`
+    : ''
+
+  const categorySection = categoryScoresHtml
+    ? `<tr>
+        <td style="padding: 24px 0 0;">
+          <div style="font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">Your Category Scores</div>
+          ${categoryScoresHtml}
+        </td>
+      </tr>`
+    : ''
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Audit Report is Ready</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; background-color: #f3f4f6;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; background-color: #f3f4f6;">
+    <tr>
+      <td align="center" style="padding: 40px 16px;">
+        <table width="600" cellpadding="0" cellspacing="0" style="border-collapse: collapse; max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+
+          <!-- Header -->
+          <tr>
+            <td style="background-color: #0f172a; padding: 24px 32px;">
+              <div style="font-size: 20px; font-weight: 700; color: #ffffff;">BizAudit</div>
+              <div style="font-size: 13px; color: #94a3b8; margin-top: 4px;">Your ${escapeHtml(nicheLabel)} Audit Report</div>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding: 32px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+
+                <!-- Greeting -->
+                <tr>
+                  <td style="padding-bottom: 24px;">
+                    <div style="font-size: 16px; color: #111827; line-height: 1.6;">Hi ${escapeHtml(record.contact_name)},</div>
+                    <div style="font-size: 14px; color: #374151; line-height: 1.6; margin-top: 8px;">Your business operations audit is complete. Here are your results:</div>
+                  </td>
+                </tr>
+
+                <!-- Overall Score -->
+                <tr>
+                  <td style="padding: 24px 0; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb;">
+                    <div style="font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Overall Score</div>
+                    <table cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+                      <tr>
+                        <td>
+                          <span style="display: inline-block; background-color: ${scoreColor}; color: #ffffff; font-size: 28px; font-weight: 700; padding: 8px 20px; border-radius: 6px; letter-spacing: -0.5px;">${record.overall_score}/100</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                ${summarySection}
+
+                ${categorySection}
+
+                <!-- CTA Button -->
+                <tr>
+                  <td style="padding: 32px 0 0;">
+                    <table cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+                      <tr>
+                        <td style="border-radius: 6px; background-color: #f97316;">
+                          <a href="${reportUrl}" style="display: inline-block; padding: 14px 28px; font-size: 15px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 6px;">View Your Full Report &rarr;</a>
+                        </td>
+                      </tr>
+                    </table>
+                    <div style="font-size: 13px; color: #6b7280; margin-top: 12px;">Your report is available anytime at the link above.</div>
+                  </td>
+                </tr>
+
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f9fafb; padding: 16px 32px; border-top: 1px solid #e5e7eb;">
+              <div style="font-size: 12px; color: #9ca3af; text-align: center;">Sent by E&amp;P Systems &bull; <a href="https://epsystems.dev" style="color: #9ca3af;">epsystems.dev</a></div>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`
+}
+
 // --- Main handler ---
 
 Deno.serve(async (req: Request) => {
@@ -332,7 +442,7 @@ Deno.serve(async (req: Request) => {
           'Authorization': `Bearer ${RESEND_API_KEY}`,
         },
         body: JSON.stringify({
-          from: 'E&PSystems <onboarding@resend.dev>',
+          from: 'E&P Systems <engineering@epsystems.org>',
           to: [ADMIN_EMAIL],
           subject: `New Audit: ${record.contact_name} — ${nicheLabel} (${record.overall_score}/100)`,
           html: htmlBody,
@@ -349,6 +459,37 @@ Deno.serve(async (req: Request) => {
       console.error('Email send failed:', (emailErr as Error).message)
     }
 
+    // Send user email via Resend (EMAIL-02)
+    let userEmailSent = false
+    if (record.contact_email) {
+      try {
+        const userHtml = buildUserEmailHtml(record, aiReport)
+
+        const userRes = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${RESEND_API_KEY}`,
+          },
+          body: JSON.stringify({
+            from: 'E&P Systems <engineering@epsystems.org>',
+            to: [record.contact_email],
+            subject: `Your ${nicheLabel} Audit Results — ${record.overall_score}/100`,
+            html: userHtml,
+          }),
+        })
+
+        if (!userRes.ok) {
+          const errorBody = await userRes.text()
+          console.error('User email Resend error:', userRes.status, errorBody)
+        } else {
+          userEmailSent = true
+        }
+      } catch (userEmailErr) {
+        console.error('User email send failed:', (userEmailErr as Error).message)
+      }
+    }
+
     // Update email_status (best-effort — don't let this failure change the response)
     try {
       await supabaseAdmin
@@ -359,7 +500,7 @@ Deno.serve(async (req: Request) => {
       console.error('email_status update failed:', (statusErr as Error).message)
     }
 
-    return new Response(JSON.stringify({ emailStatus }), { status: 200 })
+    return new Response(JSON.stringify({ emailStatus, userEmailSent }), { status: 200 })
   } catch (outerErr) {
     // Catch-all: never return non-200 to the Database Webhook
     console.error('Unhandled error in send-notification:', (outerErr as Error).message)

@@ -119,7 +119,7 @@ export default function AuditForm() {
     if (currentStep === 8) {
       // Generate report
       const scores = computeScores(state);
-      const auditId = "audit-" + Date.now();
+      const auditId = "demo-" + Date.now();
       localStorage.setItem(STORAGE_KEY + "_scores", JSON.stringify(scores));
       localStorage.setItem(STORAGE_KEY + "_form", JSON.stringify(state));
       navigate("/generating", { state: { auditId, scores, formState: state } });
