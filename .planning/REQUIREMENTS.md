@@ -84,41 +84,41 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| I18N-01 | — | Pending |
-| I18N-02 | — | Pending |
-| I18N-03 | — | Pending |
-| I18N-04 | — | Pending |
-| I18N-05 | — | Pending |
-| I18N-06 | — | Pending |
-| TRANS-01 | — | Pending |
-| TRANS-02 | — | Pending |
-| TRANS-03 | — | Pending |
-| TRANS-04 | — | Pending |
-| TRANS-05 | — | Pending |
-| TRANS-06 | — | Pending |
-| SUBN-01 | — | Pending |
-| SUBN-02 | — | Pending |
-| SUBN-03 | — | Pending |
-| SUBN-04 | — | Pending |
-| SUBN-05 | — | Pending |
-| SUBN-06 | — | Pending |
-| SUBN-07 | — | Pending |
-| SUBN-08 | — | Pending |
-| SCORE-01 | — | Pending |
-| SCORE-02 | — | Pending |
-| SCORE-03 | — | Pending |
-| AI-01 | — | Pending |
-| AI-02 | — | Pending |
-| AI-03 | — | Pending |
-| DB-01 | — | Pending |
-| DB-02 | — | Pending |
-| DB-03 | — | Pending |
+| I18N-01 | Phase 6 | Pending |
+| I18N-02 | Phase 6 | Pending |
+| I18N-03 | Phase 6 | Pending |
+| I18N-04 | Phase 6 | Pending |
+| I18N-05 | Phase 6 | Pending |
+| I18N-06 | Phase 6 | Pending |
+| TRANS-01 | Phase 11 | Pending |
+| TRANS-02 | Phase 7 | Pending |
+| TRANS-03 | Phase 7 | Pending |
+| TRANS-04 | Phase 11 | Pending |
+| TRANS-05 | Phase 11 | Pending |
+| TRANS-06 | Phase 7 | Pending |
+| SUBN-01 | Phase 8 | Pending |
+| SUBN-02 | Phase 8 | Pending |
+| SUBN-03 | Phase 8 | Pending |
+| SUBN-04 | Phase 8 | Pending |
+| SUBN-05 | Phase 8 | Pending |
+| SUBN-06 | Phase 8 | Pending |
+| SUBN-07 | Phase 8 | Pending |
+| SUBN-08 | Phase 8 | Pending |
+| SCORE-01 | Phase 9 | Pending |
+| SCORE-02 | Phase 9 | Pending |
+| SCORE-03 | Phase 9 | Pending |
+| AI-01 | Phase 11 | Pending |
+| AI-02 | Phase 11 | Pending |
+| AI-03 | Phase 11 | Pending |
+| DB-01 | Phase 10 | Pending |
+| DB-02 | Phase 10 | Pending |
+| DB-03 | Phase 10 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 29 total
-- Mapped to phases: 0
-- Unmapped: 29
+- Mapped to phases: 29
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-21*
-*Last updated: 2026-02-21 after initial definition*
+*Last updated: 2026-02-21 — traceability complete, all 29 requirements mapped to Phases 6-11*
