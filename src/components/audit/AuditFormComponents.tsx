@@ -1,5 +1,10 @@
 import { AuditFormState, AuditAction } from "@/types/audit";
 
+export interface SelectOption {
+  value: string;   // English scoring key — always stored in state
+  label: string;   // Displayed text — changes per language in Phase 7
+}
+
 interface StepProps {
   state: AuditFormState;
   dispatch: React.Dispatch<AuditAction>;
@@ -34,7 +39,7 @@ export function StyledSelect({
 }: {
   value: string;
   onChange: (v: string) => void;
-  options: string[];
+  options: SelectOption[];
   placeholder?: string;
 }) {
   return (
@@ -45,8 +50,8 @@ export function StyledSelect({
     >
       <option value="">{placeholder}</option>
       {options.map((opt) => (
-        <option key={opt} value={opt}>
-          {opt}
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
         </option>
       ))}
     </select>
@@ -103,27 +108,27 @@ export function MultiCheckbox({
   onChange,
   columns = 2,
 }: {
-  options: string[];
+  options: SelectOption[];
   selected: string[];
   onChange: (selected: string[]) => void;
   columns?: number;
 }) {
-  const toggle = (opt: string) => {
-    if (selected.includes(opt)) {
-      onChange(selected.filter((s) => s !== opt));
+  const toggle = (value: string) => {
+    if (selected.includes(value)) {
+      onChange(selected.filter((s) => s !== value));
     } else {
-      onChange([...selected, opt]);
+      onChange([...selected, value]);
     }
   };
 
   return (
     <div className={`grid gap-2 ${columns === 2 ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"}`}>
       {options.map((opt) => {
-        const isSelected = selected.includes(opt);
+        const isSelected = selected.includes(opt.value);
         return (
           <label
-            key={opt}
-            onClick={() => toggle(opt)}
+            key={opt.value}
+            onClick={() => toggle(opt.value)}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-all text-sm ${
               isSelected
                 ? "border-[hsl(var(--coral))] bg-[hsl(var(--coral)_/_0.05)]"
@@ -143,7 +148,7 @@ export function MultiCheckbox({
                 </svg>
               )}
             </div>
-            <span className={isSelected ? "font-medium text-foreground" : "text-foreground"}>{opt}</span>
+            <span className={isSelected ? "font-medium text-foreground" : "text-foreground"}>{opt.label}</span>
           </label>
         );
       })}
@@ -202,5 +207,9 @@ export function StepHeader({ step, title, subtitle }: { step: number; title: str
     </div>
   );
 }
+
+/** Convert plain string arrays to SelectOption[] (Phase 6 bridge — value === label in English) */
+export const toOptions = (strings: string[]): SelectOption[] =>
+  strings.map((s) => ({ value: s, label: s }));
 
 export type { StepProps };
