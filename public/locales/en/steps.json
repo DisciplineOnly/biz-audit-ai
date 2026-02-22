@@ -1,24 +1,113 @@
 {
   "step1": {
     "title": "Tell Us About Your Business",
-    "subtitle": "Basic info to personalize your audit report"
+    "subtitle": "Basic info to personalize your audit report",
+    "fields": {
+      "businessName": { "label": "Business Name", "placeholder": "ABC Plumbing & Heating" },
+      "contactName": { "label": "Your Name", "placeholder": "John Smith" },
+      "email": { "label": "Email Address", "placeholder": "john@abcplumbing.com" },
+      "phone": { "label": "Phone Number", "placeholder": "(555) 123-4567" }
+    },
+    "hs": {
+      "sectionHeader": "About Your Trade Business",
+      "industry": { "label": "Industry / Trade" },
+      "employeeCount": { "label": "Number of Employees (including techs)" },
+      "annualRevenue": { "label": "Annual Revenue" },
+      "yearsInBusiness": { "label": "Years in Business" },
+      "serviceArea": { "label": "Service Area", "hint": "How broad is your coverage?" }
+    },
+    "re": {
+      "sectionHeader": "About Your Real Estate Business",
+      "role": { "label": "Your Role" },
+      "teamSize": { "label": "Team Size" },
+      "transactionVolume": { "label": "Annual Transaction Volume" },
+      "annualGCI": { "label": "Annual GCI (Gross Commission Income)" },
+      "yearsInBusiness": { "label": "Years in Business" },
+      "primaryMarket": { "label": "Primary Market Type" }
+    }
   },
   "step2": {
     "title": "Your Technology & Software Stack",
-    "subtitle": "Let's understand the tools powering your business today"
+    "subtitle": "Let's understand the tools powering your business today",
+    "fields": {
+      "primaryCRM": {
+        "hs": { "label": "Primary CRM / Field Service Software" },
+        "re": { "label": "Primary CRM" },
+        "placeholder": "Select your primary software..."
+      },
+      "crmSatisfaction": {
+        "hs": { "label": "How satisfied are you with your current software?" },
+        "re": { "label": "How satisfied are you with your current CRM?" },
+        "hint": "1 = Very Unsatisfied, 5 = Very Satisfied"
+      },
+      "toolsUsed": {
+        "label": "Which of these tools do you currently use?",
+        "hint": "Select all that apply"
+      },
+      "techFrustrations": {
+        "label": "What's your biggest frustration with your current tech setup?",
+        "hint": "Optional \u2014 be as specific as you'd like",
+        "placeholder": "e.g., Our software doesn't integrate with QuickBooks, scheduling is still done on a whiteboard..."
+      }
+    }
   },
   "step3": {
     "title": "Lead Funnel & Marketing",
-    "subtitle": "How you attract, respond to, and convert new leads"
+    "subtitle": "How you attract, respond to, and convert new leads",
+    "fields": {
+      "leadSources": {
+        "label": "Where do your leads come from?",
+        "hint": "Select all that apply"
+      },
+      "responseSpeed": {
+        "hs": { "label": "When a new lead calls or submits a form, how quickly do they get a response?" },
+        "re": { "label": "When a new lead comes in, how fast does an agent respond?" }
+      },
+      "leadDistribution": { "label": "How do you distribute leads to agents?" },
+      "leadTracking": {
+        "hs": { "label": "How do you track leads from first contact to booked job?" },
+        "re": { "label": "How do you track leads from inquiry to appointment?" }
+      },
+      "conversionRate": {
+        "hs": { "label": "Do you know your lead-to-booked-job conversion rate?" },
+        "re": { "label": "What percentage of your internet leads convert to appointments?" }
+      },
+      "missedCallHandling": { "label": "How do you handle missed calls?" },
+      "touchesIn7Days": { "label": "How many touches (calls, texts, emails) does a new lead get in the first 7 days?" },
+      "googleReviews": {
+        "hs": { "label": "Approximately how many Google reviews does your business have?" },
+        "re": { "label": "Approximately how many Google reviews does your team/brokerage have?" }
+      },
+      "reviewAutomation": {
+        "hs": { "label": "Do you have an automated process to request reviews after completed jobs?" },
+        "re": { "label": "Do you have an automated review request process after closing?" }
+      }
+    }
   },
   "step4": {
     "hs": {
       "title": "Scheduling & Dispatching",
-      "subtitle": "How you manage your calendar, crew, and daily operations"
+      "subtitle": "How you manage your calendar, crew, and daily operations",
+      "fields": {
+        "schedulingMethod": { "label": "How do you schedule jobs?" },
+        "dispatchMethod": { "label": "How are jobs dispatched to technicians?" },
+        "routeOptimization": { "label": "Do you use route optimization for technician travel?" },
+        "realTimeTracking": { "label": "Can you see real-time technician locations?" },
+        "capacityPlanning": { "label": "How do you handle capacity planning and overbooking prevention?" },
+        "emergencyHandling": { "label": "How do you handle emergency/same-day service calls?" }
+      }
     },
     "re": {
       "title": "Lead Management & Follow-Up",
-      "subtitle": "How you nurture leads from inquiry through closing"
+      "subtitle": "How you nurture leads from inquiry through closing",
+      "fields": {
+        "followUpPlan": { "label": "Do you have a defined lead follow-up plan (call/text/email sequence)?" },
+        "nurtureDuration": { "label": "How long do you nurture leads before giving up?" },
+        "automatedDrip": { "label": "Do you use automated drip email/text sequences?" },
+        "leadTemperatureTracking": { "label": "How do you track which leads are hot/warm/cold?" },
+        "activityLogging": { "label": "Do agents log their activities (calls, texts, showings) in the CRM?" },
+        "coldLeadHandling": { "label": "How do you handle internet leads that don't respond to initial outreach?" }
+      }
     }
   },
   "step5": {
