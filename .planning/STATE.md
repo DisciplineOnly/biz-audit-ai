@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-21)
 
 **Core value:** Business owners complete the audit and receive a personalized, AI-driven analysis that makes them want to book a consultation
-**Current focus:** Phase 6 — i18n Infrastructure and Routing (v1.1 start)
+**Current focus:** Phase 7 — English Translation Pass (v1.1)
 
 ## Current Position
 
-Phase: 6 of 11 (i18n Infrastructure and Routing)
-Plan: 3 of 4 complete (06-01, 06-02, 06-03 done, next: 06-04)
-Status: Executing
-Last activity: 2026-02-21 — 06-03 page navigation and language toggle complete
+Phase: 7 of 11 (English Translation Pass)
+Plan: 0 of ? complete (Phase 6 complete, next: 07-01)
+Status: Phase 6 Complete
+Last activity: 2026-02-22 — 06-04 Phase 6 verification auto-approved
 
-Progress: [██░░░░░░░░] 12% (v1.1) — 3/24 plans
+Progress: [██░░░░░░░░] 17% (v1.1) — 4/24 plans
 
 ## Performance Metrics
 
@@ -40,6 +40,7 @@ Progress: [██░░░░░░░░] 12% (v1.1) — 3/24 plans
 | 6 | 06-01 | 8min | 2 | 10 |
 | 6 | 06-02 | 8min | 2 | 9 |
 | 6 | 06-03 | 8min | 2 | 6 |
+| 6 | 06-04 | 2min | 1 | 1 |
 
 ## Accumulated Context
 
@@ -53,6 +54,8 @@ Key v1.1 architectural decisions (from research):
 - `{value, label}` API for StyledSelect/MultiCheckbox in Phase 6 — DONE (06-02), toOptions() bridge in place
 - LanguageToggle placed in header with conditional render (Step 1 only in AuditForm) — DONE (06-03)
 - NotFound.tsx converted from `<a href>` to `<Link to>` for prefix-aware navigation — DONE (06-03)
+- /bg/* redirect to /* via LangLayout useEffect — DONE (06-04), Bulgarian default has no URL prefix
+- Phase 6 verification auto-approved — DONE (06-04), build passes, tests pass, all infrastructure confirmed
 - Config-driven sub-niche branching (TypeScript discriminated union) — never boolean flags
 - Phase 9 (scoring weights) can partially overlap with Phase 8 — same config schema
 
@@ -69,6 +72,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-21
-Stopped at: Completed 06-03-PLAN.md
+Last session: 2026-02-22
+Stopped at: Completed 06-04-PLAN.md (Phase 6 complete)
 Resume file: None

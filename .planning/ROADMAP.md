@@ -23,7 +23,7 @@
 
 **Milestone Goal:** Bulgarian language support with market-adapted content and sub-niche specialization of form questions across both languages.
 
-- [ ] **Phase 6: i18n Infrastructure and Routing** — Install i18next, wire `/bg/*` URL routing, fix component value/label API before any translation work
+- [x] **Phase 6: i18n Infrastructure and Routing** — Install i18next, wire `/bg/*` URL routing, fix component value/label API before any translation work
 - [ ] **Phase 7: English Translation Pass** — Extract all hardcoded strings into English JSON namespaces; verify zero regressions
 - [ ] **Phase 8: Sub-Niche Config and Selection UI** — Config-driven option branching for all 17 sub-niches; selection card grid in Step 1
 - [ ] **Phase 9: Scoring Engine Sub-Niche Weights** — Config-driven weight overrides per sub-niche group; scoring identical across languages
@@ -46,8 +46,8 @@
 Plans:
 - [x] 06-01-PLAN.md — i18next setup, URL routing, LangLayout, useLang hook
 - [x] 06-02-PLAN.md — Value/label refactor for StyledSelect and MultiCheckbox
-- [ ] 06-03-PLAN.md — Navigation prefix updates and LanguageToggle component
-- [ ] 06-04-PLAN.md — Human verification checkpoint
+- [x] 06-03-PLAN.md — Navigation prefix updates and LanguageToggle component
+- [x] 06-04-PLAN.md — Human verification checkpoint
 
 ### Phase 7: English Translation Pass
 **Goal**: Every hardcoded string in the app is extracted into English JSON namespaces and the English experience is byte-for-byte identical to pre-v1.1
@@ -112,7 +112,7 @@ Plans:
 | 3. Email and Webhook | v1.0 | 3/3 | Complete | 2026-02-20 |
 | 4. Rate Limiting | v1.0 | 2/2 | Complete | 2026-02-20 |
 | 5. Frontend Integration | v1.0 | 3/3 | Complete | 2026-02-20 |
-| 6. i18n Infrastructure and Routing | v1.1 | 0/4 | In Progress | - |
+| 6. i18n Infrastructure and Routing | v1.1 | 4/4 | Complete | 2026-02-22 |
 | 7. English Translation Pass | v1.1 | 0/? | Not started | - |
 | 8. Sub-Niche Config and Selection UI | v1.1 | 0/? | Not started | - |
 | 9. Scoring Engine Sub-Niche Weights | v1.1 | 0/? | Not started | - |
