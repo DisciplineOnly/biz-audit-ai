@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { FormField, StepHeader, StyledInput, StyledSelect, StepProps, toOptions } from "./AuditFormComponents";
 
 const HS_INDUSTRIES = toOptions([
@@ -16,6 +17,7 @@ const RE_GCI = toOptions(["Under $250K", "$250K–$500K", "$500K–$1M", "$1M–
 const RE_MARKETS = toOptions(["Residential resale", "New construction", "Luxury", "Commercial", "Mixed"]);
 
 export function Step1BusinessInfo({ state, dispatch, isHS }: StepProps) {
+  const { t } = useTranslation('steps');
   const { step1 } = state;
   const update = (payload: Partial<typeof step1>) => dispatch({ type: "UPDATE_STEP1", payload });
 
@@ -23,55 +25,55 @@ export function Step1BusinessInfo({ state, dispatch, isHS }: StepProps) {
     <div>
       <StepHeader
         step={1}
-        title="Tell Us About Your Business"
-        subtitle="Basic info to personalize your audit report"
+        title={t('step1.title')}
+        subtitle={t('step1.subtitle')}
       />
 
       <div className="space-y-5">
         <div className="grid sm:grid-cols-2 gap-5">
-          <FormField label="Business Name" required>
+          <FormField label={t('step1.fields.businessName.label')} required>
             <StyledInput
               value={step1.businessName}
               onChange={(v) => update({ businessName: v })}
-              placeholder="ABC Plumbing & Heating"
+              placeholder={t('step1.fields.businessName.placeholder')}
             />
           </FormField>
 
-          <FormField label="Your Name" required>
+          <FormField label={t('step1.fields.contactName.label')} required>
             <StyledInput
               value={step1.contactName}
               onChange={(v) => update({ contactName: v })}
-              placeholder="John Smith"
+              placeholder={t('step1.fields.contactName.placeholder')}
             />
           </FormField>
 
-          <FormField label="Email Address" required>
+          <FormField label={t('step1.fields.email.label')} required>
             <StyledInput
               type="email"
               value={step1.email}
               onChange={(v) => update({ email: v })}
-              placeholder="john@abcplumbing.com"
+              placeholder={t('step1.fields.email.placeholder')}
             />
           </FormField>
 
-          <FormField label="Phone Number">
+          <FormField label={t('step1.fields.phone.label')}>
             <StyledInput
               type="tel"
               value={step1.phone}
               onChange={(v) => update({ phone: v })}
-              placeholder="(555) 123-4567"
+              placeholder={t('step1.fields.phone.placeholder')}
             />
           </FormField>
         </div>
 
         <div className="border-t border-border pt-5">
           <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4">
-            {isHS ? "About Your Trade Business" : "About Your Real Estate Business"}
+            {isHS ? t('step1.hs.sectionHeader') : t('step1.re.sectionHeader')}
           </h3>
 
           {isHS ? (
             <div className="grid sm:grid-cols-2 gap-5">
-              <FormField label="Industry / Trade" required>
+              <FormField label={t('step1.hs.industry.label')} required>
                 <StyledSelect
                   value={step1.industry || ""}
                   onChange={(v) => update({ industry: v })}
@@ -79,7 +81,7 @@ export function Step1BusinessInfo({ state, dispatch, isHS }: StepProps) {
                 />
               </FormField>
 
-              <FormField label="Number of Employees (including techs)">
+              <FormField label={t('step1.hs.employeeCount.label')}>
                 <StyledSelect
                   value={step1.employeeCount || ""}
                   onChange={(v) => update({ employeeCount: v })}
@@ -87,7 +89,7 @@ export function Step1BusinessInfo({ state, dispatch, isHS }: StepProps) {
                 />
               </FormField>
 
-              <FormField label="Annual Revenue">
+              <FormField label={t('step1.hs.annualRevenue.label')}>
                 <StyledSelect
                   value={step1.annualRevenue || ""}
                   onChange={(v) => update({ annualRevenue: v })}
@@ -95,7 +97,7 @@ export function Step1BusinessInfo({ state, dispatch, isHS }: StepProps) {
                 />
               </FormField>
 
-              <FormField label="Years in Business">
+              <FormField label={t('step1.hs.yearsInBusiness.label')}>
                 <StyledSelect
                   value={step1.yearsInBusiness || ""}
                   onChange={(v) => update({ yearsInBusiness: v })}
@@ -103,7 +105,7 @@ export function Step1BusinessInfo({ state, dispatch, isHS }: StepProps) {
                 />
               </FormField>
 
-              <FormField label="Service Area" hint="How broad is your coverage?">
+              <FormField label={t('step1.hs.serviceArea.label')} hint={t('step1.hs.serviceArea.hint')}>
                 <StyledSelect
                   value={step1.serviceArea || ""}
                   onChange={(v) => update({ serviceArea: v })}
@@ -113,7 +115,7 @@ export function Step1BusinessInfo({ state, dispatch, isHS }: StepProps) {
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 gap-5">
-              <FormField label="Your Role" required>
+              <FormField label={t('step1.re.role.label')} required>
                 <StyledSelect
                   value={step1.role || ""}
                   onChange={(v) => update({ role: v })}
@@ -121,7 +123,7 @@ export function Step1BusinessInfo({ state, dispatch, isHS }: StepProps) {
                 />
               </FormField>
 
-              <FormField label="Team Size">
+              <FormField label={t('step1.re.teamSize.label')}>
                 <StyledSelect
                   value={step1.teamSize || ""}
                   onChange={(v) => update({ teamSize: v })}
@@ -129,7 +131,7 @@ export function Step1BusinessInfo({ state, dispatch, isHS }: StepProps) {
                 />
               </FormField>
 
-              <FormField label="Annual Transaction Volume">
+              <FormField label={t('step1.re.transactionVolume.label')}>
                 <StyledSelect
                   value={step1.transactionVolume || ""}
                   onChange={(v) => update({ transactionVolume: v })}
@@ -137,7 +139,7 @@ export function Step1BusinessInfo({ state, dispatch, isHS }: StepProps) {
                 />
               </FormField>
 
-              <FormField label="Annual GCI (Gross Commission Income)">
+              <FormField label={t('step1.re.annualGCI.label')}>
                 <StyledSelect
                   value={step1.annualGCI || ""}
                   onChange={(v) => update({ annualGCI: v })}
@@ -145,7 +147,7 @@ export function Step1BusinessInfo({ state, dispatch, isHS }: StepProps) {
                 />
               </FormField>
 
-              <FormField label="Years in Business">
+              <FormField label={t('step1.re.yearsInBusiness.label')}>
                 <StyledSelect
                   value={step1.yearsInBusiness || ""}
                   onChange={(v) => update({ yearsInBusiness: v })}
@@ -153,7 +155,7 @@ export function Step1BusinessInfo({ state, dispatch, isHS }: StepProps) {
                 />
               </FormField>
 
-              <FormField label="Primary Market Type">
+              <FormField label={t('step1.re.primaryMarket.label')}>
                 <StyledSelect
                   value={step1.primaryMarket || ""}
                   onChange={(v) => update({ primaryMarket: v })}

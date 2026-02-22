@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import {
   FormField, StepHeader, StyledSelect, MultiCheckbox, StepProps, toOptions
 } from "./AuditFormComponents";
@@ -62,6 +63,7 @@ const RE_REVIEW_AUTOMATION = toOptions([
 ]);
 
 export function Step3LeadFunnel({ state, dispatch, isHS }: StepProps) {
+  const { t } = useTranslation('steps');
   const { step3 } = state;
   const update = (payload: Partial<typeof step3>) => dispatch({ type: "UPDATE_STEP3", payload });
 
@@ -69,14 +71,14 @@ export function Step3LeadFunnel({ state, dispatch, isHS }: StepProps) {
     <div>
       <StepHeader
         step={3}
-        title="Lead Funnel & Marketing"
-        subtitle="How you attract, respond to, and convert new leads"
+        title={t('step3.title')}
+        subtitle={t('step3.subtitle')}
       />
 
       <div className="space-y-7">
         <FormField
-          label="Where do your leads come from?"
-          hint="Select all that apply"
+          label={t('step3.fields.leadSources.label')}
+          hint={t('step3.fields.leadSources.hint')}
           required
         >
           <MultiCheckbox
@@ -88,8 +90,8 @@ export function Step3LeadFunnel({ state, dispatch, isHS }: StepProps) {
 
         <FormField
           label={isHS
-            ? "When a new lead calls or submits a form, how quickly do they get a response?"
-            : "When a new lead comes in, how fast does an agent respond?"
+            ? t('step3.fields.responseSpeed.hs.label')
+            : t('step3.fields.responseSpeed.re.label')
           }
           required
         >
@@ -101,7 +103,7 @@ export function Step3LeadFunnel({ state, dispatch, isHS }: StepProps) {
         </FormField>
 
         {!isHS && (
-          <FormField label="How do you distribute leads to agents?">
+          <FormField label={t('step3.fields.leadDistribution.label')}>
             <StyledSelect
               value={step3.leadDistribution || ""}
               onChange={(v) => update({ leadDistribution: v })}
@@ -112,8 +114,8 @@ export function Step3LeadFunnel({ state, dispatch, isHS }: StepProps) {
 
         <FormField
           label={isHS
-            ? "How do you track leads from first contact to booked job?"
-            : "How do you track leads from inquiry to appointment?"
+            ? t('step3.fields.leadTracking.hs.label')
+            : t('step3.fields.leadTracking.re.label')
           }
         >
           <StyledSelect
@@ -125,8 +127,8 @@ export function Step3LeadFunnel({ state, dispatch, isHS }: StepProps) {
 
         <FormField
           label={isHS
-            ? "Do you know your lead-to-booked-job conversion rate?"
-            : "What percentage of your internet leads convert to appointments?"
+            ? t('step3.fields.conversionRate.hs.label')
+            : t('step3.fields.conversionRate.re.label')
           }
         >
           <StyledSelect
@@ -137,7 +139,7 @@ export function Step3LeadFunnel({ state, dispatch, isHS }: StepProps) {
         </FormField>
 
         {isHS ? (
-          <FormField label="How do you handle missed calls?">
+          <FormField label={t('step3.fields.missedCallHandling.label')}>
             <StyledSelect
               value={step3.missedCallHandling || ""}
               onChange={(v) => update({ missedCallHandling: v })}
@@ -145,7 +147,7 @@ export function Step3LeadFunnel({ state, dispatch, isHS }: StepProps) {
             />
           </FormField>
         ) : (
-          <FormField label="How many touches (calls, texts, emails) does a new lead get in the first 7 days?">
+          <FormField label={t('step3.fields.touchesIn7Days.label')}>
             <StyledSelect
               value={step3.touchesIn7Days || ""}
               onChange={(v) => update({ touchesIn7Days: v })}
@@ -156,8 +158,8 @@ export function Step3LeadFunnel({ state, dispatch, isHS }: StepProps) {
 
         <FormField
           label={isHS
-            ? "Approximately how many Google reviews does your business have?"
-            : "Approximately how many Google reviews does your team/brokerage have?"
+            ? t('step3.fields.googleReviews.hs.label')
+            : t('step3.fields.googleReviews.re.label')
           }
         >
           <StyledSelect
@@ -169,8 +171,8 @@ export function Step3LeadFunnel({ state, dispatch, isHS }: StepProps) {
 
         <FormField
           label={isHS
-            ? "Do you have an automated process to request reviews after completed jobs?"
-            : "Do you have an automated review request process after closing?"
+            ? t('step3.fields.reviewAutomation.hs.label')
+            : t('step3.fields.reviewAutomation.re.label')
           }
         >
           <StyledSelect

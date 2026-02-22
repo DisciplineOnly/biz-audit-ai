@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { FormField, StepHeader, StyledSelect, StepProps, toOptions } from "./AuditFormComponents";
 
 // Home Services options
@@ -40,6 +41,7 @@ const RE_COLD = toOptions([
 ]);
 
 export function Step4Scheduling({ state, dispatch, isHS }: StepProps) {
+  const { t } = useTranslation('steps');
   const { step4 } = state;
   const update = (payload: Partial<typeof step4>) => dispatch({ type: "UPDATE_STEP4", payload });
 
@@ -48,46 +50,46 @@ export function Step4Scheduling({ state, dispatch, isHS }: StepProps) {
       <div>
         <StepHeader
           step={4}
-          title="Scheduling & Dispatching"
-          subtitle="How you manage your calendar, crew, and daily operations"
+          title={t('step4.hs.title')}
+          subtitle={t('step4.hs.subtitle')}
         />
         <div className="space-y-7">
-          <FormField label="How do you schedule jobs?">
+          <FormField label={t('step4.hs.fields.schedulingMethod.label')}>
             <StyledSelect
               value={step4.schedulingMethod || ""}
               onChange={(v) => update({ schedulingMethod: v })}
               options={HS_SCHEDULING}
             />
           </FormField>
-          <FormField label="How are jobs dispatched to technicians?">
+          <FormField label={t('step4.hs.fields.dispatchMethod.label')}>
             <StyledSelect
               value={step4.dispatchMethod || ""}
               onChange={(v) => update({ dispatchMethod: v })}
               options={HS_DISPATCH}
             />
           </FormField>
-          <FormField label="Do you use route optimization for technician travel?">
+          <FormField label={t('step4.hs.fields.routeOptimization.label')}>
             <StyledSelect
               value={step4.routeOptimization || ""}
               onChange={(v) => update({ routeOptimization: v })}
               options={HS_ROUTE}
             />
           </FormField>
-          <FormField label="Can you see real-time technician locations?">
+          <FormField label={t('step4.hs.fields.realTimeTracking.label')}>
             <StyledSelect
               value={step4.realTimeTracking || ""}
               onChange={(v) => update({ realTimeTracking: v })}
               options={HS_TRACKING}
             />
           </FormField>
-          <FormField label="How do you handle capacity planning and overbooking prevention?">
+          <FormField label={t('step4.hs.fields.capacityPlanning.label')}>
             <StyledSelect
               value={step4.capacityPlanning || ""}
               onChange={(v) => update({ capacityPlanning: v })}
               options={HS_CAPACITY}
             />
           </FormField>
-          <FormField label="How do you handle emergency/same-day service calls?">
+          <FormField label={t('step4.hs.fields.emergencyHandling.label')}>
             <StyledSelect
               value={step4.emergencyHandling || ""}
               onChange={(v) => update({ emergencyHandling: v })}
@@ -103,46 +105,46 @@ export function Step4Scheduling({ state, dispatch, isHS }: StepProps) {
     <div>
       <StepHeader
         step={4}
-        title="Lead Management & Follow-Up"
-        subtitle="How you nurture leads from inquiry through closing"
+        title={t('step4.re.title')}
+        subtitle={t('step4.re.subtitle')}
       />
       <div className="space-y-7">
-        <FormField label="Do you have a defined lead follow-up plan (call/text/email sequence)?">
+        <FormField label={t('step4.re.fields.followUpPlan.label')}>
           <StyledSelect
             value={step4.followUpPlan || ""}
             onChange={(v) => update({ followUpPlan: v })}
             options={RE_FOLLOW_UP}
           />
         </FormField>
-        <FormField label="How long do you nurture leads before giving up?">
+        <FormField label={t('step4.re.fields.nurtureDuration.label')}>
           <StyledSelect
             value={step4.nurtureDuration || ""}
             onChange={(v) => update({ nurtureDuration: v })}
             options={RE_NURTURE}
           />
         </FormField>
-        <FormField label="Do you use automated drip email/text sequences?">
+        <FormField label={t('step4.re.fields.automatedDrip.label')}>
           <StyledSelect
             value={step4.automatedDrip || ""}
             onChange={(v) => update({ automatedDrip: v })}
             options={RE_DRIP}
           />
         </FormField>
-        <FormField label="How do you track which leads are hot/warm/cold?">
+        <FormField label={t('step4.re.fields.leadTemperatureTracking.label')}>
           <StyledSelect
             value={step4.leadTemperatureTracking || ""}
             onChange={(v) => update({ leadTemperatureTracking: v })}
             options={RE_TEMP}
           />
         </FormField>
-        <FormField label="Do agents log their activities (calls, texts, showings) in the CRM?">
+        <FormField label={t('step4.re.fields.activityLogging.label')}>
           <StyledSelect
             value={step4.activityLogging || ""}
             onChange={(v) => update({ activityLogging: v })}
             options={RE_LOGGING}
           />
         </FormField>
-        <FormField label="How do you handle internet leads that don't respond to initial outreach?">
+        <FormField label={t('step4.re.fields.coldLeadHandling.label')}>
           <StyledSelect
             value={step4.coldLeadHandling || ""}
             onChange={(v) => update({ coldLeadHandling: v })}

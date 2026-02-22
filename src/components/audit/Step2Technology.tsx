@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import {
   FormField, StepHeader, StyledSelect, MultiCheckbox,
   StyledTextarea, RatingButtons, StepProps, toOptions
@@ -32,6 +33,7 @@ const RE_TOOLS = toOptions([
 ]);
 
 export function Step2Technology({ state, dispatch, isHS }: StepProps) {
+  const { t } = useTranslation('steps');
   const { step2 } = state;
   const update = (payload: Partial<typeof step2>) => dispatch({ type: "UPDATE_STEP2", payload });
 
@@ -39,24 +41,24 @@ export function Step2Technology({ state, dispatch, isHS }: StepProps) {
     <div>
       <StepHeader
         step={2}
-        title="Your Technology & Software Stack"
-        subtitle="Let's understand the tools powering your business today"
+        title={t('step2.title')}
+        subtitle={t('step2.subtitle')}
       />
 
       <div className="space-y-7">
-        <FormField label={isHS ? "Primary CRM / Field Service Software" : "Primary CRM"} required>
+        <FormField label={isHS ? t('step2.fields.primaryCRM.hs.label') : t('step2.fields.primaryCRM.re.label')} required>
           <StyledSelect
             value={step2.primaryCRM}
             onChange={(v) => update({ primaryCRM: v })}
             options={isHS ? HS_CRMS : RE_CRMS}
-            placeholder="Select your primary software..."
+            placeholder={t('step2.fields.primaryCRM.placeholder')}
           />
         </FormField>
 
         <FormField
-          label={`How satisfied are you with your current ${isHS ? "software" : "CRM"}?`}
+          label={isHS ? t('step2.fields.crmSatisfaction.hs.label') : t('step2.fields.crmSatisfaction.re.label')}
           required
-          hint="1 = Very Unsatisfied, 5 = Very Satisfied"
+          hint={t('step2.fields.crmSatisfaction.hint')}
         >
           <RatingButtons
             value={step2.crmSatisfaction}
@@ -65,8 +67,8 @@ export function Step2Technology({ state, dispatch, isHS }: StepProps) {
         </FormField>
 
         <FormField
-          label="Which of these tools do you currently use?"
-          hint="Select all that apply"
+          label={t('step2.fields.toolsUsed.label')}
+          hint={t('step2.fields.toolsUsed.hint')}
         >
           <MultiCheckbox
             options={isHS ? HS_TOOLS : RE_TOOLS}
@@ -76,13 +78,13 @@ export function Step2Technology({ state, dispatch, isHS }: StepProps) {
         </FormField>
 
         <FormField
-          label="What's your biggest frustration with your current tech setup?"
-          hint="Optional — be as specific as you'd like"
+          label={t('step2.fields.techFrustrations.label')}
+          hint={t('step2.fields.techFrustrations.hint')}
         >
           <StyledTextarea
             value={step2.techFrustrations}
             onChange={(v) => update({ techFrustrations: v })}
-            placeholder="e.g., Our software doesn't integrate with QuickBooks, scheduling is still done on a whiteboard..."
+            placeholder={t('step2.fields.techFrustrations.placeholder')}
           />
         </FormField>
       </div>
