@@ -105,5 +105,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Phase 8 complete, transitioning to Phase 9
-Resume file: .planning/ROADMAP.md (Phase 9 section)
+Stopped at: Phase 9 context gathered
+Resume file: .planning/phases/09-scoring-engine-sub-niche-weights/09-CONTEXT.md
