@@ -286,3 +286,79 @@ export function getSubNicheOptions(subNiche: SubNiche): SubNicheOptions {
   const group = getSubNicheGroup(subNiche);
   return SUB_NICHE_OPTIONS[group];
 }
+
+/**
+ * Weight overrides for scoring categories per sub-niche group.
+ * All 7 values must sum to 1.0. Only groups with meaningfully
+ * different priorities from the base weights get an entry.
+ *
+ * Base weights (used when no sub-niche or no override exists):
+ *   technology: 0.10, leads: 0.20, scheduling: 0.15,
+ *   communication: 0.10, followUp: 0.15, operations: 0.15, financial: 0.15
+ */
+export interface SubNicheWeights {
+  technology: number;
+  leads: number;
+  scheduling: number;
+  communication: number;
+  followUp: number;
+  operations: number;
+  financial: number;
+}
+
+/**
+ * Research-driven weight overrides per sub-niche group.
+ * Only groups with meaningfully different priorities from base weights are listed.
+ * Unlisted groups (e.g., residential_sales) use the base weights in scoring.ts.
+ */
+export const SUB_NICHE_WEIGHTS: Partial<Record<SubNicheGroup, SubNicheWeights>> = {
+  // HS Reactive: emergency-driven — scheduling/dispatch is the core competitive advantage
+  reactive: {
+    technology: 0.10, leads: 0.20, scheduling: 0.20,
+    communication: 0.10, followUp: 0.10, operations: 0.15, financial: 0.15,
+  },
+
+  // HS Recurring: subscription-based — retention and service agreements drive revenue
+  recurring: {
+    technology: 0.10, leads: 0.15, scheduling: 0.15,
+    communication: 0.10, followUp: 0.20, operations: 0.15, financial: 0.15,
+  },
+
+  // HS Project-Based: high-value projects — financial controls and operations define profitability
+  project_based: {
+    technology: 0.10, leads: 0.15, scheduling: 0.10,
+    communication: 0.10, followUp: 0.15, operations: 0.20, financial: 0.20,
+  },
+
+  // RE Commercial: long deal cycles — lead nurture and transaction management are critical
+  commercial: {
+    technology: 0.10, leads: 0.15, scheduling: 0.20,
+    communication: 0.10, followUp: 0.10, operations: 0.20, financial: 0.15,
+  },
+
+  // RE Property Management: operational excellence — communication, operations, financial controls
+  property_management: {
+    technology: 0.10, leads: 0.10, scheduling: 0.10,
+    communication: 0.15, followUp: 0.15, operations: 0.20, financial: 0.20,
+  },
+
+  // RE New Construction: presale pipeline — long nurture through build cycle
+  new_construction: {
+    technology: 0.10, leads: 0.20, scheduling: 0.20,
+    communication: 0.10, followUp: 0.15, operations: 0.10, financial: 0.15,
+  },
+
+  // RE Luxury/Resort: relationship-intensive — communication, follow-up, and presentation tech
+  luxury_resort: {
+    technology: 0.15, leads: 0.15, scheduling: 0.10,
+    communication: 0.15, followUp: 0.20, operations: 0.10, financial: 0.15,
+  },
+};
+// NOTE: residential_sales intentionally omitted — base weights are a good fit
+
+/** Get scoring weights for a sub-niche, falling back to null if no overrides exist */
+export function getWeightsForSubNiche(subNiche: SubNiche | null): SubNicheWeights | null {
+  if (!subNiche) return null;
+  const group = getSubNicheGroup(subNiche);
+  return SUB_NICHE_WEIGHTS[group] ?? null;
+}
