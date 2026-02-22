@@ -53,6 +53,7 @@ interface AuditScores {
 
 interface FormState {
   niche: string
+  subNiche?: string | null  // Sub-niche key from AuditFormState (e.g., "hvac", "plumbing")
   step1: {
     businessName: string
     contactName?: string
