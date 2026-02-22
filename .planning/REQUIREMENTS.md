@@ -22,7 +22,7 @@ Requirements for v1.1 Localization & Sub-Niche Specialization. Each maps to road
 - [x] **TRANS-02**: User sees all 8 form steps fully translated to Bulgarian (labels, descriptions, placeholders, validation messages)
 - [x] **TRANS-03**: User sees the report page (scores, headings, section labels) in Bulgarian when the audit was completed in Bulgarian
 - [ ] **TRANS-04**: Bulgarian form options reflect the local market (Bulgarian CRMs, tools, platforms — e.g., imot.bg, OLX.bg, Viber)
-- [ ] **TRANS-05**: Bulgarian price/revenue ranges use BGN currency with locally appropriate tiers
+- [ ] **TRANS-05**: Bulgarian price/revenue ranges use EUR currency with locally appropriate tiers
 - [x] **TRANS-06**: Existing English experience remains identical after i18n refactor (no regressions)
 
 ### Sub-Niche Specialization
