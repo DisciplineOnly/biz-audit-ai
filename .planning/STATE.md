@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** Business owners complete the audit and receive a personalized, AI-driven analysis that makes them want to book a consultation
-**Current focus:** Phase 10 — Database and Backend Extension (v1.1)
+**Current focus:** Phase 11 — Bulgarian Content and AI Reports (v1.1)
 
 ## Current Position
 
-Phase: 10 of 11 (Database and Backend Extension)
-Plan: 2 of 2 complete (Phase 10 complete, next: Phase 11)
+Phase: 11 of 11 (Bulgarian Content and AI Reports)
+Plan: 2 of 4 complete
 Status: Executing
-Last activity: 2026-02-22 — Completed 10-02-PLAN.md
+Last activity: 2026-02-22 — Completed 11-02-PLAN.md
 
-Progress: [████████████████████] 70% (v1.1) — 20/20 plans planned, 20 complete
+Progress: [████████████████████████] 75% (v1.1) — 24/24 plans planned, 22 complete
 
 ## Performance Metrics
 
@@ -57,6 +57,7 @@ Progress: [████████████████████] 70% (v1
 | 9 | 09-03 | 2min | 1 | 0 |
 | 10 | 10-01 | 2min | 3 | 6 |
 | 10 | 10-02 | 2min | 2 | 1 |
+| 11 | 11-02 | 3min | 2 | 5 |
 
 ## Accumulated Context
 
@@ -110,6 +111,10 @@ Key v1.1 architectural decisions (from research):
 - Bulgarian default no URL prefix, English uses /en/ — DONE (10-02), matches actual app routing behavior
 - Duplicated SUB_NICHE_LABELS in send-notification — DONE (10-02), edge functions deploy independently
 - Fallback to raw key for unknown language/sub-niche values — DONE (10-02), future-proofs against new entries
+- BG sub-niche options keep CRM lists unchanged, add Viber to all toolsExtra, replace lead sources with BG platforms — DONE (11-02)
+- KPI values kept as English strings for scoring consistency — DONE (11-02), display labels via bg/steps.json
+- EUR revenue tiers at Bulgarian-appropriate ranges (25K-500K EUR HS, 15K-150K EUR RE) — DONE (11-02)
+- getSubNicheOptionsForLang as new export, getSubNicheOptions preserved for backward compat — DONE (11-02)
 
 ### Pending Todos
 
@@ -125,5 +130,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 10-02-PLAN.md (Phase 10 complete)
-Resume file: .planning/phases/10-database-and-backend-extension/10-02-SUMMARY.md
+Stopped at: Completed 11-02-PLAN.md
+Resume file: .planning/phases/11-bulgarian-content-and-ai-reports/11-02-SUMMARY.md
