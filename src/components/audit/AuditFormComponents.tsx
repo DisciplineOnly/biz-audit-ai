@@ -1,4 +1,5 @@
 import { AuditFormState, AuditAction } from "@/types/audit";
+import { useTranslation } from "react-i18next";
 
 export interface SelectOption {
   value: string;   // English scoring key — always stored in state
@@ -35,20 +36,22 @@ export function StyledSelect({
   value,
   onChange,
   options,
-  placeholder = "Select an option...",
+  placeholder,
 }: {
   value: string;
   onChange: (v: string) => void;
   options: SelectOption[];
   placeholder?: string;
 }) {
+  const { t } = useTranslation('common');
+  const placeholderText = placeholder ?? t('form.selectPlaceholder');
   return (
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
       className="w-full h-11 px-3 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--coral))] focus:border-transparent transition-all"
     >
-      <option value="">{placeholder}</option>
+      <option value="">{placeholderText}</option>
       {options.map((opt) => (
         <option key={opt.value} value={opt.value}>
           {opt.label}
@@ -159,12 +162,15 @@ export function MultiCheckbox({
 export function RatingButtons({
   value,
   onChange,
-  labels = ["Very Unsatisfied", "Unsatisfied", "Neutral", "Satisfied", "Very Satisfied"],
+  labels,
 }: {
   value: number;
   onChange: (v: number) => void;
   labels?: string[];
 }) {
+  const { t } = useTranslation('common');
+  const ratingLabelsRaw = labels ?? t('rating.labels', { returnObjects: true });
+  const ratingLabels = Array.isArray(ratingLabelsRaw) ? ratingLabelsRaw as string[] : ["Very Unsatisfied", "Unsatisfied", "Neutral", "Satisfied", "Very Satisfied"];
   return (
     <div className="space-y-2">
       <div className="flex gap-2">
@@ -184,12 +190,12 @@ export function RatingButtons({
         ))}
       </div>
       <div className="flex justify-between text-xs text-muted-foreground px-1">
-        <span>{labels[0]}</span>
-        <span>{labels[4]}</span>
+        <span>{ratingLabels[0]}</span>
+        <span>{ratingLabels[4]}</span>
       </div>
       {value > 0 && (
         <p className="text-sm text-center font-medium" style={{ color: "hsl(var(--coral))" }}>
-          {labels[value - 1]}
+          {ratingLabels[value - 1]}
         </p>
       )}
     </div>
@@ -197,10 +203,11 @@ export function RatingButtons({
 }
 
 export function StepHeader({ step, title, subtitle }: { step: number; title: string; subtitle?: string }) {
+  const { t } = useTranslation('common');
   return (
     <div className="mb-8">
       <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">
-        Step {step} of 8
+        {t('stepOf', { current: step, total: 8 })}
       </div>
       <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">{title}</h2>
       {subtitle && <p className="text-muted-foreground">{subtitle}</p>}

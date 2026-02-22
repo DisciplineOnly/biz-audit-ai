@@ -1,5 +1,7 @@
 import { useEffect, useReducer, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { TFunction } from "i18next";
 import { ChevronLeft, ChevronRight, Zap, Save } from "lucide-react";
 import { AuditFormState, auditReducer, initialFormState, Niche } from "@/types/audit";
 import { useLang } from "@/hooks/useLang";
@@ -16,34 +18,23 @@ import { computeScores } from "@/lib/scoring";
 
 const STORAGE_KEY = "ep_audit_state";
 
-const STEP_LABELS = [
-  "BUSINESS",
-  "TECHNOLOGY",
-  "LEADS",
-  "SCHEDULING",
-  "COMMUNICATION",
-  "FOLLOW-UP",
-  "OPERATIONS",
-  "FINANCIAL",
-];
-
-function validateStep(step: number, state: AuditFormState): string[] {
+function validateStep(step: number, state: AuditFormState, t: TFunction): string[] {
   const errors: string[] = [];
   switch (step) {
     case 1:
-      if (!state.step1.businessName) errors.push("Business name is required");
-      if (!state.step1.contactName) errors.push("Your name is required");
-      if (!state.step1.email) errors.push("Email address is required");
+      if (!state.step1.businessName) errors.push(t('validation.businessNameRequired'));
+      if (!state.step1.contactName) errors.push(t('validation.nameRequired'));
+      if (!state.step1.email) errors.push(t('validation.emailRequired'));
       if (state.step1.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.step1.email))
-        errors.push("Please enter a valid email address");
+        errors.push(t('validation.emailInvalid'));
       break;
     case 2:
-      if (!state.step2.primaryCRM) errors.push("Please select your primary CRM or software");
-      if (!state.step2.crmSatisfaction) errors.push("Please rate your satisfaction with your current software");
+      if (!state.step2.primaryCRM) errors.push(t('validation.crmRequired'));
+      if (!state.step2.crmSatisfaction) errors.push(t('validation.crmSatisfactionRequired'));
       break;
     case 3:
-      if (!state.step3.leadSources.length) errors.push("Please select at least one lead source");
-      if (!state.step3.responseSpeed) errors.push("Please select your lead response speed");
+      if (!state.step3.leadSources.length) errors.push(t('validation.leadSourceRequired'));
+      if (!state.step3.responseSpeed) errors.push(t('validation.responseSpeedRequired'));
       break;
     // Steps 4-8 have no required fields beyond basics
   }
@@ -53,6 +44,7 @@ function validateStep(step: number, state: AuditFormState): string[] {
 export default function AuditForm() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation('common');
   const { prefix } = useLang();
   const nicheParam = searchParams.get("niche") as Niche | null;
   const isResume = searchParams.get("resume") === "true";
@@ -96,8 +88,10 @@ export default function AuditForm() {
   const currentStep = state.currentStep;
   const progress = Math.round((currentStep / 8) * 100);
 
-  const step4Label = isHS ? "SCHEDULING" : "LEAD MGMT";
-  const tabLabels = [...STEP_LABELS];
+  const stepLabelsRaw = t('stepLabels', { returnObjects: true });
+  const stepLabels = Array.isArray(stepLabelsRaw) ? stepLabelsRaw as string[] : ["BUSINESS", "TECHNOLOGY", "LEADS", "SCHEDULING", "COMMUNICATION", "FOLLOW-UP", "OPERATIONS", "FINANCIAL"];
+  const step4Label = isHS ? t('stepLabelsAlt.step4hs') : t('stepLabelsAlt.step4re');
+  const tabLabels = [...stepLabels];
   tabLabels[3] = step4Label;
 
   const triggerAnim = () => {
@@ -110,7 +104,7 @@ export default function AuditForm() {
   };
 
   const handleNext = () => {
-    const errs = validateStep(currentStep, state);
+    const errs = validateStep(currentStep, state, t);
     if (errs.length > 0) {
       setErrors(errs);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -175,14 +169,14 @@ export default function AuditForm() {
               className="w-7 h-7 rounded-md flex items-center justify-center text-white font-bold text-xs"
               style={{ backgroundColor: "hsl(var(--coral))" }}
             >
-              E&P
+              {t('brand.initials')}
             </div>
-            <span className="font-semibold hidden sm:block">E&P Systems</span>
+            <span className="font-semibold hidden sm:block">{t('brand.name')}</span>
           </button>
 
           <div className="text-center">
             <div className="text-white text-sm font-semibold">
-              Step {currentStep} of 8
+              {t('stepOf', { current: currentStep, total: 8 })}
             </div>
             <div className="text-white/50 text-xs">{tabLabels[currentStep - 1]}</div>
           </div>
@@ -194,7 +188,7 @@ export default function AuditForm() {
               className="flex items-center gap-1.5 text-white/60 hover:text-white text-xs transition-colors"
             >
               <Save className="w-3.5 h-3.5" />
-              {savedToast ? "Saved!" : "Save Progress"}
+              {savedToast ? t('buttons.saved') : t('buttons.save')}
             </button>
           </div>
         </div>
@@ -249,7 +243,7 @@ export default function AuditForm() {
         <div className="flex items-center gap-2 mb-6">
           <span className="text-lg">{isHS ? "🔧" : "🏠"}</span>
           <span className="text-sm text-muted-foreground font-medium">
-            {isHS ? "Home Services & Trades" : "Real Estate Teams & Brokerages"} Audit
+            {isHS ? t('audit.nicheBadge.hs') : t('audit.nicheBadge.re')}
           </span>
         </div>
 
@@ -262,7 +256,7 @@ export default function AuditForm() {
               borderColor: "hsl(var(--score-red) / 0.3)",
             }}
           >
-            <p className="text-sm font-semibold text-destructive mb-1">Please fix the following:</p>
+            <p className="text-sm font-semibold text-destructive mb-1">{t('validation.fixFollowing')}</p>
             <ul className="list-disc list-inside space-y-1">
               {errors.map((e, i) => (
                 <li key={i} className="text-sm text-destructive">{e}</li>
@@ -290,7 +284,7 @@ export default function AuditForm() {
             className="flex items-center gap-2 px-5 py-3 rounded-xl border border-border text-foreground hover:bg-secondary transition-colors font-medium"
           >
             <ChevronLeft className="w-4 h-4" />
-            {currentStep === 1 ? "Back to Home" : "Back"}
+            {currentStep === 1 ? t('buttons.backToHome') : t('buttons.back')}
           </button>
 
           <button
@@ -301,11 +295,11 @@ export default function AuditForm() {
             {currentStep === 8 ? (
               <>
                 <Zap className="w-4 h-4" />
-                Generate My AI Audit Report
+                {t('buttons.generateReport')}
               </>
             ) : (
               <>
-                Next Step
+                {t('buttons.next')}
                 <ChevronRight className="w-4 h-4" />
               </>
             )}
