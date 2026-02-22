@@ -1,1 +1,26 @@
-{}
+{
+  "steps": [
+    "Analyzing your technology stack...",
+    "Evaluating your lead funnel...",
+    "Scoring your scheduling & operations...",
+    "Assessing your communication systems...",
+    "Reviewing your follow-up & retention...",
+    "Identifying revenue opportunities...",
+    "Benchmarking against industry standards...",
+    "Generating personalized recommendations..."
+  ],
+  "heading": "Generating Your AI Audit Report",
+  "subtitle": "This takes about 15\u201320 seconds \u2014 please don't close this tab",
+  "analyzing": "Analyzing...",
+  "errors": {
+    "missingFormData": "Missing form data. Please start over.",
+    "missingNiche": "Missing niche selection. Please start over.",
+    "reportFailed": "Report generation failed",
+    "reportIssue": "Report generation encountered an issue."
+  },
+  "rateLimit": {
+    "heading": "Too Many Submissions",
+    "savedMessage": "Your audit data has been saved. You'll receive your report once the limit resets.",
+    "defaultMessage": "Too many submissions. Please try again later."
+  }
+}

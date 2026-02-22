@@ -1,1 +1,89 @@
-{}
+{
+  "hero": {
+    "nicheBadge": {
+      "hs": "Home Services & Trades \u00b7 AI Business Audit",
+      "re": "Real Estate \u00b7 AI Business Audit"
+    },
+    "reportTitle": "Business Audit Report \u00b7 {{date}}",
+    "employees": "{{count}} employees",
+    "revenue": "{{amount}} revenue",
+    "overallScore": "Overall Score"
+  },
+  "scores": {
+    "strong": "Strong",
+    "moderate": "Moderate",
+    "needsWork": "Needs Work",
+    "criticalGap": "Critical Gap",
+    "weight": "{{weight}}% weight"
+  },
+  "benchmark": {
+    "above": "Above Average",
+    "average": "Average",
+    "below": "Below Average"
+  },
+  "sections": {
+    "executiveSummary": "Executive Summary",
+    "categoryScorecard": "Category Scorecard",
+    "criticalGaps": "Top 3 Critical Gaps",
+    "quickWins": "Quick Wins (30 Days)",
+    "quickWinsSubtitle": "Things you can implement immediately with existing resources",
+    "strategicRecs": "Strategic Recommendations (90 Days)",
+    "strategicRecsSubtitle": "Larger investments with significant ROI potential",
+    "competitorBenchmark": "Competitor Benchmark"
+  },
+  "categories": {
+    "technology": "Technology & Software",
+    "leads": "Lead Funnel & Marketing",
+    "scheduling": {
+      "hs": "Scheduling & Dispatch",
+      "re": "Lead Management"
+    },
+    "communication": "Communication",
+    "followUp": "Follow-Up & Retention",
+    "operations": "Operations & Accountability",
+    "financial": "Financial Operations"
+  },
+  "cta": {
+    "heading": "Want Help Implementing These Recommendations?",
+    "description": "Book a free 30-minute strategy call with the E&P Systems team. We'll review your audit results, prioritize your top opportunities, and show you exactly how we can help implement them.",
+    "bookCall": "Book Your Free Strategy Call",
+    "shareReport": "Share This Report",
+    "noObligation": "No obligation \u00b7 No sales pressure \u00b7 Just strategy"
+  },
+  "errors": {
+    "notFound": {
+      "heading": "Report Not Found",
+      "description": "This audit link is invalid or has expired. Start a new audit to generate a fresh report."
+    },
+    "fetchFailed": "Failed to load report. Please try again.",
+    "noData": {
+      "heading": "No Report Data Found",
+      "description": "We couldn't find any report data. Start a new audit to generate a fresh report."
+    },
+    "timeout": {
+      "heading": "Taking Longer Than Expected",
+      "description": "Your report is still being generated. Try refreshing the page in a few minutes, or contact support if this persists."
+    },
+    "pending": {
+      "heading": "Your Report is Being Generated...",
+      "description": "Our AI is analyzing your audit responses. This usually takes 15-30 seconds."
+    }
+  },
+  "share": {
+    "share": "Share",
+    "copied": "Copied!"
+  },
+  "executiveSummaryTemplate": {
+    "intro": "Based on your responses, <strong>{{businessName}}</strong> scored <scoreStrong>{{score}}/100</scoreStrong> overall \u2014 placing you in the <strong>{{label}}</strong> category for {{nicheType}} of your size.",
+    "strengths": "Your strongest areas are in <strong>{{areas}}</strong>, which suggests you have a solid operational foundation to build from.",
+    "gaps": "However, significant gaps in <strong>{{areas}}</strong> represent your biggest opportunities. Businesses that close these gaps typically see <strong>20-40% revenue increases</strong> within 12 months through better lead conversion, retention, and operational efficiency.",
+    "recommendation": "The recommendations in this report are based on your specific answers and industry benchmarks for {{nicheDescription}}.",
+    "hsNicheType": "home service businesses",
+    "reNicheType": "real estate teams",
+    "hsNicheDescription": "{{industry}} businesses with {{employees}} employees",
+    "reNicheDescription": "real estate teams with {{teamSize}}"
+  },
+  "footer": {
+    "startNewAudit": "\u2190 Start a New Audit"
+  }
+}
