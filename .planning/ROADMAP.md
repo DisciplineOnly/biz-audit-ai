@@ -118,10 +118,15 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. A user who visits `/bg/` sees the landing page entirely in Bulgarian including niche selection copy, value proposition, and CTA
   2. A Bulgarian user completing the audit sees platform options native to the Bulgarian market — imot.bg and homes.bg in Real Estate lead sources, OLX.bg and bazar.bg in Home Services, Viber in communication tools — instead of US-market options
-  3. Revenue and pricing fields in Bulgarian offer BGN-denominated tiers at locally appropriate values (not dollar amounts)
+  3. Revenue and pricing fields in Bulgarian offer EUR-denominated tiers at locally appropriate values (not dollar amounts)
   4. After submitting a Bulgarian audit, the AI-generated report arrives written entirely in Bulgarian, references the user's sub-niche specifically (e.g., "като ВиК бизнес"), and mentions Bulgarian platforms in recommendations
   5. The rate-limit error displayed to a Bulgarian user reads in Bulgarian (frontend translates a machine-readable code, not a hardcoded English string from the edge function)
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 11-01-PLAN.md — Populate all 5 Bulgarian translation files (common, landing, steps, generating, report)
+- [ ] 11-02-PLAN.md — Bulgarian market options (imot.bg, OLX.bg, Viber) and EUR revenue/GCI tiers
+- [ ] 11-03-PLAN.md — Language-aware AI report generation with Bulgarian prompt template and i18n rate-limit errors
+- [ ] 11-04-PLAN.md — Verification checkpoint
 
 ## Progress
 
@@ -137,4 +142,4 @@ Plans:
 | 8. Sub-Niche Config and Selection UI | v1.1 | 5/5 | Complete | 2026-02-22 |
 | 9. Scoring Engine Sub-Niche Weights | v1.1 | 3/3 | Complete | 2026-02-22 |
 | 10. Database and Backend Extension | 2/2 | Complete    | 2026-02-22 | - |
-| 11. Bulgarian Content and AI Reports | v1.1 | 0/? | Not started | - |
+| 11. Bulgarian Content and AI Reports | v1.1 | 0/4 | Planning complete | - |
