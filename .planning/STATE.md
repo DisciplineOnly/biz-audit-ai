@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 9 of 11 (Scoring Engine Sub-Niche Weights)
-Plan: 1 of 3 complete (Phase 9, next: 09-02)
+Plan: 2 of 3 complete (Phase 9, next: 09-03)
 Status: Executing
-Last activity: 2026-02-22 — 09-01 complete (sub-niche weight overrides)
+Last activity: 2026-02-22 — 09-02 complete (AI prompt sub-niche context)
 
-Progress: [███████████░░░░░░░░░] 53% (v1.1) — 16/18 plans planned, 16 complete
+Progress: [████████████░░░░░░░░] 57% (v1.1) — 17/18 plans planned, 17 complete
 
 ## Performance Metrics
 
@@ -53,6 +53,7 @@ Progress: [███████████░░░░░░░░░] 53% (v1
 | 8 | 08-04 | 2min | 4 | 3 |
 | 8 | 08-05 | 1min | 0 | 0 |
 | 9 | 09-01 | 4min | 2 | 3 |
+| 9 | 09-02 | 2min | 3 | 1 |
 
 ## Accumulated Context
 
@@ -95,6 +96,10 @@ Key v1.1 architectural decisions (from research):
 - Config-driven weights via Partial<Record> with null fallback — DONE (09-01), no hardcoded conditionals in scoring.ts
 - computeScores() backward compatible with optional subNiche param — DONE (09-01), no subNiche = identical v1.0 behavior
 - CategoryScore weight field derived dynamically from applied weights — DONE (09-01), matches actual scoring
+- Inline SUB_NICHE_LABELS map in edge function (cannot import from frontend) — DONE (09-02), with sync comment to SUB_NICHE_REGISTRY
+- Dual read path for subNiche (body.subNiche ?? body.formState.subNiche) — DONE (09-02), maximum compatibility
+- No weight context in AI prompt, only sub-niche name — DONE (09-02), per 09-CONTEXT decision
+- Human-readable label in prompt (HVAC not hvac) — DONE (09-02), for natural AI output
 
 ### Pending Todos
 
@@ -110,5 +115,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 09-01-PLAN.md
-Resume file: .planning/phases/09-scoring-engine-sub-niche-weights/09-02-PLAN.md
+Stopped at: Completed 09-02-PLAN.md
+Resume file: .planning/phases/09-scoring-engine-sub-niche-weights/09-03-PLAN.md
