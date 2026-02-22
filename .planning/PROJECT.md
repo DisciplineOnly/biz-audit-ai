@@ -96,7 +96,8 @@ EMAIL-02 and custom Resend domain completed post-v1.0.
 
 | URL-based i18n routing | /bg/ path prefix for Bulgarian, default for English; avoids subdomain complexity | ✓ Good — /:lang? optional segment, LangLayout syncs i18n with URL, /bg/ redirects to / (Bulgarian default) |
 | Value/label separation in form components | Store English scoring keys as values, display text as labels — scoring never breaks across languages | ✓ Good — toOptions() bridge, SelectOption {value, label} API |
+| Namespace-based i18n with HTTP backend | 5 JSON namespaces (common, landing, steps, generating, report) loaded via i18next-http-backend from public/locales/ | ✓ Good — all strings extracted, English experience identical |
 | Research-driven sub-niche questions | Let domain research determine which questions/options differ per sub-niche rather than guessing | — Pending |
 
 ---
-*Last updated: 2026-02-22 after Phase 6*
+*Last updated: 2026-02-22 after Phase 7*
