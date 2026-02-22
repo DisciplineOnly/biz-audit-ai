@@ -44,9 +44,9 @@ Requirements for v1.1 Localization & Sub-Niche Specialization. Each maps to road
 
 ### AI Reports
 
-- [ ] **AI-01**: User who completed the audit in Bulgarian receives an AI-generated report entirely in Bulgarian
-- [ ] **AI-02**: AI report references sub-niche-specific context in its recommendations (e.g., "as a plumbing business" not generic "home services")
-- [ ] **AI-03**: AI report for Bulgarian users references Bulgarian-market tools and platforms in recommendations
+- [x] **AI-01**: User who completed the audit in Bulgarian receives an AI-generated report entirely in Bulgarian
+- [x] **AI-02**: AI report references sub-niche-specific context in its recommendations (e.g., "as a plumbing business" not generic "home services")
+- [x] **AI-03**: AI report for Bulgarian users references Bulgarian-market tools and platforms in recommendations
 
 ### Backend
 
@@ -107,9 +107,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SCORE-01 | Phase 9 | Complete |
 | SCORE-02 | Phase 9 | Complete |
 | SCORE-03 | Phase 9 | Complete |
-| AI-01 | Phase 11 | Pending |
-| AI-02 | Phase 11 | Pending |
-| AI-03 | Phase 11 | Pending |
+| AI-01 | Phase 11 | Complete |
+| AI-02 | Phase 11 | Complete |
+| AI-03 | Phase 11 | Complete |
 | DB-01 | Phase 10 | Complete |
 | DB-02 | Phase 10 | Complete |
 | DB-03 | Phase 10 | Complete |

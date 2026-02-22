@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 11 of 11 (Bulgarian Content and AI Reports)
-Plan: 3 of 4 complete
+Plan: 3 of 4 complete (next: 11-04-PLAN.md)
 Status: Executing
-Last activity: 2026-02-22 — Completed 11-01-PLAN.md
+Last activity: 2026-02-22 — Completed 11-03-PLAN.md
 
-Progress: [████████████████████████] 79% (v1.1) — 24/24 plans planned, 23 complete
+Progress: [█████████████████████████] 83% (v1.1) — 24/24 plans planned, 23 complete
 
 ## Performance Metrics
 
@@ -59,6 +59,7 @@ Progress: [███████████████████████
 | 10 | 10-02 | 2min | 2 | 1 |
 | 11 | 11-01 | 5min | 2 | 6 |
 | 11 | 11-02 | 3min | 2 | 5 |
+| 11 | 11-03 | 6min | 2 | 2 |
 
 ## Accumulated Context
 
@@ -118,6 +119,10 @@ Key v1.1 architectural decisions (from research):
 - KPI values kept as English strings for scoring consistency — DONE (11-02), display labels via bg/steps.json
 - EUR revenue tiers at Bulgarian-appropriate ranges (25K-500K EUR HS, 15K-150K EUR RE) — DONE (11-02)
 - getSubNicheOptionsForLang as new export, getSubNicheOptions preserved for backward compat — DONE (11-02)
+- Separate Bulgarian prompt template (buildBulgarianPrompt) with shared helpers, not language flag injection — DONE (11-03)
+- MAX_TOKENS increased from 4096 to 5000 for all languages (Bulgarian text ~10-20% longer) — DONE (11-03)
+- Machine-readable rate-limit response (code + hoursRemaining) replaces hardcoded English message — DONE (11-03)
+- Sub-niche label fallback to raw key (not null) for unknown values — DONE (11-03), future-proofs against new sub-niches
 
 ### Pending Todos
 
@@ -133,5 +138,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 11-01-PLAN.md
-Resume file: .planning/phases/11-bulgarian-content-and-ai-reports/11-01-SUMMARY.md
+Stopped at: Completed 11-03-PLAN.md
+Resume file: .planning/phases/11-bulgarian-content-and-ai-reports/11-03-SUMMARY.md
