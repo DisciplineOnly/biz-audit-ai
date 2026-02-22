@@ -11,6 +11,8 @@ export interface FetchReportResult {
     scores: AuditScores;
     report_status: 'pending' | 'completed' | 'failed';
     created_at: string;
+    language: string | null;   // null for legacy audits (no backfill)
+    sub_niche: string | null;  // null for legacy audits (no backfill)
   };
   aiReport: AIReportData | null;
   reportStatus: 'pending' | 'completed' | 'failed';

@@ -31,7 +31,7 @@ Deno.serve(async (req: Request) => {
     // Query audits table using service_role (bypasses RLS — anon has no SELECT policy)
     const { data: audit, error: auditError } = await supabaseAdmin
       .from('audits')
-      .select('id, niche, business_name, form_data, scores, report_status, created_at')
+      .select('id, niche, business_name, form_data, scores, report_status, created_at, language, sub_niche')
       .eq('id', auditId)
       .single()
 
