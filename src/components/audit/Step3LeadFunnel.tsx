@@ -2,7 +2,8 @@ import { useTranslation } from 'react-i18next';
 import {
   FormField, StepHeader, StyledSelect, MultiCheckbox, StepProps, toOptions
 } from "./AuditFormComponents";
-import { getSubNicheOptions } from "@/config/subNicheConfig";
+import { getSubNicheOptionsForLang } from "@/config/subNicheConfig";
+import { useLang } from "@/hooks/useLang";
 
 const HS_LEAD_SOURCES = toOptions([
   "Google Search/SEO", "Google Ads (PPC)", "Google Local Services Ads",
@@ -15,6 +16,19 @@ const RE_LEAD_SOURCES = toOptions([
   "Sphere of Influence/Referrals", "Past Client Referrals", "Agent Website/IDX",
   "YouTube/Video", "Door Knocking/Cold Calling", "Expired/FSBO Prospecting",
   "Relocation Companies", "Builder/Developer Partnerships",
+]);
+
+// Bulgarian base lead source lists (fallback when no sub-niche selected)
+const BG_HS_LEAD_SOURCES = toOptions([
+  "Google Търсене/SEO", "Google Ads", "Facebook/Instagram реклами",
+  "OLX.bg", "bazar.bg", "Alo.bg", "Facebook Marketplace",
+  "Препоръки от клиенти", "Viber групи",
+]);
+
+const BG_RE_LEAD_SOURCES = toOptions([
+  "imot.bg", "imoti.net", "homes.bg", "OLX.bg",
+  "Facebook/Instagram реклами", "Google Ads",
+  "Препоръки от клиенти",
 ]);
 
 const RESPONSE_SPEEDS = [
@@ -65,14 +79,17 @@ const RE_REVIEW_AUTOMATION = toOptions([
 
 export function Step3LeadFunnel({ state, dispatch, isHS }: StepProps) {
   const { t } = useTranslation('steps');
+  const { lang } = useLang();
   const { step3 } = state;
   const update = (payload: Partial<typeof step3>) => dispatch({ type: "UPDATE_STEP3", payload });
 
-  // Sub-niche-aware lead source options
-  const subNicheOpts = state.subNiche ? getSubNicheOptions(state.subNiche) : null;
+  // Sub-niche-aware + language-aware lead source options
+  const subNicheOpts = state.subNiche ? getSubNicheOptionsForLang(state.subNiche, lang) : null;
   const leadSourceOptions = subNicheOpts && subNicheOpts.leadSources.length > 0
     ? toOptions(subNicheOpts.leadSources)
-    : (isHS ? HS_LEAD_SOURCES : RE_LEAD_SOURCES);
+    : (isHS
+      ? (lang === 'bg' ? BG_HS_LEAD_SOURCES : HS_LEAD_SOURCES)
+      : (lang === 'bg' ? BG_RE_LEAD_SOURCES : RE_LEAD_SOURCES));
 
   return (
     <div>

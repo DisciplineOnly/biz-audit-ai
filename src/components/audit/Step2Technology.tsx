@@ -3,7 +3,8 @@ import {
   FormField, StepHeader, StyledSelect, MultiCheckbox,
   StyledTextarea, RatingButtons, StepProps, toOptions
 } from "./AuditFormComponents";
-import { getSubNicheOptions } from "@/config/subNicheConfig";
+import { getSubNicheOptionsForLang } from "@/config/subNicheConfig";
+import { useLang } from "@/hooks/useLang";
 
 const HS_CRMS = toOptions([
   "ServiceTitan", "Housecall Pro", "Jobber", "FieldEdge", "ServiceM8",
@@ -35,11 +36,12 @@ const RE_TOOLS = toOptions([
 
 export function Step2Technology({ state, dispatch, isHS }: StepProps) {
   const { t } = useTranslation('steps');
+  const { lang } = useLang();
   const { step2 } = state;
   const update = (payload: Partial<typeof step2>) => dispatch({ type: "UPDATE_STEP2", payload });
 
-  // Sub-niche-aware option resolution
-  const subNicheOpts = state.subNiche ? getSubNicheOptions(state.subNiche) : null;
+  // Sub-niche-aware + language-aware option resolution
+  const subNicheOpts = state.subNiche ? getSubNicheOptionsForLang(state.subNiche, lang) : null;
   const crmOptions = subNicheOpts && subNicheOpts.crms.length > 0
     ? toOptions(subNicheOpts.crms)
     : (isHS ? HS_CRMS : RE_CRMS);
