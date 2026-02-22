@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 7 of 11 (English Translation Pass)
-Plan: 1 of 6 complete (Phase 7 executing, next: 07-02)
+Plan: 2 of 6 complete (Phase 7 executing, next: 07-03)
 Status: Executing
-Last activity: 2026-02-22 — Completed 07-01 (i18n namespace infrastructure + landing extraction)
+Last activity: 2026-02-22 — Completed 07-02 (audit form chrome + shared component i18n extraction)
 
-Progress: [===                 ] 17% (Phase 7) — 1/6 plans
+Progress: [======              ] 33% (Phase 7) — 2/6 plans
 
 ## Performance Metrics
 
@@ -42,6 +42,7 @@ Progress: [===                 ] 17% (Phase 7) — 1/6 plans
 | 6 | 06-03 | 8min | 2 | 6 |
 | 6 | 06-04 | 2min | 1 | 1 |
 | 7 | 07-01 | 3min | 2 | 16 |
+| 7 | 07-02 | 3min | 2 | 4 |
 
 ## Accumulated Context
 
@@ -60,6 +61,8 @@ Key v1.1 architectural decisions (from research):
 - i18n fallbackLng changed from 'bg' to 'en' — DONE (07-01), English is complete language, Bulgarian comes in Phase 11
 - Namespace-based i18n via i18next-http-backend from public/locales/ — DONE (07-01), 5 namespaces: common, landing, steps, generating, report
 - useSuspense: false for i18n — DONE (07-01), avoids Suspense wrapper complexity in SPA
+- TFunction param passing for validateStep — DONE (07-02), pure functions outside component receive t as parameter
+- Nullish coalescing for i18n prop defaults — DONE (07-02), explicit props override t() fallback in RatingButtons/StyledSelect
 - Config-driven sub-niche branching (TypeScript discriminated union) — never boolean flags
 - Phase 9 (scoring weights) can partially overlap with Phase 8 — same config schema
 
@@ -77,5 +80,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 07-01-PLAN.md
-Resume file: .planning/phases/07-english-translation-pass/07-02-PLAN.md
+Stopped at: Completed 07-02-PLAN.md
+Resume file: .planning/phases/07-english-translation-pass/07-03-PLAN.md
