@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, useLocation, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation, Trans } from "react-i18next";
 import { AuditFormState, AuditScores, AIReportData } from "@/types/audit";
 import { getScoreColor, getScoreLabel, getBenchmark, generateMockReport } from "@/lib/scoring";
 import { fetchReport } from "@/lib/fetchReport";
@@ -8,9 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar, Download, Share2, CheckCircle, AlertTriangle, TrendingUp, BarChart3, Zap } from "lucide-react";
 import { useLang } from "@/hooks/useLang";
 
-function ScoreBar({ score, label }: { score: number; label: string }) {
+function ScoreBar({ score, label, scoreLabel }: { score: number; label: string; scoreLabel: string }) {
   const color = getScoreColor(score);
-  const scoreLabel = getScoreLabel(score);
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between text-sm">
@@ -59,28 +59,13 @@ function OverallScoreCircle({ score }: { score: number }) {
   );
 }
 
-function BenchmarkBadge({ level }: { level: "above" | "average" | "below" }) {
-  const config = {
-    above: { label: "Above Average", bg: "hsl(var(--score-green) / 0.1)", color: "hsl(var(--score-green))", icon: "↑" },
-    average: { label: "Average", bg: "hsl(var(--score-yellow) / 0.1)", color: "hsl(var(--score-yellow))", icon: "→" },
-    below: { label: "Below Average", bg: "hsl(var(--score-red) / 0.1)", color: "hsl(var(--score-red))", icon: "↓" },
-  };
-  const c = config[level];
-  return (
-    <span
-      className="text-xs font-bold px-2 py-1 rounded-full"
-      style={{ backgroundColor: c.bg, color: c.color }}
-    >
-      {c.icon} {c.label}
-    </span>
-  );
-}
-
 export default function Report() {
   const { auditId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const { prefix } = useLang();
+  const { t } = useTranslation('report');
+  const { t: tc } = useTranslation('common');
   const [copied, setCopied] = useState(false);
   const [pollStartTime] = useState(() => Date.now());
   const POLL_TIMEOUT_MS = 90_000; // 90 seconds max polling
@@ -128,6 +113,36 @@ export default function Report() {
   const scores: AuditScores | null = locationState?.scores ?? fetchedData?.audit?.scores ?? null;
   const aiReport: AIReportData | null = locationState?.aiReport ?? fetchedData?.aiReport ?? null;
   const reportStatus = fetchedData?.reportStatus ?? (locationState?.aiReport ? "completed" : null);
+
+  // Translation helpers for score and category labels
+  const scoreLabels: Record<string, string> = {
+    Strong: t('scores.strong'),
+    Moderate: t('scores.moderate'),
+    'Needs Work': t('scores.needsWork'),
+    'Critical Gap': t('scores.criticalGap'),
+  };
+  const translateScoreLabel = (score: number) => {
+    const key = getScoreLabel(score);
+    return scoreLabels[key] ?? key;
+  };
+
+  const isHS = formState?.niche === "home_services";
+
+  const categoryLabels: Record<string, string> = {
+    technology: t('categories.technology'),
+    leads: t('categories.leads'),
+    scheduling: isHS ? t('categories.scheduling.hs') : t('categories.scheduling.re'),
+    communication: t('categories.communication'),
+    followUp: t('categories.followUp'),
+    operations: t('categories.operations'),
+    financial: t('categories.financial'),
+  };
+
+  const benchmarkLabels = {
+    above: { label: t('benchmark.above'), bg: "hsl(var(--score-green) / 0.1)", color: "hsl(var(--score-green))", icon: "\u2191" },
+    average: { label: t('benchmark.average'), bg: "hsl(var(--score-yellow) / 0.1)", color: "hsl(var(--score-yellow))", icon: "\u2192" },
+    below: { label: t('benchmark.below'), bg: "hsl(var(--score-red) / 0.1)", color: "hsl(var(--score-red))", icon: "\u2193" },
+  };
 
   // ---- Conditional rendering (in order) ----
 
@@ -182,18 +197,18 @@ export default function Report() {
           className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold"
           style={{ backgroundColor: "hsl(var(--coral))" }}
         >
-          E&P
+          {tc('brand.initials')}
         </div>
-        <h1 className="text-2xl font-bold text-white">Report Not Found</h1>
+        <h1 className="text-2xl font-bold text-white">{t('errors.notFound.heading')}</h1>
         <p className="text-white/60 text-center max-w-md">
-          This audit link is invalid or has expired. Start a new audit to generate a fresh report.
+          {t('errors.notFound.description')}
         </p>
         <Link
           to={prefix || "/"}
           className="px-6 py-3 rounded-xl text-white font-semibold transition-all hover:opacity-90"
           style={{ backgroundColor: "hsl(var(--coral))" }}
         >
-          Start a New Audit
+          {tc('buttons.startNewAudit')}
         </Link>
       </div>
     );
@@ -203,9 +218,9 @@ export default function Report() {
   if (isError) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <p className="text-muted-foreground">Failed to load report. Please try again.</p>
+        <p className="text-muted-foreground">{t('errors.fetchFailed')}</p>
         <Link to={prefix || "/"} className="text-sm font-medium" style={{ color: "hsl(var(--coral))" }}>
-          Start a New Audit →
+          {tc('buttons.startNewAudit')} &rarr;
         </Link>
       </div>
     );
@@ -218,16 +233,16 @@ export default function Report() {
         className="min-h-screen flex flex-col items-center justify-center gap-6 px-6"
         style={{ backgroundColor: "hsl(var(--navy))" }}
       >
-        <h2 className="text-xl font-bold text-white">Taking Longer Than Expected</h2>
+        <h2 className="text-xl font-bold text-white">{t('errors.timeout.heading')}</h2>
         <p className="text-white/60 text-center max-w-md">
-          Your report is still being generated. Try refreshing the page in a few minutes, or contact support if this persists.
+          {t('errors.timeout.description')}
         </p>
         <button
           onClick={() => window.location.reload()}
           className="px-6 py-3 rounded-xl text-white font-semibold transition-all hover:opacity-90"
           style={{ backgroundColor: "hsl(var(--coral))" }}
         >
-          Refresh Page
+          {tc('buttons.refreshPage')}
         </button>
       </div>
     );
@@ -247,9 +262,9 @@ export default function Report() {
             style={{ borderTopColor: "hsl(var(--coral))" }}
           />
         </div>
-        <h2 className="text-xl font-bold text-white">Your Report is Being Generated...</h2>
+        <h2 className="text-xl font-bold text-white">{t('errors.pending.heading')}</h2>
         <p className="text-white/60 text-center max-w-md">
-          Our AI is analyzing your audit responses. This usually takes 15-30 seconds.
+          {t('errors.pending.description')}
         </p>
       </div>
     );
@@ -266,18 +281,18 @@ export default function Report() {
           className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold"
           style={{ backgroundColor: "hsl(var(--coral))" }}
         >
-          E&P
+          {tc('brand.initials')}
         </div>
-        <h1 className="text-2xl font-bold text-white">No Report Data Found</h1>
+        <h1 className="text-2xl font-bold text-white">{t('errors.noData.heading')}</h1>
         <p className="text-white/60 text-center max-w-md">
-          We couldn't find any report data. Start a new audit to generate a fresh report.
+          {t('errors.noData.description')}
         </p>
         <Link
           to={prefix || "/"}
           className="px-6 py-3 rounded-xl text-white font-semibold transition-all hover:opacity-90"
           style={{ backgroundColor: "hsl(var(--coral))" }}
         >
-          Start a New Audit
+          {tc('buttons.startNewAudit')}
         </Link>
       </div>
     );
@@ -294,9 +309,8 @@ export default function Report() {
   const strategicRecs = aiReport?.strategicRecommendations ?? templateReport.strategicRecs ?? [];
   const executiveSummary = aiReport?.executiveSummary ?? null;
 
-  const isHS = formState.niche === "home_services";
   const businessName = formState.step1.businessName || "Your Business";
-  const overallLabel = getScoreLabel(scores.overall);
+  const overallLabel = translateScoreLabel(scores.overall);
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -306,23 +320,33 @@ export default function Report() {
 
   const handlePrint = () => window.print();
 
+  // Niche description for executive summary template
+  const nicheDescription = isHS
+    ? t('executiveSummaryTemplate.hsNicheDescription', {
+        industry: formState.step1.industry || "home service",
+        employees: formState.step1.employeeCount || "your",
+      })
+    : t('executiveSummaryTemplate.reNicheDescription', {
+        teamSize: formState.step1.teamSize || "your team size",
+      });
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header style={{ backgroundColor: "hsl(var(--navy))" }} className="py-4 px-6 print:hidden">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <button onClick={() => navigate(prefix || "/")} className="flex items-center gap-2 text-white/80 hover:text-white">
-            <div className="w-7 h-7 rounded-md flex items-center justify-center text-white font-bold text-xs" style={{ backgroundColor: "hsl(var(--coral))" }}>E&P</div>
-            <span className="font-semibold hidden sm:block">E&P Systems</span>
+            <div className="w-7 h-7 rounded-md flex items-center justify-center text-white font-bold text-xs" style={{ backgroundColor: "hsl(var(--coral))" }}>{tc('brand.initials')}</div>
+            <span className="font-semibold hidden sm:block">{tc('brand.name')}</span>
           </button>
           <div className="flex items-center gap-3">
             <button onClick={handleShare} className="flex items-center gap-1.5 text-white/70 hover:text-white text-sm transition-colors">
               <Share2 className="w-4 h-4" />
-              {copied ? "Copied!" : "Share"}
+              {copied ? t('share.copied') : t('share.share')}
             </button>
             <button onClick={handlePrint} className="flex items-center gap-1.5 text-white/70 hover:text-white text-sm transition-colors">
               <Download className="w-4 h-4" />
-              Download PDF
+              {tc('buttons.downloadPdf')}
             </button>
           </div>
         </div>
@@ -332,21 +356,21 @@ export default function Report() {
       <section style={{ backgroundColor: "hsl(var(--navy))" }} className="py-12 px-6">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center gap-2 mb-4">
-            <span className="text-white/60 text-sm">{isHS ? "Home Services & Trades" : "Real Estate"} · AI Business Audit</span>
+            <span className="text-white/60 text-sm">{isHS ? t('hero.nicheBadge.hs') : t('hero.nicheBadge.re')}</span>
           </div>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-8">
             <div>
               <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">{businessName}</h1>
-              <p className="text-white/60 mb-1">Business Audit Report · {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</p>
+              <p className="text-white/60 mb-1">{t('hero.reportTitle', { date: new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) })}</p>
               <div className="flex flex-wrap gap-2 mt-4">
                 {formState.step1.industry && (
                   <span className="text-xs px-3 py-1 rounded-full text-white/80 bg-white/10">{formState.step1.industry}</span>
                 )}
                 {formState.step1.employeeCount && (
-                  <span className="text-xs px-3 py-1 rounded-full text-white/80 bg-white/10">{formState.step1.employeeCount} employees</span>
+                  <span className="text-xs px-3 py-1 rounded-full text-white/80 bg-white/10">{t('hero.employees', { count: formState.step1.employeeCount })}</span>
                 )}
                 {formState.step1.annualRevenue && (
-                  <span className="text-xs px-3 py-1 rounded-full text-white/80 bg-white/10">{formState.step1.annualRevenue} revenue</span>
+                  <span className="text-xs px-3 py-1 rounded-full text-white/80 bg-white/10">{t('hero.revenue', { amount: formState.step1.annualRevenue })}</span>
                 )}
                 {formState.step1.role && (
                   <span className="text-xs px-3 py-1 rounded-full text-white/80 bg-white/10">{formState.step1.role}</span>
@@ -355,7 +379,7 @@ export default function Report() {
             </div>
             <div className="text-center">
               <OverallScoreCircle score={scores.overall} />
-              <p className="text-white font-bold mt-2">Overall Score</p>
+              <p className="text-white font-bold mt-2">{t('hero.overallScore')}</p>
               <p className="text-white/60 text-sm">{overallLabel}</p>
             </div>
           </div>
@@ -367,7 +391,7 @@ export default function Report() {
         <section className="bg-card rounded-2xl border border-border p-6 md:p-8">
           <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
             <BarChart3 className="w-5 h-5" style={{ color: "hsl(var(--coral))" }} />
-            Executive Summary
+            {t('sections.executiveSummary')}
           </h2>
           {executiveSummary ? (
             <div className="prose prose-sm max-w-none text-muted-foreground leading-relaxed">
@@ -376,31 +400,51 @@ export default function Report() {
           ) : (
             <div className="prose prose-sm max-w-none text-muted-foreground leading-relaxed space-y-3">
               <p>
-                Based on your responses, <strong className="text-foreground">{businessName}</strong> scored{" "}
-                <strong style={{ color: getScoreColor(scores.overall) }}>{scores.overall}/100</strong> overall —
-                placing you in the <strong className="text-foreground">{overallLabel.toLowerCase()}</strong> category for{" "}
-                {isHS ? "home service businesses" : "real estate teams"} of your size.
+                <Trans
+                  i18nKey="executiveSummaryTemplate.intro"
+                  ns="report"
+                  values={{
+                    businessName,
+                    score: scores.overall,
+                    label: overallLabel.toLowerCase(),
+                    nicheType: isHS ? t('executiveSummaryTemplate.hsNicheType') : t('executiveSummaryTemplate.reNicheType'),
+                  }}
+                  components={{
+                    strong: <strong className="text-foreground" />,
+                    scoreStrong: <strong style={{ color: getScoreColor(scores.overall) }} />,
+                  }}
+                />
               </p>
               <p>
-                Your strongest areas are in{" "}
-                <strong className="text-foreground">
-                  {scores.categories.sort((a, b) => b.score - a.score).slice(0, 2).map(c => c.label).join(" and ")}
-                </strong>
-                , which suggests you have a solid operational foundation to build from.
+                <Trans
+                  i18nKey="executiveSummaryTemplate.strengths"
+                  ns="report"
+                  values={{
+                    areas: scores.categories
+                      .sort((a, b) => b.score - a.score)
+                      .slice(0, 2)
+                      .map(c => categoryLabels[c.category] ?? c.label)
+                      .join(" and "),
+                  }}
+                  components={{ strong: <strong className="text-foreground" /> }}
+                />
               </p>
               <p>
-                However, significant gaps in{" "}
-                <strong className="text-foreground">
-                  {scores.categories.sort((a, b) => a.score - b.score).slice(0, 2).map(c => c.label).join(" and ")}
-                </strong>{" "}
-                represent your biggest opportunities. Businesses that close these gaps typically see{" "}
-                <strong className="text-foreground">20-40% revenue increases</strong> within 12 months through better lead conversion,
-                retention, and operational efficiency.
+                <Trans
+                  i18nKey="executiveSummaryTemplate.gaps"
+                  ns="report"
+                  values={{
+                    areas: scores.categories
+                      .sort((a, b) => a.score - b.score)
+                      .slice(0, 2)
+                      .map(c => categoryLabels[c.category] ?? c.label)
+                      .join(" and "),
+                  }}
+                  components={{ strong: <strong className="text-foreground" /> }}
+                />
               </p>
               <p>
-                The recommendations in this report are based on your specific answers and industry benchmarks for{" "}
-                {isHS ? `${formState.step1.industry || "home service"} businesses` : "real estate teams"}{" "}
-                {isHS ? `with ${formState.step1.employeeCount || "your"} employees` : `with ${formState.step1.teamSize || "your team size"}`}.
+                {t('executiveSummaryTemplate.recommendation', { nicheDescription })}
               </p>
             </div>
           )}
@@ -410,11 +454,16 @@ export default function Report() {
         <section className="bg-card rounded-2xl border border-border p-6 md:p-8">
           <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
             <TrendingUp className="w-5 h-5" style={{ color: "hsl(var(--coral))" }} />
-            Category Scorecard
+            {t('sections.categoryScorecard')}
           </h2>
           <div className="space-y-5">
             {scores.categories.map((cat) => (
-              <ScoreBar key={cat.category} score={cat.score} label={`${cat.label} (${cat.weight}% weight)`} />
+              <ScoreBar
+                key={cat.category}
+                score={cat.score}
+                label={`${categoryLabels[cat.category] ?? cat.label} (${t('scores.weight', { weight: cat.weight })})`}
+                scoreLabel={translateScoreLabel(cat.score)}
+              />
             ))}
           </div>
         </section>
@@ -423,7 +472,7 @@ export default function Report() {
         <section>
           <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
             <AlertTriangle className="w-5 h-5" style={{ color: "hsl(var(--score-orange))" }} />
-            Top 3 Critical Gaps
+            {t('sections.criticalGaps')}
           </h2>
           <div className="space-y-4">
             {gaps.map((gap, i) => (
@@ -461,9 +510,9 @@ export default function Report() {
         <section className="bg-card rounded-2xl border border-border p-6 md:p-8">
           <h2 className="text-xl font-bold text-foreground mb-2 flex items-center gap-2">
             <Zap className="w-5 h-5" style={{ color: "hsl(var(--score-yellow))" }} />
-            Quick Wins (30 Days)
+            {t('sections.quickWins')}
           </h2>
-          <p className="text-muted-foreground text-sm mb-6">Things you can implement immediately with existing resources</p>
+          <p className="text-muted-foreground text-sm mb-6">{t('sections.quickWinsSubtitle')}</p>
           <div className="space-y-5">
             {quickWins.map((win, i) => (
               <div key={i} className="flex items-start gap-4">
@@ -487,9 +536,9 @@ export default function Report() {
         <section>
           <h2 className="text-xl font-bold text-foreground mb-2 flex items-center gap-2">
             <TrendingUp className="w-5 h-5" style={{ color: "hsl(var(--coral))" }} />
-            Strategic Recommendations (90 Days)
+            {t('sections.strategicRecs')}
           </h2>
-          <p className="text-muted-foreground text-sm mb-4">Larger investments with significant ROI potential</p>
+          <p className="text-muted-foreground text-sm mb-4">{t('sections.strategicRecsSubtitle')}</p>
           <div className="grid md:grid-cols-3 gap-4">
             {strategicRecs.map((rec, i) => (
               <div key={i} className="bg-card rounded-2xl border border-border p-5">
@@ -516,14 +565,23 @@ export default function Report() {
 
         {/* Competitor Benchmark */}
         <section className="bg-card rounded-2xl border border-border p-6 md:p-8">
-          <h2 className="text-xl font-bold text-foreground mb-6">Competitor Benchmark</h2>
+          <h2 className="text-xl font-bold text-foreground mb-6">{t('sections.competitorBenchmark')}</h2>
           <div className="space-y-3">
-            {scores.categories.map((cat) => (
-              <div key={cat.category} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                <span className="text-sm text-foreground">{cat.label}</span>
-                <BenchmarkBadge level={getBenchmark(cat.score)} />
-              </div>
-            ))}
+            {scores.categories.map((cat) => {
+              const level = getBenchmark(cat.score);
+              const bConfig = benchmarkLabels[level];
+              return (
+                <div key={cat.category} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                  <span className="text-sm text-foreground">{categoryLabels[cat.category] ?? cat.label}</span>
+                  <span
+                    className="text-xs font-bold px-2 py-1 rounded-full"
+                    style={{ backgroundColor: bConfig.bg, color: bConfig.color }}
+                  >
+                    {bConfig.icon} {bConfig.label}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </section>
 
@@ -534,11 +592,10 @@ export default function Report() {
         >
           <div className="text-3xl mb-4">📞</div>
           <h2 className="text-2xl font-bold text-white mb-3">
-            Want Help Implementing These Recommendations?
+            {t('cta.heading')}
           </h2>
           <p className="text-white/70 mb-6 max-w-2xl mx-auto">
-            Book a free 30-minute strategy call with the E&P Systems team. We'll review your audit results,
-            prioritize your top opportunities, and show you exactly how we can help implement them.
+            {t('cta.description')}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
@@ -549,23 +606,23 @@ export default function Report() {
               style={{ backgroundColor: "hsl(var(--coral))" }}
             >
               <Calendar className="w-5 h-5" />
-              Book Your Free Strategy Call
+              {t('cta.bookCall')}
             </a>
             <button
               onClick={handleShare}
               className="flex items-center gap-2 px-6 py-4 rounded-xl text-white/70 hover:text-white font-medium border border-white/20 hover:border-white/40 transition-all"
             >
               <Share2 className="w-4 h-4" />
-              Share This Report
+              {t('cta.shareReport')}
             </button>
           </div>
-          <p className="text-white/40 text-xs mt-4">No obligation · No sales pressure · Just strategy</p>
+          <p className="text-white/40 text-xs mt-4">{t('cta.noObligation')}</p>
         </section>
 
         {/* Footer */}
         <div className="text-center py-4 print:hidden">
           <Link to={prefix || "/"} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-            ← Start a New Audit
+            {t('footer.startNewAudit')}
           </Link>
         </div>
       </div>
