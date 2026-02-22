@@ -158,8 +158,9 @@ function buildPrompt(params: {
   formState: FormState
   techFrustrations: string
   biggestChallenge: string
+  subNiche?: string | null  // Human-readable sub-niche label (e.g., "HVAC", "Plumbing")
 }): { system: string; user: string } {
-  const { niche, businessName, scores, formState, techFrustrations, biggestChallenge } = params
+  const { niche, businessName, scores, formState, techFrustrations, biggestChallenge, subNiche } = params
   const isHS = niche === 'home_services'
   const nicheLabel = isHS ? 'Home Services Business' : 'Real Estate Team'
   const overallScore = scores.overall
@@ -190,6 +191,7 @@ Constraints:
 - Never recommend third-party tools, software vendors, or specific products by name. Identify problems and their business impact, steering toward custom solutions and expert consultation.
 - Reference industry benchmarks using phrases like "Most successful teams in your space..." without hard numbers or competitor names.
 - Each gap, quick win, and recommendation MUST include a "cta" field with a personalized call-to-action nudging the reader to book a consultation call. Examples: "Let us automate your follow-up sequence — book a call", "We can build a custom scheduling system for your team".
+- When a sub-niche is specified, tailor recommendations to that specific business type (e.g., "as a plumbing business" not just "home services"). Use your knowledge of that sub-niche's unique challenges and opportunities.
 
 Item count based on overall score (${overallScore}/100):
 - Generate ${gapCount} gaps
@@ -318,7 +320,7 @@ Required JSON schema:
 
 Business: ${businessName}
 Niche: ${nicheLabel}
-Overall Score: ${overallScore}/100
+${subNiche ? `Sub-Niche: ${subNiche}\n` : ''}Overall Score: ${overallScore}/100
 
 Category Scores (weakest first):
 ${categoryScoreLines}
