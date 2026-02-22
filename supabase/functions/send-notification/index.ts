@@ -147,12 +147,23 @@ function buildRecommendationsHtml(aiReport: AiReport | null): string {
 function buildAdminEmailHtml(record: AuditRecord, aiReport: AiReport | null): string {
   const nicheLabel = record.niche === 'home_services' ? 'Home Services' : 'Real Estate'
   const scoreColor = getScoreColor(record.overall_score)
-  const reportUrl = `https://bizaudit.epsystems.dev/report/${record.id}`
+  const langPrefix = record.language === 'en' ? '/en' : ''
+  const reportUrl = `https://bizaudit.epsystems.dev${langPrefix}/report/${record.id}`
   const categoryScoresHtml = buildCategoryScoresHtml(record.scores)
   const recommendationsHtml = buildRecommendationsHtml(aiReport)
 
   const phoneDisplay = record.contact_phone
     ? `<tr><td style="padding: 4px 0; font-size: 14px; color: #6b7280; width: 100px;">Phone</td><td style="padding: 4px 0; font-size: 14px; color: #111827;">${escapeHtml(record.contact_phone)}</td></tr>`
+    : ''
+
+  const languageDisplay = record.language ? (LANGUAGE_LABELS[record.language] ?? record.language) : null
+  const subNicheDisplay = record.sub_niche ? (SUB_NICHE_LABELS[record.sub_niche] ?? record.sub_niche) : null
+
+  const languageRow = languageDisplay
+    ? `<tr><td style="padding: 4px 0; font-size: 14px; color: #6b7280; width: 100px;">Language</td><td style="padding: 4px 0; font-size: 14px; color: #111827;">${escapeHtml(languageDisplay)}</td></tr>`
+    : ''
+  const subNicheRow = subNicheDisplay
+    ? `<tr><td style="padding: 4px 0; font-size: 14px; color: #6b7280; width: 100px;">Sub-niche</td><td style="padding: 4px 0; font-size: 14px; color: #111827;">${escapeHtml(subNicheDisplay)}</td></tr>`
     : ''
 
   const categorySection = categoryScoresHtml
@@ -224,6 +235,8 @@ function buildAdminEmailHtml(record: AuditRecord, aiReport: AiReport | null): st
                         <td style="padding: 4px 0; font-size: 14px; color: #6b7280;">Niche</td>
                         <td style="padding: 4px 0; font-size: 14px; color: #111827;">${escapeHtml(nicheLabel)}</td>
                       </tr>
+                      ${subNicheRow}
+                      ${languageRow}
                     </table>
                   </td>
                 </tr>
@@ -281,7 +294,8 @@ function buildAdminEmailHtml(record: AuditRecord, aiReport: AiReport | null): st
 function buildUserEmailHtml(record: AuditRecord, aiReport: AiReport | null): string {
   const nicheLabel = record.niche === 'home_services' ? 'Home Services' : 'Real Estate'
   const scoreColor = getScoreColor(record.overall_score)
-  const reportUrl = `https://bizaudit.epsystems.dev/report/${record.id}`
+  const langPrefix = record.language === 'en' ? '/en' : ''
+  const reportUrl = `https://bizaudit.epsystems.dev${langPrefix}/report/${record.id}`
   const categoryScoresHtml = buildCategoryScoresHtml(record.scores)
 
   // Show executive summary if available
@@ -448,6 +462,8 @@ Deno.serve(async (req: Request) => {
     const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL')!
 
     const nicheLabel = record.niche === 'home_services' ? 'Home Services' : 'Real Estate'
+    const subNicheDisplay = record.sub_niche ? (SUB_NICHE_LABELS[record.sub_niche] ?? record.sub_niche) : null
+    const subjectNiche = subNicheDisplay ? `${nicheLabel} / ${subNicheDisplay}` : nicheLabel
 
     // Send admin email via Resend
     let emailStatus = 'failed'
@@ -463,7 +479,7 @@ Deno.serve(async (req: Request) => {
         body: JSON.stringify({
           from: 'E&P Systems <engineering@epsystems.org>',
           to: [ADMIN_EMAIL],
-          subject: `New Audit: ${record.contact_name} — ${nicheLabel} (${record.overall_score}/100)`,
+          subject: `New Audit: ${record.contact_name} — ${subjectNiche} (${record.overall_score}/100)`,
           html: htmlBody,
         }),
       })
