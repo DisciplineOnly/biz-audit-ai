@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 11 of 11 (Bulgarian Content and AI Reports)
-Plan: 2 of 4 complete
+Plan: 3 of 4 complete
 Status: Executing
-Last activity: 2026-02-22 — Completed 11-02-PLAN.md
+Last activity: 2026-02-22 — Completed 11-01-PLAN.md
 
-Progress: [████████████████████████] 75% (v1.1) — 24/24 plans planned, 22 complete
+Progress: [████████████████████████] 79% (v1.1) — 24/24 plans planned, 23 complete
 
 ## Performance Metrics
 
@@ -57,6 +57,7 @@ Progress: [███████████████████████
 | 9 | 09-03 | 2min | 1 | 0 |
 | 10 | 10-01 | 2min | 3 | 6 |
 | 10 | 10-02 | 2min | 2 | 1 |
+| 11 | 11-01 | 5min | 2 | 6 |
 | 11 | 11-02 | 3min | 2 | 5 |
 
 ## Accumulated Context
@@ -111,6 +112,8 @@ Key v1.1 architectural decisions (from research):
 - Bulgarian default no URL prefix, English uses /en/ — DONE (10-02), matches actual app routing behavior
 - Duplicated SUB_NICHE_LABELS in send-notification — DONE (10-02), edge functions deploy independently
 - Fallback to raw key for unknown language/sub-niche values — DONE (10-02), future-proofs against new entries
+- Bulgarian translations use formal Вие address, short sub-niche tags (ОВК, ВиК, Електро) for layout fit — DONE (11-01)
+- rateLimit.message + timeHints keys added to both EN and BG generating.json for client-side rate-limit i18n — DONE (11-01)
 - BG sub-niche options keep CRM lists unchanged, add Viber to all toolsExtra, replace lead sources with BG platforms — DONE (11-02)
 - KPI values kept as English strings for scoring consistency — DONE (11-02), display labels via bg/steps.json
 - EUR revenue tiers at Bulgarian-appropriate ranges (25K-500K EUR HS, 15K-150K EUR RE) — DONE (11-02)
@@ -130,5 +133,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 11-02-PLAN.md
-Resume file: .planning/phases/11-bulgarian-content-and-ai-reports/11-02-SUMMARY.md
+Stopped at: Completed 11-01-PLAN.md
+Resume file: .planning/phases/11-bulgarian-content-and-ai-reports/11-01-SUMMARY.md

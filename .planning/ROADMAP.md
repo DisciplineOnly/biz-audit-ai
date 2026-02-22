@@ -142,4 +142,4 @@ Plans:
 | 8. Sub-Niche Config and Selection UI | v1.1 | 5/5 | Complete | 2026-02-22 |
 | 9. Scoring Engine Sub-Niche Weights | v1.1 | 3/3 | Complete | 2026-02-22 |
 | 10. Database and Backend Extension | 2/2 | Complete    | 2026-02-22 | - |
-| 11. Bulgarian Content and AI Reports | 1/4 | In Progress|  | - |
+| 11. Bulgarian Content and AI Reports | 2/4 | In Progress|  | - |
