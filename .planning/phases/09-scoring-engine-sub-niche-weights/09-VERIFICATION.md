@@ -1,97 +1,98 @@
-# Phase 9: Scoring Engine Sub-Niche Weights - Verification Report
+---
+phase: 09-scoring-engine-sub-niche-weights
+verified: 2026-02-22T15:44:30Z
+status: passed
+score: 10/10 must-haves verified
+---
 
-**Date:** 2026-02-22
-**Verifier:** Automated (Plan 09-03)
-**Result:** ALL CRITERIA PASS
+# Phase 9: Scoring Engine Sub-Niche Weights Verification Report
 
-## Build Verification
+**Phase Goal:** Scoring reflects sub-niche business priorities through config-driven weight overrides with no regressions on English scoring
+**Verified:** 2026-02-22T15:44:30Z
+**Status:** passed
+**Re-verification:** No — initial GSD-format verification (previous file was a plan-03 verify script output, not GSD verifier output)
 
-- `npm run build`: PASS (5.45s, 1766 modules, zero errors)
-- `npm run test`: PASS (1 test file, 1 test passed)
+## Goal Achievement
 
-## Criterion 1: Base Weight Regression (SCORE-01)
+### Observable Truths
 
-**Status: PASS**
+| #  | Truth | Status | Evidence |
+|----|-------|--------|----------|
+| 1  | SubNicheWeights type exists defining per-category weight overrides | VERIFIED | `src/config/subNicheConfig.ts` line 299 — exported `SubNicheWeights` interface with 7 keys |
+| 2  | SUB_NICHE_WEIGHTS config maps SubNicheGroup keys to weight override objects | VERIFIED | `src/config/subNicheConfig.ts` lines 314-356 — 7 entries: reactive, recurring, project_based, commercial, property_management, new_construction, luxury_resort |
+| 3  | Every weight override object's values sum to exactly 1.0 | VERIFIED | Runtime check confirmed all 7 groups sum to 1.00 |
+| 4  | Groups with no meaningful weight differences have no entry (graceful fallback to base weights) | VERIFIED | residential_sales intentionally omitted with comment on line 357 |
+| 5  | computeScores() accepts optional subNiche parameter | VERIFIED | `src/lib/scoring.ts` line 186: `computeScores(state: AuditFormState, subNiche?: SubNiche \| null)` |
+| 6  | No subNiche = identical results to v1.0 (base weights unchanged) | VERIFIED | Lines 516-528: baseWeights defined, `subNicheWeights = getWeightsForSubNiche(subNiche ?? null)`, `weights = subNicheWeights ?? baseWeights` — null path resolves to baseWeights with exact v1.0 values |
+| 7  | subNiche provided = config-defined weight overrides applied via getSubNicheGroup lookup | VERIFIED | `getWeightsForSubNiche()` at line 360 calls `getSubNicheGroup()` then looks up `SUB_NICHE_WEIGHTS[group]` |
+| 8  | CategoryScore weight field reflects applied weights, not always base weights | VERIFIED | `src/lib/scoring.ts` lines 543-549: `weight: Math.round(weights.technology * 100)` etc. — uses `weights` variable not hardcoded values |
+| 9  | AuditForm.tsx passes state.subNiche to computeScores() | VERIFIED | `src/pages/AuditForm.tsx` line 119: `const scores = computeScores(state, state.subNiche)` |
+| 10 | npm run build succeeds with zero errors | VERIFIED | Build output: 1766 modules transformed, built in 5.36s, zero errors |
 
-### Base Weights Confirmed
-The `baseWeights` object in `src/lib/scoring.ts` (lines 516-524):
-```
-technology: 0.10, leads: 0.20, scheduling: 0.15,
-communication: 0.10, followUp: 0.15, operations: 0.15, financial: 0.15
-```
-These are the exact v1.0 values.
+**Score:** 10/10 truths verified
 
-### Code Path Verification
-- `computeScores(state)` (no subNiche): `subNiche` is `undefined`, `undefined ?? null` = `null`, `getWeightsForSubNiche(null)` returns `null`, `null ?? baseWeights` = `baseWeights`. **Uses base weights.**
-- `computeScores(state, null)`: Same path. **Uses base weights.**
-- `computeScores(state, "residential_sales")`: `getSubNicheGroup("residential_sales")` returns `"residential_sales"`, `SUB_NICHE_WEIGHTS["residential_sales"]` is `undefined` (intentionally omitted), `undefined ?? null` = `null`, `null ?? baseWeights` = `baseWeights`. **Uses base weights.**
+### Required Artifacts
 
-## Criterion 2: Sub-Niche Weight Overrides (SCORE-01, SCORE-03)
+| Artifact | Expected | Status | Details |
+|----------|----------|--------|---------|
+| `src/config/subNicheConfig.ts` | SubNicheWeights type, SUB_NICHE_WEIGHTS config, getWeightsForSubNiche() helper | VERIFIED | All three present and substantive; file is 365 lines with real config data |
+| `src/lib/scoring.ts` | computeScores() with optional subNiche parameter and weight override logic | VERIFIED | Import on line 2, signature at line 186, weight resolution at lines 516-528 |
+| `src/pages/AuditForm.tsx` | Passes state.subNiche to computeScores() | VERIFIED | Line 119 confirmed |
+| `supabase/functions/generate-report/index.ts` | buildPrompt() accepts subNiche, prompt includes Sub-Niche label, SUB_NICHE_LABELS map | VERIFIED | All three present; 17-entry labels map, prompt at line 324, handler reads body.subNiche at line 442 |
 
-**Status: PASS**
+### Key Link Verification
 
-### 7 Weight Override Groups
-All entries in `SUB_NICHE_WEIGHTS` (src/config/subNicheConfig.ts lines 314-356):
+| From | To | Via | Status | Details |
+|------|----|-----|--------|---------|
+| `src/lib/scoring.ts` | `src/config/subNicheConfig.ts` | `getWeightsForSubNiche()` import | WIRED | Line 2: `import { getWeightsForSubNiche } from "@/config/subNicheConfig"` — called at line 527 |
+| `src/pages/AuditForm.tsx` | `src/lib/scoring.ts` | `computeScores()` call with subNiche argument | WIRED | Line 17: import, line 119: `computeScores(state, state.subNiche)` — subNiche argument wired |
+| `supabase/functions/generate-report/index.ts` | label lookup + buildPrompt | inline SUB_NICHE_LABELS + subNiche parameter | WIRED | Lines 442-464: reads subNicheKey, resolves to human-readable label, passes to buildPrompt() |
 
-| Group | Sum | Meaningful Diffs from Base |
-|-------|-----|---------------------------|
-| reactive | 1.00 | scheduling +5, followUp -5 |
-| recurring | 1.00 | leads -5, followUp +5 |
-| project_based | 1.00 | leads -5, scheduling -5, operations +5, financial +5 |
-| commercial | 1.00 | leads -5, scheduling +5, followUp -5, operations +5 |
-| property_management | 1.00 | leads -10, scheduling -5, communication +5, operations +5, financial +5 |
-| new_construction | 1.00 | scheduling +5, operations -5 |
-| luxury_resort | 1.00 | technology +5, leads -5, scheduling -5, communication +5, followUp +5, operations -5 |
+### Requirements Coverage
 
-All 7 sums verified to equal exactly 1.00.
+| Requirement | Source Plan | Description | Status | Evidence |
+|-------------|-------------|-------------|--------|----------|
+| SCORE-01 | 09-01, 09-02, 09-03 | Scoring engine applies sub-niche-specific weight adjustments where research indicates different priorities | SATISFIED | 7 weight override groups in SUB_NICHE_WEIGHTS; computeScores() applies them when subNiche provided; AI prompt includes sub-niche context |
+| SCORE-02 | 09-01, 09-03 | Scoring produces identical results for the same answers regardless of language | SATISFIED | scoring.ts and subNicheConfig.ts contain zero references to i18n, i18next, language, t(), useTranslation, or locale. subNiche parameter is a string literal key (e.g., "hvac"), not a translated label |
+| SCORE-03 | 09-01, 09-03 | Sub-niche weight overrides are config-driven (not hardcoded conditionals) | SATISFIED | SUB_NICHE_WEIGHTS is a Partial<Record<SubNicheGroup, SubNicheWeights>> config object; computeScores() has no conditionals — pure lookup via getWeightsForSubNiche() |
 
-### Specific Override Verification
-- **project_based**: operations=0.20 (+5), financial=0.20 (+5), scheduling=0.10 (-5), leads=0.15 (-5) -- Confirmed
-- **property_management**: operations=0.20 (+5), financial=0.20 (+5), leads=0.10 (-10) -- Confirmed
-- **recurring**: followUp=0.20 (+5), leads=0.15 (-5) -- Confirmed
+No orphaned requirements: REQUIREMENTS.md traceability table maps SCORE-01, SCORE-02, SCORE-03 to Phase 9 — all three accounted for.
 
-### Lookup Function Verification
-- `getWeightsForSubNiche("hvac")` -> `getSubNicheGroup("hvac")` = `"reactive"` -> returns reactive weights. **Confirmed.**
-- `getWeightsForSubNiche("construction")` -> `getSubNicheGroup("construction")` = `"project_based"` -> returns project_based weights. **Confirmed.**
-- `getWeightsForSubNiche("property_management")` -> `getSubNicheGroup("property_management")` = `"property_management"` -> returns property_management weights. **Confirmed.**
+### Anti-Patterns Found
 
-### Weight Application
-`computeScores()` line 528: `const weights = subNicheWeights ?? baseWeights;` -- sub-niche weights are applied when present, base weights when not.
+| File | Line | Pattern | Severity | Impact |
+|------|------|---------|----------|--------|
+| — | — | — | — | None found |
 
-## Criterion 3: Language Neutrality (SCORE-02)
+No TODOs, FIXMEs, stubs, empty implementations, or placeholder returns found in scoring.ts, subNicheConfig.ts, AuditForm.tsx, or generate-report/index.ts.
 
-**Status: PASS**
+### Human Verification Required
 
-### Architectural Verification
-- `scoring.ts` does NOT reference `i18n`, `i18next`, `language`, `t()`, `useTranslation`, or any locale-related code
-- `subNicheConfig.ts` contains only a comment mentioning `labelKey` for Phase 11 display -- no translation function is called
-- Scoring uses `state.step3.responseSpeed` etc. which stores English value strings (Phase 6 value/label separation)
-- The `subNiche` parameter is a string literal key (e.g., "hvac"), not a translated label
-- No translation function is called inside scoring.ts or its imports
+None. All critical behaviors are verifiable through static code analysis:
 
-**Design guarantee:** Language never enters the scoring pipeline. Identical form state always produces identical scores regardless of UI language.
+- Weight math is pure arithmetic (verified programmatically)
+- Code paths are traceable (no runtime branching hidden from static analysis)
+- Language neutrality is an architectural guarantee (no i18n code in scoring pipeline)
 
-## AI Prompt Sub-Niche Context
+### Build and Test Results
 
-**Status: PASS**
+- `npm run build`: PASS — 1766 modules transformed, zero errors, 5.36s
+- `npm run test`: PASS — 1 test file, 1 test passed, zero failures
 
-- `buildPrompt()` accepts `subNiche?: string | null` parameter (line 162)
-- User prompt includes `Sub-Niche: ${subNiche}` when provided (line 324)
-- `SUB_NICHE_LABELS` covers all 17 sub-niches (verified count: 17)
-- Labels are human-readable (e.g., "HVAC" not "hvac")
-- No weight data appears in the prompt -- only the sub-niche name
+### Gaps Summary
 
-## Summary
+No gaps. All must-haves from 09-01-PLAN.md frontmatter are satisfied:
 
-| # | Criterion | Result |
-|---|-----------|--------|
-| 1 | Base Weight Regression | PASS |
-| 2 | Sub-Niche Weight Overrides | PASS |
-| 3 | Language Neutrality | PASS |
-| 4 | AI Prompt Sub-Niche Context | PASS |
-
-**Phase 9 verification: ALL CRITERIA PASS**
+- `SubNicheWeights` type exported and substantive
+- `SUB_NICHE_WEIGHTS` has 7 config entries, each with 7 keys summing to 1.00
+- `getWeightsForSubNiche()` exported and correctly routes through group lookup
+- `computeScores()` signature extended with optional `subNiche` parameter
+- Backward compatibility preserved — no-subNiche path uses unmodified base weights
+- `CategoryScore.weight` field reflects applied weights dynamically
+- AuditForm.tsx wired: passes `state.subNiche` as second argument to `computeScores()`
+- Edge function wired: reads subNiche from request body, resolves to human-readable label via 17-entry inline map, passes to `buildPrompt()`
+- Language neutrality: architectural guarantee — no locale code anywhere in the scoring pipeline
 
 ---
-*Phase: 09-scoring-engine-sub-niche-weights*
-*Verified: 2026-02-22*
+_Verified: 2026-02-22T15:44:30Z_
+_Verifier: Claude (gsd-verifier)_
