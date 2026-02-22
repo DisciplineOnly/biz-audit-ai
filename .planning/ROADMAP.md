@@ -92,7 +92,11 @@ Plans:
   1. Running `computeScores()` without a sub-niche produces the same results as v1.0 (base weights unchanged)
   2. Running `computeScores()` with a sub-niche applies the config-defined weight overrides — the applied weights sum to 1.0 and differ meaningfully from base where research indicates (e.g., Operations weighted higher for project-based trades)
   3. The same answers submitted in English and Bulgarian produce identical numerical scores — language does not affect score output
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 09-01-PLAN.md — Research-driven weight config, computeScores() integration, AuditForm wiring
+- [ ] 09-02-PLAN.md — AI prompt sub-niche context in generate-report edge function
+- [ ] 09-03-PLAN.md — Verification checkpoint
 
 ### Phase 10: Database and Backend Extension
 **Goal**: Completed audits persist language and sub-niche, the admin email reports both fields, and Bulgarian free-text reaches the AI unstripped
@@ -128,6 +132,6 @@ Plans:
 | 6. i18n Infrastructure and Routing | v1.1 | 4/4 | Complete | 2026-02-22 |
 | 7. English Translation Pass | v1.1 | 6/6 | Complete | 2026-02-22 |
 | 8. Sub-Niche Config and Selection UI | v1.1 | 5/5 | Complete | 2026-02-22 |
-| 9. Scoring Engine Sub-Niche Weights | v1.1 | 0/? | Not started | - |
+| 9. Scoring Engine Sub-Niche Weights | v1.1 | 0/3 | Not started | - |
 | 10. Database and Backend Extension | v1.1 | 0/? | Not started | - |
 | 11. Bulgarian Content and AI Reports | v1.1 | 0/? | Not started | - |

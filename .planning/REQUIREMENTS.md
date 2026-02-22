@@ -38,9 +38,9 @@ Requirements for v1.1 Localization & Sub-Niche Specialization. Each maps to road
 
 ### Scoring
 
-- [ ] **SCORE-01**: Scoring engine applies sub-niche-specific weight adjustments where research indicates different priorities
-- [ ] **SCORE-02**: Scoring produces identical results for the same answers regardless of language (English vs Bulgarian)
-- [ ] **SCORE-03**: Sub-niche weight overrides are config-driven (not hardcoded conditionals)
+- [x] **SCORE-01**: Scoring engine applies sub-niche-specific weight adjustments where research indicates different priorities
+- [x] **SCORE-02**: Scoring produces identical results for the same answers regardless of language (English vs Bulgarian)
+- [x] **SCORE-03**: Sub-niche weight overrides are config-driven (not hardcoded conditionals)
 
 ### AI Reports
 
@@ -104,9 +104,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SUBN-06 | Phase 8 | Pending |
 | SUBN-07 | Phase 8 | Pending |
 | SUBN-08 | Phase 8 | Pending |
-| SCORE-01 | Phase 9 | Pending |
-| SCORE-02 | Phase 9 | Pending |
-| SCORE-03 | Phase 9 | Pending |
+| SCORE-01 | Phase 9 | Complete |
+| SCORE-02 | Phase 9 | Complete |
+| SCORE-03 | Phase 9 | Complete |
 | AI-01 | Phase 11 | Pending |
 | AI-02 | Phase 11 | Pending |
 | AI-03 | Phase 11 | Pending |

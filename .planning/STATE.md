@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 9 of 11 (Scoring Engine Sub-Niche Weights)
-Plan: 0 of ? complete (Phase 8 complete, next: 09-01)
-Status: Ready to plan
-Last activity: 2026-02-22 — Phase 8 complete (5/5 plans, all criteria PASS)
+Plan: 1 of 3 complete (Phase 9, next: 09-02)
+Status: Executing
+Last activity: 2026-02-22 — 09-01 complete (sub-niche weight overrides)
 
-Progress: [██████████░░░░░░░░░░] 50% (v1.1) — 15/? plans
+Progress: [███████████░░░░░░░░░] 53% (v1.1) — 16/18 plans planned, 16 complete
 
 ## Performance Metrics
 
@@ -52,6 +52,7 @@ Progress: [██████████░░░░░░░░░░] 50% (v1
 | 8 | 08-03 | 2min | 3 | 1 |
 | 8 | 08-04 | 2min | 4 | 3 |
 | 8 | 08-05 | 1min | 0 | 0 |
+| 9 | 09-01 | 4min | 2 | 3 |
 
 ## Accumulated Context
 
@@ -90,6 +91,10 @@ Key v1.1 architectural decisions (from research):
 - Tools checklist uses ADDITIVE model — DONE (08-04), sub-niche extras appended to base
 - SUBN-06 (pricing adaptation) deferred to v1.x — DONE (08-05), per research recommendation
 - Phase 8 verification passed — DONE (08-05), all 5 ROADMAP success criteria met
+- residential_sales uses base weights (no override entry) — DONE (09-01), closest match to original scoring profile
+- Config-driven weights via Partial<Record> with null fallback — DONE (09-01), no hardcoded conditionals in scoring.ts
+- computeScores() backward compatible with optional subNiche param — DONE (09-01), no subNiche = identical v1.0 behavior
+- CategoryScore weight field derived dynamically from applied weights — DONE (09-01), matches actual scoring
 
 ### Pending Todos
 
@@ -105,5 +110,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Phase 9 context gathered
-Resume file: .planning/phases/09-scoring-engine-sub-niche-weights/09-CONTEXT.md
+Stopped at: Completed 09-01-PLAN.md
+Resume file: .planning/phases/09-scoring-engine-sub-niche-weights/09-02-PLAN.md
