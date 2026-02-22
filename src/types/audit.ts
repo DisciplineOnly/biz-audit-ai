@@ -1,7 +1,23 @@
 export type Niche = "home_services" | "real_estate";
 
+/** All 12 Home Services sub-niches */
+export type HSSubNiche =
+  | "hvac" | "plumbing" | "electrical" | "garage_doors"       // Group A: Reactive Service
+  | "pest_control" | "landscaping" | "cleaning"               // Group B: Recurring/Scheduled
+  | "roofing" | "painting" | "general_contracting"            // Group C: Project-Based
+  | "construction" | "interior_design";                       // Group C: Project-Based
+
+/** All 5 Real Estate sub-niches */
+export type RESubNiche =
+  | "residential_sales" | "commercial" | "property_management"
+  | "new_construction" | "luxury_resort";
+
+/** Union of all sub-niches */
+export type SubNiche = HSSubNiche | RESubNiche;
+
 export interface AuditFormState {
   niche: Niche | null;
+  subNiche: SubNiche | null;
   currentStep: number;
   completedSteps: number[];
   partnerCode: string | null;
@@ -139,6 +155,7 @@ export interface AuditFormState {
 
 export const initialFormState: AuditFormState = {
   niche: null,
+  subNiche: null,
   currentStep: 1,
   completedSteps: [],
   partnerCode: null,
@@ -182,6 +199,7 @@ export const initialFormState: AuditFormState = {
 
 export type AuditAction =
   | { type: "SET_NICHE"; payload: Niche }
+  | { type: "SET_SUB_NICHE"; payload: SubNiche }
   | { type: "SET_STEP"; payload: number }
   | { type: "COMPLETE_STEP"; payload: number }
   | { type: "SET_PARTNER_CODE"; payload: string }
@@ -198,7 +216,9 @@ export type AuditAction =
 export function auditReducer(state: AuditFormState, action: AuditAction): AuditFormState {
   switch (action.type) {
     case "SET_NICHE":
-      return { ...state, niche: action.payload };
+      return { ...state, niche: action.payload, subNiche: null };
+    case "SET_SUB_NICHE":
+      return { ...state, subNiche: action.payload };
     case "SET_STEP":
       return { ...state, currentStep: action.payload };
     case "COMPLETE_STEP":

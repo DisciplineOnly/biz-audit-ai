@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { FormField, StepHeader, StyledSelect, MultiCheckbox, StepProps, toOptions } from "./AuditFormComponents";
+import { getSubNicheOptions } from "@/config/subNicheConfig";
 
 const HS_PERFORMANCE = toOptions([
   "KPIs tracked in software (revenue per tech, callback rate, etc.)",
@@ -56,6 +57,12 @@ export function Step7Operations({ state, dispatch, isHS }: StepProps) {
   const { t } = useTranslation('steps');
   const { step7 } = state;
   const update = (payload: Partial<typeof step7>) => dispatch({ type: "UPDATE_STEP7", payload });
+
+  // Sub-niche-aware KPI options
+  const subNicheOpts = state.subNiche ? getSubNicheOptions(state.subNiche) : null;
+  const kpiOptions = subNicheOpts && subNicheOpts.kpis.length > 0
+    ? toOptions(subNicheOpts.kpis)
+    : (isHS ? HS_KPIS : RE_KPIS);
 
   return (
     <div>
@@ -142,7 +149,7 @@ export function Step7Operations({ state, dispatch, isHS }: StepProps) {
           hint={t('step7.fields.kpisTracked.hint')}
         >
           <MultiCheckbox
-            options={isHS ? HS_KPIS : RE_KPIS}
+            options={kpiOptions}
             selected={step7.kpisTracked}
             onChange={(v) => update({ kpisTracked: v })}
           />

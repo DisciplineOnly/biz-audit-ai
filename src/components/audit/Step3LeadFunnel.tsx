@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import {
   FormField, StepHeader, StyledSelect, MultiCheckbox, StepProps, toOptions
 } from "./AuditFormComponents";
+import { getSubNicheOptions } from "@/config/subNicheConfig";
 
 const HS_LEAD_SOURCES = toOptions([
   "Google Search/SEO", "Google Ads (PPC)", "Google Local Services Ads",
@@ -67,6 +68,12 @@ export function Step3LeadFunnel({ state, dispatch, isHS }: StepProps) {
   const { step3 } = state;
   const update = (payload: Partial<typeof step3>) => dispatch({ type: "UPDATE_STEP3", payload });
 
+  // Sub-niche-aware lead source options
+  const subNicheOpts = state.subNiche ? getSubNicheOptions(state.subNiche) : null;
+  const leadSourceOptions = subNicheOpts && subNicheOpts.leadSources.length > 0
+    ? toOptions(subNicheOpts.leadSources)
+    : (isHS ? HS_LEAD_SOURCES : RE_LEAD_SOURCES);
+
   return (
     <div>
       <StepHeader
@@ -82,7 +89,7 @@ export function Step3LeadFunnel({ state, dispatch, isHS }: StepProps) {
           required
         >
           <MultiCheckbox
-            options={isHS ? HS_LEAD_SOURCES : RE_LEAD_SOURCES}
+            options={leadSourceOptions}
             selected={step3.leadSources}
             onChange={(v) => update({ leadSources: v })}
           />

@@ -14,7 +14,8 @@
       "employeeCount": { "label": "Number of Employees (including techs)" },
       "annualRevenue": { "label": "Annual Revenue" },
       "yearsInBusiness": { "label": "Years in Business" },
-      "serviceArea": { "label": "Service Area", "hint": "How broad is your coverage?" }
+      "serviceArea": { "label": "Service Area", "hint": "How broad is your coverage?" },
+      "subNiche": { "title": "What type of trade business do you run?" }
     },
     "re": {
       "sectionHeader": "About Your Real Estate Business",
@@ -23,7 +24,8 @@
       "transactionVolume": { "label": "Annual Transaction Volume" },
       "annualGCI": { "label": "Annual GCI (Gross Commission Income)" },
       "yearsInBusiness": { "label": "Years in Business" },
-      "primaryMarket": { "label": "Primary Market Type" }
+      "primaryMarket": { "label": "Primary Market Type" },
+      "subNiche": { "title": "What's your primary market segment?" }
     }
   },
   "step2": {

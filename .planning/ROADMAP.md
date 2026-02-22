@@ -25,7 +25,7 @@
 
 - [x] **Phase 6: i18n Infrastructure and Routing** — Install i18next, wire `/bg/*` URL routing, fix component value/label API before any translation work
 - [x] **Phase 7: English Translation Pass** — Extract all hardcoded strings into English JSON namespaces; verify zero regressions
-- [ ] **Phase 8: Sub-Niche Config and Selection UI** — Config-driven option branching for all 17 sub-niches; selection card grid in Step 1
+- [x] **Phase 8: Sub-Niche Config and Selection UI** — Config-driven option branching for all 17 sub-niches; selection card grid in Step 1
 - [ ] **Phase 9: Scoring Engine Sub-Niche Weights** — Config-driven weight overrides per sub-niche group; scoring identical across languages
 - [ ] **Phase 10: Database and Backend Extension** — Persist language and sub-niche; fix Cyrillic sanitization; wire fields through to edge function
 - [ ] **Phase 11: Bulgarian Content and AI Reports** — Full Bulgarian translation namespaces, BG-market options, AI report in Bulgarian
@@ -76,7 +76,13 @@ Plans:
   3. CRM and software options in Step 2 show tools relevant to the selected sub-niche group (e.g., ServiceTitan for HVAC, GorillaDesk for Pest Control, Buildertrend for Construction, Lasso for New Construction)
   4. Lead source options in Step 3 and KPI options in Step 7 reflect the selected sub-niche — a plumber and a landscaper see meaningfully different lists
   5. Sub-niche selection state is preserved in localStorage and survives page refresh; sub-niche selection works identically whether the UI is in English or Bulgarian
-**Plans**: TBD
+**Plans**: 5 plans
+Plans:
+- [x] 08-01-PLAN.md — SubNiche types, AuditFormState integration, config schema and registry
+- [x] 08-02-PLAN.md — SubNicheSelector card grid component, Step 1 integration, validation
+- [x] 08-03-PLAN.md — Populate all CRM, tools, lead source, and KPI option data from research
+- [x] 08-04-PLAN.md — Wire Steps 2, 3, 7 to read options from sub-niche config
+- [x] 08-05-PLAN.md — Verification checkpoint
 
 ### Phase 9: Scoring Engine Sub-Niche Weights
 **Goal**: Scoring reflects sub-niche business priorities through config-driven weight overrides with no regressions on English scoring
@@ -121,7 +127,7 @@ Plans:
 | 5. Frontend Integration | v1.0 | 3/3 | Complete | 2026-02-20 |
 | 6. i18n Infrastructure and Routing | v1.1 | 4/4 | Complete | 2026-02-22 |
 | 7. English Translation Pass | v1.1 | 6/6 | Complete | 2026-02-22 |
-| 8. Sub-Niche Config and Selection UI | v1.1 | 0/? | Not started | - |
+| 8. Sub-Niche Config and Selection UI | v1.1 | 5/5 | Complete | 2026-02-22 |
 | 9. Scoring Engine Sub-Niche Weights | v1.1 | 0/? | Not started | - |
 | 10. Database and Backend Extension | v1.1 | 0/? | Not started | - |
 | 11. Bulgarian Content and AI Reports | v1.1 | 0/? | Not started | - |

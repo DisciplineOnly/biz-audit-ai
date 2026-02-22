@@ -31,7 +31,8 @@
     "crmRequired": "Please select your primary CRM or software",
     "crmSatisfactionRequired": "Please rate your satisfaction with your current software",
     "leadSourceRequired": "Please select at least one lead source",
-    "responseSpeedRequired": "Please select your lead response speed"
+    "responseSpeedRequired": "Please select your lead response speed",
+    "subNicheRequired": "Please select your specific business type"
   },
   "niche": {
     "hs": "Home Services & Trades",

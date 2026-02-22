@@ -3,6 +3,7 @@ import {
   FormField, StepHeader, StyledSelect, MultiCheckbox,
   StyledTextarea, RatingButtons, StepProps, toOptions
 } from "./AuditFormComponents";
+import { getSubNicheOptions } from "@/config/subNicheConfig";
 
 const HS_CRMS = toOptions([
   "ServiceTitan", "Housecall Pro", "Jobber", "FieldEdge", "ServiceM8",
@@ -37,6 +38,16 @@ export function Step2Technology({ state, dispatch, isHS }: StepProps) {
   const { step2 } = state;
   const update = (payload: Partial<typeof step2>) => dispatch({ type: "UPDATE_STEP2", payload });
 
+  // Sub-niche-aware option resolution
+  const subNicheOpts = state.subNiche ? getSubNicheOptions(state.subNiche) : null;
+  const crmOptions = subNicheOpts && subNicheOpts.crms.length > 0
+    ? toOptions(subNicheOpts.crms)
+    : (isHS ? HS_CRMS : RE_CRMS);
+  const baseTools = isHS ? HS_TOOLS : RE_TOOLS;
+  const toolOptions = subNicheOpts && subNicheOpts.toolsExtra.length > 0
+    ? [...baseTools, ...toOptions(subNicheOpts.toolsExtra)]
+    : baseTools;
+
   return (
     <div>
       <StepHeader
@@ -50,7 +61,7 @@ export function Step2Technology({ state, dispatch, isHS }: StepProps) {
           <StyledSelect
             value={step2.primaryCRM}
             onChange={(v) => update({ primaryCRM: v })}
-            options={isHS ? HS_CRMS : RE_CRMS}
+            options={crmOptions}
             placeholder={t('step2.fields.primaryCRM.placeholder')}
           />
         </FormField>
@@ -71,7 +82,7 @@ export function Step2Technology({ state, dispatch, isHS }: StepProps) {
           hint={t('step2.fields.toolsUsed.hint')}
         >
           <MultiCheckbox
-            options={isHS ? HS_TOOLS : RE_TOOLS}
+            options={toolOptions}
             selected={step2.toolsUsed}
             onChange={(v) => update({ toolsUsed: v })}
           />

@@ -27,6 +27,7 @@ function validateStep(step: number, state: AuditFormState, t: TFunction): string
       if (!state.step1.email) errors.push(t('validation.emailRequired'));
       if (state.step1.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.step1.email))
         errors.push(t('validation.emailInvalid'));
+      if (!state.subNiche) errors.push(t('validation.subNicheRequired'));
       break;
     case 2:
       if (!state.step2.primaryCRM) errors.push(t('validation.crmRequired'));

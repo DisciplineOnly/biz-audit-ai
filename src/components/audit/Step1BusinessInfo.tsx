@@ -1,5 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { FormField, StepHeader, StyledInput, StyledSelect, StepProps, toOptions } from "./AuditFormComponents";
+import { SubNicheSelector } from "./SubNicheSelector";
+import { SubNiche } from "@/types/audit";
 
 const HS_INDUSTRIES = toOptions([
   "HVAC", "Plumbing", "Electrical", "Roofing", "Landscaping",
@@ -164,6 +166,16 @@ export function Step1BusinessInfo({ state, dispatch, isHS }: StepProps) {
               </FormField>
             </div>
           )}
+        </div>
+
+        {/* Sub-Niche Selection */}
+        <div className="border-t border-border pt-5">
+          <SubNicheSelector
+            niche={state.niche!}
+            selected={state.subNiche}
+            onSelect={(subNiche: SubNiche) => dispatch({ type: "SET_SUB_NICHE", payload: subNiche })}
+            title={isHS ? t('step1.hs.subNiche.title') : t('step1.re.subNiche.title')}
+          />
         </div>
       </div>
     </div>

@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** Business owners complete the audit and receive a personalized, AI-driven analysis that makes them want to book a consultation
-**Current focus:** Phase 8 — Sub-Niche Config and Selection UI (v1.1)
+**Current focus:** Phase 9 — Scoring Engine Sub-Niche Weights (v1.1)
 
 ## Current Position
 
-Phase: 8 of 11 (Sub-Niche Config and Selection UI)
-Plan: 0 of ? complete (Phase 7 complete, next: 08-01)
+Phase: 9 of 11 (Scoring Engine Sub-Niche Weights)
+Plan: 0 of ? complete (Phase 8 complete, next: 09-01)
 Status: Ready to plan
-Last activity: 2026-02-22 — Phase 7 complete, transitioning to Phase 8
+Last activity: 2026-02-22 — Phase 8 complete (5/5 plans, all criteria PASS)
 
-Progress: [████████░░░░░░░░░░░░] 40% (v1.1) — 10/? plans
+Progress: [██████████░░░░░░░░░░] 50% (v1.1) — 15/? plans
 
 ## Performance Metrics
 
@@ -47,6 +47,11 @@ Progress: [████████░░░░░░░░░░░░] 40% (v1
 | 7 | 07-04 | 4min | 2 | 5 |
 | 7 | 07-05 | 4min | 3 | 5 |
 | 7 | 07-06 | 2min | 1 | 0 |
+| 8 | 08-01 | 2min | 2 | 2 |
+| 8 | 08-02 | 3min | 2 | 5 |
+| 8 | 08-03 | 2min | 3 | 1 |
+| 8 | 08-04 | 2min | 4 | 3 |
+| 8 | 08-05 | 1min | 0 | 0 |
 
 ## Accumulated Context
 
@@ -77,8 +82,14 @@ Key v1.1 architectural decisions (from research):
 - ScoreBar receives translated scoreLabel as prop — DONE (07-05), keeps component simple and translation-aware
 - BenchmarkBadge inlined with translated benchmarkLabels config — DONE (07-05), avoids prop-drilling complexity
 - Phase 7 verification passed — DONE (07-06), all 3 ROADMAP success criteria met, zero hardcoded strings in 14 files
-- Config-driven sub-niche branching (TypeScript discriminated union) — never boolean flags
-- Phase 9 (scoring weights) can partially overlap with Phase 8 — same config schema
+- 3-group HS sub-niche strategy (reactive/recurring/project_based) — DONE (08-01), reduces 12 sub-niches to 3 config entries
+- RE sub-niches individually configured (5 separate entries) — DONE (08-01), each has unique CRM/lead/KPI needs
+- SubNiche as string literal union, not enum — DONE (08-01), consistent with existing Niche type
+- SET_NICHE resets subNiche to null — DONE (08-01), clean state transitions
+- CRM/lead source lists REPLACE base lists on sub-niche selection — DONE (08-04), complete replacement for clarity
+- Tools checklist uses ADDITIVE model — DONE (08-04), sub-niche extras appended to base
+- SUBN-06 (pricing adaptation) deferred to v1.x — DONE (08-05), per research recommendation
+- Phase 8 verification passed — DONE (08-05), all 5 ROADMAP success criteria met
 
 ### Pending Todos
 
@@ -94,5 +105,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Phase 8 context gathered
-Resume file: .planning/phases/08-sub-niche-config-and-selection-ui/08-CONTEXT.md
+Stopped at: Phase 8 complete, transitioning to Phase 9
+Resume file: .planning/ROADMAP.md (Phase 9 section)
