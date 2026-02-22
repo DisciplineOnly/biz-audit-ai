@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 10 of 11 (Database and Backend Extension)
-Plan: 0 of ? complete (Phase 10, next: 10-01)
-Status: Ready to plan
-Last activity: 2026-02-22 — Phase 9 complete, transitioning to Phase 10
+Plan: 1 of 2 complete (Phase 10, next: 10-02)
+Status: Executing
+Last activity: 2026-02-22 — Completed 10-01-PLAN.md
 
-Progress: [█████████████░░░░░░░] 60% (v1.1) — 18/18 plans planned, 18 complete
+Progress: [██████████████░░░░░░] 65% (v1.1) — 20/20 plans planned, 19 complete
 
 ## Performance Metrics
 
@@ -55,6 +55,7 @@ Progress: [█████████████░░░░░░░] 60% (v1
 | 9 | 09-01 | 4min | 2 | 3 |
 | 9 | 09-02 | 2min | 3 | 1 |
 | 9 | 09-03 | 2min | 1 | 0 |
+| 10 | 10-01 | 2min | 3 | 6 |
 
 ## Accumulated Context
 
@@ -102,6 +103,9 @@ Key v1.1 architectural decisions (from research):
 - No weight context in AI prompt, only sub-niche name — DONE (09-02), per 09-CONTEXT decision
 - Human-readable label in prompt (HVAC not hvac) — DONE (09-02), for natural AI output
 - Phase 9 verification passed — DONE (09-03), all 3 ROADMAP success criteria met (base weights, sub-niche overrides, language neutrality)
+- Nullable language/sub_niche columns (no DEFAULT, no backfill) — DONE (10-01), legacy rows untouched
+- Unicode sanitization via \p{L}\p{N} with /gu flag — DONE (10-01), replaces ASCII-only \w to preserve Cyrillic
+- \p{Emoji_Presentation} for emoji stripping — DONE (10-01), avoids false matches on ASCII digits/#
 
 ### Pending Todos
 
@@ -110,12 +114,12 @@ None.
 ### Blockers/Concerns
 
 - ~~Phase 6 pitfall: i18next detection order~~ — RESOLVED (06-01): no browser-languagedetector used, URL is sole source of truth
-- Phase 10 pitfall: `sanitizeText()` currently strips all Cyrillic — must fix before Phase 11 Bulgarian content
+- ~~Phase 10 pitfall: `sanitizeText()` currently strips all Cyrillic~~ — RESOLVED (10-01): replaced \w with \p{L}\p{N}, Cyrillic preserved
 - Phase 11 quality gate: Bulgarian AI report output requires native-speaker review of 3-5 generated reports before launch sign-off (process gap, not technical blocker)
 - Resend sandbox sender (onboarding@resend.dev) needs custom domain for production (carried from v1.0)
 
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Phase 10 context gathered
-Resume file: .planning/phases/10-database-and-backend-extension/10-CONTEXT.md
+Stopped at: Completed 10-01-PLAN.md
+Resume file: .planning/phases/10-database-and-backend-extension/10-01-SUMMARY.md
