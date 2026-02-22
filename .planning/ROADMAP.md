@@ -24,7 +24,7 @@
 **Milestone Goal:** Bulgarian language support with market-adapted content and sub-niche specialization of form questions across both languages.
 
 - [x] **Phase 6: i18n Infrastructure and Routing** — Install i18next, wire `/bg/*` URL routing, fix component value/label API before any translation work
-- [ ] **Phase 7: English Translation Pass** — Extract all hardcoded strings into English JSON namespaces; verify zero regressions
+- [x] **Phase 7: English Translation Pass** — Extract all hardcoded strings into English JSON namespaces; verify zero regressions
 - [ ] **Phase 8: Sub-Niche Config and Selection UI** — Config-driven option branching for all 17 sub-niches; selection card grid in Step 1
 - [ ] **Phase 9: Scoring Engine Sub-Niche Weights** — Config-driven weight overrides per sub-niche group; scoring identical across languages
 - [ ] **Phase 10: Database and Backend Extension** — Persist language and sub-niche; fix Cyrillic sanitization; wire fields through to edge function
@@ -59,12 +59,12 @@ Plans:
   3. The report page headings, section labels, and score display text are served from `en/report.json`
 **Plans**: 6 plans
 Plans:
-- [ ] 07-01-PLAN.md — i18n namespace restructure + landing page extraction
-- [ ] 07-02-PLAN.md — Audit form chrome + form component extraction
-- [ ] 07-03-PLAN.md — Steps 1-4 field label/hint/placeholder extraction
-- [ ] 07-04-PLAN.md — Steps 5-8 field label/hint/placeholder extraction
-- [ ] 07-05-PLAN.md — Loading page + Report page + scoring display label extraction
-- [ ] 07-06-PLAN.md — Verification checkpoint
+- [x] 07-01-PLAN.md — i18n namespace restructure + landing page extraction
+- [x] 07-02-PLAN.md — Audit form chrome + form component extraction
+- [x] 07-03-PLAN.md — Steps 1-4 field label/hint/placeholder extraction
+- [x] 07-04-PLAN.md — Steps 5-8 field label/hint/placeholder extraction
+- [x] 07-05-PLAN.md — Loading page + Report page + scoring display label extraction
+- [x] 07-06-PLAN.md — Verification checkpoint
 
 ### Phase 8: Sub-Niche Config and Selection UI
 **Goal**: Users can select their specific sub-niche and all relevant form option lists adapt to that selection in English
@@ -120,7 +120,7 @@ Plans:
 | 4. Rate Limiting | v1.0 | 2/2 | Complete | 2026-02-20 |
 | 5. Frontend Integration | v1.0 | 3/3 | Complete | 2026-02-20 |
 | 6. i18n Infrastructure and Routing | v1.1 | 4/4 | Complete | 2026-02-22 |
-| 7. English Translation Pass | v1.1 | 0/6 | Not started | - |
+| 7. English Translation Pass | v1.1 | 6/6 | Complete | 2026-02-22 |
 | 8. Sub-Niche Config and Selection UI | v1.1 | 0/? | Not started | - |
 | 9. Scoring Engine Sub-Niche Weights | v1.1 | 0/? | Not started | - |
 | 10. Database and Backend Extension | v1.1 | 0/? | Not started | - |
