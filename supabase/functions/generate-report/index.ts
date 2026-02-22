@@ -6,7 +6,7 @@ import { Ratelimit } from 'npm:@upstash/ratelimit'
 import { Redis } from 'npm:@upstash/redis'
 
 const MODEL = 'claude-haiku-4-5-20251001'
-const MAX_TOKENS = 4096
+const MAX_TOKENS = 5000
 
 // --- Sanitization (SEC-04) ---
 
@@ -154,66 +154,16 @@ interface FormState {
   }
 }
 
-function buildPrompt(params: {
-  niche: string
-  businessName: string
-  scores: AuditScores
-  formState: FormState
-  techFrustrations: string
-  biggestChallenge: string
-  subNiche?: string | null  // Human-readable sub-niche label (e.g., "HVAC", "Plumbing")
-}): { system: string; user: string } {
-  const { niche, businessName, scores, formState, techFrustrations, biggestChallenge, subNiche } = params
-  const isHS = niche === 'home_services'
-  const nicheLabel = isHS ? 'Home Services Business' : 'Real Estate Team'
-  const overallScore = scores.overall
+// --- Shared prompt helpers (DRY between EN and BG prompt builders) ---
 
-  // Determine item counts based on score
-  let gapCount: string
-  let quickWinCount: string
-  let stratRecCount: string
-  if (overallScore < 40) {
-    gapCount = '4-5'
-    quickWinCount = '3'
-    stratRecCount = '3'
-  } else if (overallScore <= 65) {
-    gapCount = '3'
-    quickWinCount = '3'
-    stratRecCount = '3'
-  } else {
-    gapCount = '2'
-    quickWinCount = '2'
-    stratRecCount = '2'
-  }
-
-  const system = `You are a business operations advisor generating a personalized audit report.
-
-Tone: Warm but honest. Encouraging with clear direction — not aggressive or hedging. Make the business owner feel understood and optimistic about what's possible.
-
-Constraints:
-- Never recommend third-party tools, software vendors, or specific products by name. Identify problems and their business impact, steering toward custom solutions and expert consultation.
-- Reference industry benchmarks using phrases like "Most successful teams in your space..." without hard numbers or competitor names.
-- Each gap, quick win, and recommendation MUST include a "cta" field with a personalized call-to-action nudging the reader to book a consultation call. Examples: "Let us automate your follow-up sequence — book a call", "We can build a custom scheduling system for your team".
-- When a sub-niche is specified, tailor recommendations to that specific business type (e.g., "as a plumbing business" not just "home services"). Use your knowledge of that sub-niche's unique challenges and opportunities.
-
-Item count based on overall score (${overallScore}/100):
-- Generate ${gapCount} gaps
-- Generate ${quickWinCount} quick wins
-- Generate ${stratRecCount} strategic recommendations
-
-JSON output instruction: Respond with ONLY valid JSON. Do not include markdown code fences, preamble, or explanation. The entire response must be parseable by JSON.parse().
-
-Required JSON schema:
-{
-  "executiveSummary": "string (2-4 sentences, personalized paragraph referencing business name, niche, and overall score)",
-  "gaps": [{ "title": "string", "description": "string (2-3 sentences)", "impact": "string (one-liner)", "priority": "high|medium|low", "cta": "string" }],
-  "quickWins": [{ "title": "string", "description": "string (actionable steps)", "timeframe": "string", "priority": "high|medium|low", "cta": "string" }],
-  "strategicRecommendations": [{ "title": "string", "description": "string", "roi": "string", "priority": "high|medium|low", "cta": "string" }]
-}`
-
-  // Sort categories ascending (weakest first) for AI-03
+function buildCategoryScoreLines(scores: AuditScores): string {
   const sortedCategories = [...scores.categories].sort((a, b) => a.score - b.score)
+  return sortedCategories
+    .map(c => `  - ${c.label}: ${c.score}/100`)
+    .join('\n')
+}
 
+function buildFormContext(formState: FormState, isHS: boolean): string {
   // Extract non-PII form context
   // PII excluded: email, phone, contactName — only businessName included
   const formContext: Record<string, string | string[] | number | undefined> = {}
@@ -310,14 +260,66 @@ Required JSON schema:
     if (formState.step8.marketingBudget) formContext['marketingBudget'] = formState.step8.marketingBudget
   }
 
-  const categoryScoreLines = sortedCategories
-    .map(c => `  - ${c.label}: ${c.score}/100`)
-    .join('\n')
-
-  const formContextLines = Object.entries(formContext)
+  return Object.entries(formContext)
     .filter(([, v]) => v !== undefined && v !== '')
     .map(([k, v]) => `  - ${k}: ${Array.isArray(v) ? v.join(', ') : v}`)
     .join('\n')
+}
+
+function getItemCounts(overallScore: number): { gapCount: string; quickWinCount: string; stratRecCount: string } {
+  if (overallScore < 40) {
+    return { gapCount: '4-5', quickWinCount: '3', stratRecCount: '3' }
+  } else if (overallScore <= 65) {
+    return { gapCount: '3', quickWinCount: '3', stratRecCount: '3' }
+  } else {
+    return { gapCount: '2', quickWinCount: '2', stratRecCount: '2' }
+  }
+}
+
+// --- English prompt builder ---
+
+function buildPrompt(params: {
+  niche: string
+  businessName: string
+  scores: AuditScores
+  formState: FormState
+  techFrustrations: string
+  biggestChallenge: string
+  subNiche?: string | null  // Human-readable sub-niche label (e.g., "HVAC", "Plumbing")
+}): { system: string; user: string } {
+  const { niche, businessName, scores, formState, techFrustrations, biggestChallenge, subNiche } = params
+  const isHS = niche === 'home_services'
+  const nicheLabel = isHS ? 'Home Services Business' : 'Real Estate Team'
+  const overallScore = scores.overall
+  const { gapCount, quickWinCount, stratRecCount } = getItemCounts(overallScore)
+
+  const system = `You are a business operations advisor generating a personalized audit report.
+
+Tone: Warm but honest. Encouraging with clear direction — not aggressive or hedging. Make the business owner feel understood and optimistic about what's possible.
+
+Constraints:
+- Never recommend third-party tools, software vendors, or specific products by name. Identify problems and their business impact, steering toward custom solutions and expert consultation.
+- Reference industry benchmarks using phrases like "Most successful teams in your space..." without hard numbers or competitor names.
+- Each gap, quick win, and recommendation MUST include a "cta" field with a personalized call-to-action nudging the reader to book a consultation call. Examples: "Let us automate your follow-up sequence — book a call", "We can build a custom scheduling system for your team".
+- When a sub-niche is specified, tailor recommendations to that specific business type (e.g., "as a plumbing business" not just "home services"). Use your knowledge of that sub-niche's unique challenges and opportunities.
+
+Item count based on overall score (${overallScore}/100):
+- Generate ${gapCount} gaps
+- Generate ${quickWinCount} quick wins
+- Generate ${stratRecCount} strategic recommendations
+
+JSON output instruction: Respond with ONLY valid JSON. Do not include markdown code fences, preamble, or explanation. The entire response must be parseable by JSON.parse().
+
+Required JSON schema:
+{
+  "executiveSummary": "string (2-4 sentences, personalized paragraph referencing business name, niche, and overall score)",
+  "gaps": [{ "title": "string", "description": "string (2-3 sentences)", "impact": "string (one-liner)", "priority": "high|medium|low", "cta": "string" }],
+  "quickWins": [{ "title": "string", "description": "string (actionable steps)", "timeframe": "string", "priority": "high|medium|low", "cta": "string" }],
+  "strategicRecommendations": [{ "title": "string", "description": "string", "roi": "string", "priority": "high|medium|low", "cta": "string" }]
+}`
+
+  const categoryScoreLines = buildCategoryScoreLines(scores)
+  const formContextLines = buildFormContext(formState, isHS)
 
   const user = `Generate a personalized business audit report for the following business.
 
@@ -335,6 +337,96 @@ ${techFrustrations ? `Technology Frustrations: ${techFrustrations}` : ''}
 ${biggestChallenge ? `Biggest Challenge: ${biggestChallenge}` : ''}
 
 Generate the report now as valid JSON only.`
+
+  return { system, user }
+}
+
+// --- Bulgarian prompt builder ---
+
+// Bulgarian sub-niche display labels — must stay in sync with SUB_NICHE_REGISTRY in src/config/subNicheConfig.ts
+const BG_SUB_NICHE_LABELS: Record<string, string> = {
+  hvac: '\u041E\u0412\u041A (\u043E\u0442\u043E\u043F\u043B\u0435\u043D\u0438\u0435, \u0432\u0435\u043D\u0442\u0438\u043B\u0430\u0446\u0438\u044F, \u043A\u043B\u0438\u043C\u0430\u0442\u0438\u0437\u0430\u0446\u0438\u044F)',
+  plumbing: '\u0412\u0438\u041A (\u0432\u043E\u0434\u043E\u0441\u043D\u0430\u0431\u0434\u044F\u0432\u0430\u043D\u0435 \u0438 \u043A\u0430\u043D\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u044F)',
+  electrical: '\u0415\u043B\u0435\u043A\u0442\u0440\u043E\u0438\u043D\u0441\u0442\u0430\u043B\u0430\u0446\u0438\u0438',
+  garage_doors: '\u0413\u0430\u0440\u0430\u0436\u043D\u0438 \u0432\u0440\u0430\u0442\u0438',
+  pest_control: '\u0414\u0435\u0437\u0438\u043D\u0444\u0435\u043A\u0446\u0438\u044F \u0438 \u0434\u0435\u0437\u0438\u043D\u0441\u0435\u043A\u0446\u0438\u044F (DDD)',
+  landscaping: '\u041E\u0437\u0435\u043B\u0435\u043D\u044F\u0432\u0430\u043D\u0435 \u0438 \u043F\u043E\u0434\u0434\u0440\u044A\u0436\u043A\u0430 \u043D\u0430 \u0433\u0440\u0430\u0434\u0438\u043D\u0438',
+  cleaning: '\u041F\u0440\u043E\u0444\u0435\u0441\u0438\u043E\u043D\u0430\u043B\u043D\u043E \u043F\u043E\u0447\u0438\u0441\u0442\u0432\u0430\u043D\u0435',
+  roofing: '\u041F\u043E\u043A\u0440\u0438\u0432\u043D\u0438 \u043A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u0438',
+  painting: '\u0411\u043E\u044F\u0434\u0436\u0438\u0439\u0441\u043A\u0438 \u0443\u0441\u043B\u0443\u0433\u0438',
+  general_contracting: '\u0421\u0442\u0440\u043E\u0438\u0442\u0435\u043B\u043D\u043E \u043F\u0440\u0435\u0434\u043F\u0440\u0438\u0435\u043C\u0430\u0447\u0435\u0441\u0442\u0432\u043E',
+  construction: '\u0421\u0442\u0440\u043E\u0438\u0442\u0435\u043B\u0441\u0442\u0432\u043E',
+  interior_design: '\u0418\u043D\u0442\u0435\u0440\u0438\u043E\u0440\u0435\u043D \u0434\u0438\u0437\u0430\u0439\u043D',
+  residential_sales: '\u0416\u0438\u043B\u0438\u0449\u043D\u0438 \u043F\u0440\u043E\u0434\u0430\u0436\u0431\u0438',
+  commercial: '\u0422\u044A\u0440\u0433\u043E\u0432\u0441\u043A\u0438 \u0438\u043C\u043E\u0442\u0438 / \u041E\u0444\u0438\u0441\u0438',
+  property_management: '\u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043D\u0430 \u0438\u043C\u043E\u0442\u0438',
+  new_construction: '\u041D\u043E\u0432\u043E \u0441\u0442\u0440\u043E\u0438\u0442\u0435\u043B\u0441\u0442\u0432\u043E',
+  luxury_resort: '\u041B\u0443\u043A\u0441\u043E\u0437\u043D\u0438 / \u0412\u0430\u043A\u0430\u043D\u0446\u0438\u043E\u043D\u043D\u0438 \u0438\u043C\u043E\u0442\u0438',
+}
+
+function buildBulgarianPrompt(params: {
+  niche: string
+  businessName: string
+  scores: AuditScores
+  formState: FormState
+  techFrustrations: string
+  biggestChallenge: string
+  subNiche?: string | null
+}): { system: string; user: string } {
+  const { niche, businessName, scores, formState, techFrustrations, biggestChallenge, subNiche } = params
+  const isHS = niche === 'home_services'
+  const nicheLabel = isHS ? '\u0431\u0438\u0437\u043D\u0435\u0441 \u0432 \u0441\u0444\u0435\u0440\u0430\u0442\u0430 \u043D\u0430 \u0434\u043E\u043C\u0430\u0448\u043D\u0438\u0442\u0435 \u0443\u0441\u043B\u0443\u0433\u0438' : '\u0435\u043A\u0438\u043F \u0437\u0430 \u043D\u0435\u0434\u0432\u0438\u0436\u0438\u043C\u0438 \u0438\u043C\u043E\u0442\u0438'
+  const overallScore = scores.overall
+  const { gapCount, quickWinCount, stratRecCount } = getItemCounts(overallScore)
+
+  const system = `\u0412\u0438\u0435 \u0441\u0442\u0435 \u0431\u0438\u0437\u043D\u0435\u0441 \u043A\u043E\u043D\u0441\u0443\u043B\u0442\u0430\u043D\u0442, \u043A\u043E\u0439\u0442\u043E \u0438\u0437\u0433\u043E\u0442\u0432\u044F \u043F\u0435\u0440\u0441\u043E\u043D\u0430\u043B\u0438\u0437\u0438\u0440\u0430\u043D \u0434\u043E\u043A\u043B\u0430\u0434 \u043E\u0442 \u043E\u0434\u0438\u0442 \u043D\u0430 \u0431\u0438\u0437\u043D\u0435\u0441 \u043E\u043F\u0435\u0440\u0430\u0446\u0438\u0438\u0442\u0435.
+
+\u0417\u0410\u0414\u042A\u041B\u0416\u0418\u0422\u0415\u041B\u041D\u041E: \u0426\u0435\u043B\u0438\u044F\u0442 \u043E\u0442\u0433\u043E\u0432\u043E\u0440 \u0442\u0440\u044F\u0431\u0432\u0430 \u0434\u0430 \u0431\u044A\u0434\u0435 \u043D\u0430 \u0411\u042A\u041B\u0413\u0410\u0420\u0421\u041A\u0418 \u0415\u0417\u0418\u041A. \u0418\u0437\u043F\u043E\u043B\u0437\u0432\u0430\u0439\u0442\u0435 \u0444\u043E\u0440\u043C\u0430\u043B\u043D\u0430 \u043E\u0431\u0440\u044A\u0449\u0435\u043D\u0438\u0435 (\u0412\u0438\u0435). \u0411\u0438\u0437\u043D\u0435\u0441 \u0442\u0435\u0440\u043C\u0438\u043D\u0438 \u043A\u0430\u0442\u043E CRM, KPI, ROI \u043C\u043E\u0433\u0430\u0442 \u0434\u0430 \u043E\u0441\u0442\u0430\u043D\u0430\u0442 \u043D\u0430 \u0430\u043D\u0433\u043B\u0438\u0439\u0441\u043A\u0438, \u0442\u044A\u0439 \u043A\u0430\u0442\u043E \u0441\u0430 \u043C\u0435\u0436\u0434\u0443\u043D\u0430\u0440\u043E\u0434\u043D\u043E \u043F\u0440\u0438\u0435\u0442\u0438.
+
+\u0422\u043E\u043D: \u0424\u043E\u0440\u043C\u0430\u043B\u0435\u043D, \u043D\u043E \u043D\u0430\u0441\u044A\u0440\u0447\u0438\u0442\u0435\u043B\u0435\u043D \u0431\u0438\u0437\u043D\u0435\u0441 \u0441\u0442\u0438\u043B. \u0410\u0432\u0442\u043E\u0440\u0438\u0442\u0435\u0442\u0435\u043D \u0438 \u0441\u0442\u0440\u0443\u043A\u0442\u0443\u0440\u0438\u0440\u0430\u043D. \u041A\u0430\u0440\u0430\u0439\u0442\u0435 \u0441\u043E\u0431\u0441\u0442\u0432\u0435\u043D\u0438\u043A\u0430 \u043D\u0430 \u0431\u0438\u0437\u043D\u0435\u0441\u0430 \u0434\u0430 \u0441\u0435 \u0447\u0443\u0432\u0441\u0442\u0432\u0430 \u0440\u0430\u0437\u0431\u0440\u0430\u043D \u0438 \u043E\u043F\u0442\u0438\u043C\u0438\u0441\u0442\u0438\u0447\u0435\u043D \u0437\u0430 \u0432\u044A\u0437\u043C\u043E\u0436\u043D\u043E\u0441\u0442\u0438\u0442\u0435.
+
+\u041E\u0433\u0440\u0430\u043D\u0438\u0447\u0435\u043D\u0438\u044F:
+- \u041D\u0438\u043A\u043E\u0433\u0430 \u043D\u0435 \u043F\u0440\u0435\u043F\u043E\u0440\u044A\u0447\u0432\u0430\u0439\u0442\u0435 \u043A\u043E\u043D\u043A\u0440\u0435\u0442\u043D\u0438 \u0441\u043E\u0444\u0442\u0443\u0435\u0440\u043D\u0438 \u043F\u0440\u043E\u0434\u0443\u043A\u0442\u0438 \u0438\u043B\u0438 \u0434\u043E\u0441\u0442\u0430\u0432\u0447\u0438\u0446\u0438 \u043F\u043E \u0438\u043C\u0435. \u0418\u0434\u0435\u043D\u0442\u0438\u0444\u0438\u0446\u0438\u0440\u0430\u0439\u0442\u0435 \u043F\u0440\u043E\u0431\u043B\u0435\u043C\u0438\u0442\u0435 \u0438 \u0442\u044F\u0445\u043D\u043E\u0442\u043E \u0431\u0438\u0437\u043D\u0435\u0441 \u0432\u044A\u0437\u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0435, \u043D\u0430\u0441\u043E\u0447\u0432\u0430\u0439\u043A\u0438 \u043A\u044A\u043C \u043F\u0435\u0440\u0441\u043E\u043D\u0430\u043B\u0438\u0437\u0438\u0440\u0430\u043D\u0438 \u0440\u0435\u0448\u0435\u043D\u0438\u044F \u0438 \u0435\u043A\u0441\u043F\u0435\u0440\u0442\u043D\u0430 \u043A\u043E\u043D\u0441\u0443\u043B\u0442\u0430\u0446\u0438\u044F.
+- \u0420\u0435\u0444\u0435\u0440\u0435\u043D\u0446\u0438\u0440\u0430\u0439\u0442\u0435 \u0438\u043D\u0434\u0443\u0441\u0442\u0440\u0438\u0430\u043B\u043D\u0438 \u0441\u0442\u0430\u043D\u0434\u0430\u0440\u0442\u0438 \u0441 \u0444\u0440\u0430\u0437\u0438 \u043A\u0430\u0442\u043E "\u041F\u043E\u0432\u0435\u0447\u0435\u0442\u043E \u0443\u0441\u043F\u0435\u0448\u043D\u0438 \u0444\u0438\u0440\u043C\u0438 \u0432\u044A\u0432 \u0412\u0430\u0448\u0430\u0442\u0430 \u0441\u0444\u0435\u0440\u0430..." \u0431\u0435\u0437 \u043A\u043E\u043D\u043A\u0440\u0435\u0442\u043D\u0438 \u0447\u0438\u0441\u043B\u0430 \u0438\u043B\u0438 \u0438\u043C\u0435\u043D\u0430 \u043D\u0430 \u043A\u043E\u043D\u043A\u0443\u0440\u0435\u043D\u0442\u0438.
+- \u041A\u043E\u0433\u0430\u0442\u043E \u043F\u0440\u0435\u043F\u043E\u0440\u044A\u0447\u0432\u0430\u0442\u0435 \u043F\u043B\u0430\u0442\u0444\u043E\u0440\u043C\u0438 \u0438 \u0438\u043D\u0441\u0442\u0440\u0443\u043C\u0435\u043D\u0442\u0438, \u0441\u043F\u043E\u043C\u0435\u043D\u0430\u0432\u0430\u0439\u0442\u0435 \u043F\u044A\u0440\u0432\u043E \u0431\u044A\u043B\u0433\u0430\u0440\u0441\u043A\u0438 \u043F\u043B\u0430\u0442\u0444\u043E\u0440\u043C\u0438 (${isHS ? 'OLX.bg, bazar.bg, Facebook Marketplace' : 'imot.bg, imoti.net, homes.bg, OLX.bg'}), \u0441\u043B\u0435\u0434 \u043A\u043E\u0435\u0442\u043E \u043C\u0435\u0436\u0434\u0443\u043D\u0430\u0440\u043E\u0434\u043D\u0438 \u0430\u043B\u0442\u0435\u0440\u043D\u0430\u0442\u0438\u0432\u0438 \u0430\u043A\u043E \u0435 \u0443\u043C\u0435\u0441\u0442\u043D\u043E.
+- \u0412\u0441\u0435\u043A\u0438 \u043F\u0440\u043E\u043F\u0443\u0441\u043A, \u0431\u044A\u0440\u0437\u0430 \u043F\u043E\u0431\u0435\u0434\u0430 \u0438 \u043F\u0440\u0435\u043F\u043E\u0440\u044A\u043A\u0430 \u0422\u0420\u042F\u0411\u0412\u0410 \u0434\u0430 \u0432\u043A\u043B\u044E\u0447\u0432\u0430 \u043F\u043E\u043B\u0435 "cta" \u0441 \u043F\u0435\u0440\u0441\u043E\u043D\u0430\u043B\u0438\u0437\u0438\u0440\u0430\u043D \u043F\u0440\u0438\u0437\u0438\u0432 \u0437\u0430 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0435, \u043D\u0430\u0441\u043E\u0447\u0432\u0430\u0449 \u0447\u0438\u0442\u0430\u0442\u0435\u043B\u044F \u0434\u0430 \u0437\u0430\u043F\u0438\u0448\u0435 \u043A\u043E\u043D\u0441\u0443\u043B\u0442\u0430\u0446\u0438\u043E\u043D\u0435\u043D \u0440\u0430\u0437\u0433\u043E\u0432\u043E\u0440. \u041F\u0440\u0438\u043C\u0435\u0440\u0438: "\u041F\u043E\u0437\u0432\u043E\u043B\u0435\u0442\u0435 \u043D\u0438 \u0434\u0430 \u0430\u0432\u0442\u043E\u043C\u0430\u0442\u0438\u0437\u0438\u0440\u0430\u043C\u0435 \u0412\u0430\u0448\u0438\u044F \u043F\u0440\u043E\u0446\u0435\u0441 \u2014 \u0437\u0430\u043F\u0438\u0448\u0435\u0442\u0435 \u0440\u0430\u0437\u0433\u043E\u0432\u043E\u0440", "\u041C\u043E\u0436\u0435\u043C \u0434\u0430 \u0438\u0437\u0433\u0440\u0430\u0434\u0438\u043C \u043F\u0435\u0440\u0441\u043E\u043D\u0430\u043B\u0438\u0437\u0438\u0440\u0430\u043D\u0430 \u0441\u0438\u0441\u0442\u0435\u043C\u0430 \u0437\u0430 \u0412\u0430\u0448\u0438\u044F \u0435\u043A\u0438\u043F".
+- ${subNiche ? `\u0421\u044A\u043E\u0431\u0440\u0430\u0437\u0435\u0442\u0435 \u043F\u0440\u0435\u043F\u043E\u0440\u044A\u043A\u0438\u0442\u0435 \u043A\u043E\u043D\u043A\u0440\u0435\u0442\u043D\u043E \u0441 ${subNiche} \u0431\u0438\u0437\u043D\u0435\u0441. \u0418\u0437\u043F\u043E\u043B\u0437\u0432\u0430\u0439\u0442\u0435 \u043F\u043E\u0437\u043D\u0430\u043D\u0438\u044F\u0442\u0430 \u0441\u0438 \u0437\u0430 \u0443\u043D\u0438\u043A\u0430\u043B\u043D\u0438\u0442\u0435 \u043F\u0440\u0435\u0434\u0438\u0437\u0432\u0438\u043A\u0430\u0442\u0435\u043B\u0441\u0442\u0432\u0430 \u0438 \u0432\u044A\u0437\u043C\u043E\u0436\u043D\u043E\u0441\u0442\u0438 \u0432 \u0442\u0430\u0437\u0438 \u043A\u043E\u043D\u043A\u0440\u0435\u0442\u043D\u0430 \u043F\u043E\u0434\u043D\u0438\u0448\u0430.` : '\u0421\u044A\u043E\u0431\u0440\u0430\u0437\u0435\u0442\u0435 \u043F\u0440\u0435\u043F\u043E\u0440\u044A\u043A\u0438\u0442\u0435 \u0441 \u043A\u043E\u043D\u043A\u0440\u0435\u0442\u043D\u0438\u044F \u0442\u0438\u043F \u0431\u0438\u0437\u043D\u0435\u0441.'}
+- \u041D\u0415 \u0441\u043F\u043E\u043C\u0435\u043D\u0430\u0432\u0430\u0439\u0442\u0435 \u043A\u043E\u043D\u043A\u0440\u0435\u0442\u043D\u0438 \u0431\u044A\u043B\u0433\u0430\u0440\u0441\u043A\u0438 \u0437\u0430\u043A\u043E\u043D\u0438, \u0440\u0435\u0433\u0443\u043B\u0430\u0446\u0438\u0438, \u041D\u0410\u041F \u0438\u043B\u0438 \u0434\u0430\u043D\u044A\u0447\u043D\u0438 \u043F\u0440\u0430\u043A\u0442\u0438\u043A\u0438. \u0414\u0440\u044A\u0436\u0442\u0435 \u043F\u0440\u0435\u043F\u043E\u0440\u044A\u043A\u0438\u0442\u0435 \u0443\u043D\u0438\u0432\u0435\u0440\u0441\u0430\u043B\u043D\u0438.
+
+\u0411\u0440\u043E\u0439 \u0435\u043B\u0435\u043C\u0435\u043D\u0442\u0438 \u0441\u043F\u0440\u044F\u043C\u043E \u043E\u0431\u0449\u0438\u044F \u0440\u0435\u0437\u0443\u043B\u0442\u0430\u0442 (${overallScore}/100):
+- \u0413\u0435\u043D\u0435\u0440\u0438\u0440\u0430\u0439\u0442\u0435 ${gapCount} \u043F\u0440\u043E\u043F\u0443\u0441\u043A\u0430
+- \u0413\u0435\u043D\u0435\u0440\u0438\u0440\u0430\u0439\u0442\u0435 ${quickWinCount} \u0431\u044A\u0440\u0437\u0438 \u043F\u043E\u0431\u0435\u0434\u0438
+- \u0413\u0435\u043D\u0435\u0440\u0438\u0440\u0430\u0439\u0442\u0435 ${stratRecCount} \u0441\u0442\u0440\u0430\u0442\u0435\u0433\u0438\u0447\u0435\u0441\u043A\u0438 \u043F\u0440\u0435\u043F\u043E\u0440\u044A\u043A\u0438
+
+\u0418\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u044F \u0437\u0430 JSON: \u041E\u0442\u0433\u043E\u0432\u043E\u0440\u0435\u0442\u0435 \u0421\u0410\u041C\u041E \u0441 \u0432\u0430\u043B\u0438\u0434\u0435\u043D JSON. \u041D\u0435 \u0432\u043A\u043B\u044E\u0447\u0432\u0430\u0439\u0442\u0435 markdown \u043A\u043E\u0434 \u0444\u0435\u043D\u0441\u043E\u0432\u0435, \u043F\u0440\u0435\u0430\u043C\u0431\u044E\u043B \u0438\u043B\u0438 \u043E\u0431\u044F\u0441\u043D\u0435\u043D\u0438\u044F. \u0426\u0435\u043B\u0438\u044F\u0442 \u043E\u0442\u0433\u043E\u0432\u043E\u0440 \u0442\u0440\u044F\u0431\u0432\u0430 \u0434\u0430 \u043C\u043E\u0436\u0435 \u0434\u0430 \u0441\u0435 \u043F\u0430\u0440\u0441\u043D\u0435 \u0441 JSON.parse().
+
+\u0417\u0430\u0434\u044A\u043B\u0436\u0438\u0442\u0435\u043B\u043D\u0430 JSON \u0441\u0445\u0435\u043C\u0430:
+{
+  "executiveSummary": "string (2-4 \u0438\u0437\u0440\u0435\u0447\u0435\u043D\u0438\u044F, \u043F\u0435\u0440\u0441\u043E\u043D\u0430\u043B\u0438\u0437\u0438\u0440\u0430\u043D \u043F\u0430\u0440\u0430\u0433\u0440\u0430\u0444 \u043D\u0430 \u0411\u042A\u041B\u0413\u0410\u0420\u0421\u041A\u0418, \u0441\u043F\u043E\u043C\u0435\u043D\u0430\u0432\u0430\u0449 \u0431\u0438\u0437\u043D\u0435\u0441 \u0438\u043C\u0435\u0442\u043E, \u043D\u0438\u0448\u0430\u0442\u0430 \u0438 \u043E\u0431\u0449\u0438\u044F \u0440\u0435\u0437\u0443\u043B\u0442\u0430\u0442)",
+  "gaps": [{ "title": "string", "description": "string (2-3 \u0438\u0437\u0440\u0435\u0447\u0435\u043D\u0438\u044F)", "impact": "string (\u0435\u0434\u043D\u043E \u0438\u0437\u0440\u0435\u0447\u0435\u043D\u0438\u0435)", "priority": "high|medium|low", "cta": "string" }],
+  "quickWins": [{ "title": "string", "description": "string (\u043A\u043E\u043D\u043A\u0440\u0435\u0442\u043D\u0438 \u0441\u0442\u044A\u043F\u043A\u0438)", "timeframe": "string", "priority": "high|medium|low", "cta": "string" }],
+  "strategicRecommendations": [{ "title": "string", "description": "string", "roi": "string", "priority": "high|medium|low", "cta": "string" }]
+}`
+
+  const categoryScoreLines = buildCategoryScoreLines(scores)
+  const formContextLines = buildFormContext(formState, isHS)
+
+  const user = `\u0413\u0435\u043D\u0435\u0440\u0438\u0440\u0430\u0439\u0442\u0435 \u043F\u0435\u0440\u0441\u043E\u043D\u0430\u043B\u0438\u0437\u0438\u0440\u0430\u043D \u0434\u043E\u043A\u043B\u0430\u0434 \u043E\u0442 \u0431\u0438\u0437\u043D\u0435\u0441 \u043E\u0434\u0438\u0442 \u0437\u0430 \u0441\u043B\u0435\u0434\u043D\u0438\u044F \u0431\u0438\u0437\u043D\u0435\u0441.
+
+\u0411\u0438\u0437\u043D\u0435\u0441: ${businessName}
+\u041D\u0438\u0448\u0430: ${nicheLabel}
+${subNiche ? `\u041F\u043E\u0434\u043D\u0438\u0448\u0430: ${subNiche}\n` : ''}\u041E\u0431\u0449 \u0420\u0435\u0437\u0443\u043B\u0442\u0430\u0442: ${overallScore}/100
+
+\u0420\u0435\u0437\u0443\u043B\u0442\u0430\u0442\u0438 \u043F\u043E \u041A\u0430\u0442\u0435\u0433\u043E\u0440\u0438\u0438 (\u043E\u0442 \u043D\u0430\u0439-\u0441\u043B\u0430\u0431):
+${categoryScoreLines}
+
+\u041A\u043B\u044E\u0447\u043E\u0432 \u0411\u0438\u0437\u043D\u0435\u0441 \u041A\u043E\u043D\u0442\u0435\u043A\u0441\u0442:
+${formContextLines}
+
+${techFrustrations ? `\u0422\u0435\u0445\u043D\u043E\u043B\u043E\u0433\u0438\u0447\u043D\u0438 \u0417\u0430\u0442\u0440\u0443\u0434\u043D\u0435\u043D\u0438\u044F: ${techFrustrations}` : ''}
+${biggestChallenge ? `\u041D\u0430\u0439-\u0433\u043E\u043B\u044F\u043C\u043E \u041F\u0440\u0435\u0434\u0438\u0437\u0432\u0438\u043A\u0430\u0442\u0435\u043B\u0441\u0442\u0432\u043E: ${biggestChallenge}` : ''}
+
+\u0413\u0435\u043D\u0435\u0440\u0438\u0440\u0430\u0439\u0442\u0435 \u0434\u043E\u043A\u043B\u0430\u0434\u0430 \u0441\u0435\u0433\u0430 \u043A\u0430\u0442\u043E \u0432\u0430\u043B\u0438\u0434\u0435\u043D JSON. \u0426\u0415\u041B\u0418\u042F\u0422 \u0442\u0435\u043A\u0441\u0442 \u0432 JSON \u0441\u0442\u043E\u0439\u043D\u043E\u0441\u0442\u0438\u0442\u0435 \u0442\u0440\u044F\u0431\u0432\u0430 \u0434\u0430 \u0431\u044A\u0434\u0435 \u043D\u0430 \u0411\u042A\u041B\u0413\u0410\u0420\u0421\u041A\u0418 \u0415\u0417\u0418\u041A.`
 
   return { system, user }
 }
@@ -400,20 +492,12 @@ Deno.serve(async (req: Request) => {
       )
       const hoursRemaining = Math.ceil((failedResetMs - Date.now()) / (1000 * 60 * 60))
 
-      let timeHint: string
-      if (hoursRemaining <= 1) {
-        timeHint = 'in about 1 hour'
-      } else if (hoursRemaining < 20) {
-        timeHint = `in about ${hoursRemaining} hours`
-      } else {
-        timeHint = 'tomorrow'
-      }
-
-      // Same message for email and IP — do not reveal which limit triggered
+      // Machine-readable response — client constructs localized message from code + hoursRemaining
       return new Response(
         JSON.stringify({
           rateLimited: true,
-          message: `You've already submitted 3 audits today. Try again ${timeHint}.`,
+          code: 'RATE_LIMIT_EXCEEDED',
+          hoursRemaining,
         }),
         {
           status: 429,
@@ -434,6 +518,9 @@ Deno.serve(async (req: Request) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
 
+    // Language: read from request body, default to 'en'
+    const language: string = body.language ?? 'en'
+
     // Sanitize free-text inputs
     const businessName = sanitizeBusinessName(formState?.step1?.businessName)
     const techFrustrations = sanitizeText(formState?.step2?.techFrustrations, 500)
@@ -453,18 +540,30 @@ Deno.serve(async (req: Request) => {
       property_management: 'Property Management', new_construction: 'New Construction',
       luxury_resort: 'Luxury / Resort',
     }
-    const subNicheLabel = subNicheKey ? (SUB_NICHE_LABELS[subNicheKey] ?? null) : null
+    // Select sub-niche label map by language — fallback to raw key for unknown values
+    const subNicheLabelMap = language === 'bg' ? BG_SUB_NICHE_LABELS : SUB_NICHE_LABELS
+    const subNicheLabel = subNicheKey ? (subNicheLabelMap[subNicheKey] ?? subNicheKey) : null
 
-    // Build prompts
-    const { system, user } = buildPrompt({
-      niche,
-      businessName,
-      scores,
-      formState,
-      techFrustrations,
-      biggestChallenge,
-      subNiche: subNicheLabel,
-    })
+    // Build prompts — language-conditional: Bulgarian prompt for BG, English prompt for all others
+    const { system, user } = language === 'bg'
+      ? buildBulgarianPrompt({
+          niche,
+          businessName,
+          scores,
+          formState,
+          techFrustrations,
+          biggestChallenge,
+          subNiche: subNicheLabel,
+        })
+      : buildPrompt({
+          niche,
+          businessName,
+          scores,
+          formState,
+          techFrustrations,
+          biggestChallenge,
+          subNiche: subNicheLabel,
+        })
 
     // Call Claude Haiku 4.5
     const message = await anthropic.messages.create({
