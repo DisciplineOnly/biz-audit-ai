@@ -44,7 +44,7 @@ Business owners complete the audit and receive a personalized, AI-driven analysi
 
 ### Active
 
-- [ ] i18n infrastructure with URL-based language routing
+- ✓ i18n infrastructure with URL-based language routing — Phase 6
 - [ ] Full Bulgarian localization (UI, form steps, landing page, report)
 - [ ] Bulgarian-market content adaptation (CRMs, tools, pricing, regulations)
 - [ ] Sub-niche specialization with research-driven question adaptation (both languages)
@@ -94,8 +94,9 @@ EMAIL-02 and custom Resend domain completed post-v1.0.
 | Defer EMAIL-02 (user email) | Requires custom Resend domain verification (DNS propagation); not blocking for MVP | ✓ Good — implemented post-v1.0 |
 | Drop Phase 6 (Verification) | Manual QA and audit sufficient for MVP launch | ⚠️ Revisit — consider for v1.1 |
 
-| URL-based i18n routing | /bg/ path prefix for Bulgarian, default for English; avoids subdomain complexity | — Pending |
+| URL-based i18n routing | /bg/ path prefix for Bulgarian, default for English; avoids subdomain complexity | ✓ Good — /:lang? optional segment, LangLayout syncs i18n with URL, /bg/ redirects to / (Bulgarian default) |
+| Value/label separation in form components | Store English scoring keys as values, display text as labels — scoring never breaks across languages | ✓ Good — toOptions() bridge, SelectOption {value, label} API |
 | Research-driven sub-niche questions | Let domain research determine which questions/options differ per sub-niche rather than guessing | — Pending |
 
 ---
-*Last updated: 2026-02-21 after v1.1 milestone started*
+*Last updated: 2026-02-22 after Phase 6*
