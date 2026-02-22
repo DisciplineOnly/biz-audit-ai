@@ -10,7 +10,8 @@ import type { AuditFormState, AuditScores } from '@/types/audit'
 // Generating the UUID client-side avoids this entirely — no extra round-trip needed.
 export async function submitAudit(
   formState: AuditFormState,
-  scores: AuditScores
+  scores: AuditScores,
+  language: string
 ): Promise<string> {
   const id = crypto.randomUUID()
 
@@ -27,6 +28,8 @@ export async function submitAudit(
       overall_score: scores.overall,
       form_data: formState,
       scores: scores,
+      language,
+      sub_niche: formState.subNiche ?? null,
     })
 
   if (error) {

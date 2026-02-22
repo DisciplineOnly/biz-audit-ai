@@ -13,7 +13,7 @@ const MIN_WAIT_MS = 8000;
 export default function Loading() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { prefix } = useLang();
+  const { prefix, lang } = useLang();
   const { t } = useTranslation('generating');
   const { t: tc } = useTranslation('common');
   const [currentStep, setCurrentStep] = useState(0);
@@ -174,7 +174,7 @@ export default function Loading() {
     async function runAuditFlow() {
       // Step 1: Submit audit to DB (must complete first — auditId needed for generate-report)
       try {
-        const id = await submitAudit(formState!, scores!);
+        const id = await submitAudit(formState!, scores!, lang);
         if (!mountedRef.current) return;
         console.log("Audit saved successfully with ID:", id);
         auditIdRef.current = id;
