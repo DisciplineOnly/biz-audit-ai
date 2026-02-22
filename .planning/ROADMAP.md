@@ -106,7 +106,10 @@ Plans:
   1. A completed English audit row in the `audits` table has `language = 'en'` and `sub_niche = '<selected sub-niche>'` — both fields present and correct
   2. The admin notification email body includes the language and sub-niche of the audit (e.g., "Language: Bulgarian | Sub-niche: HVAC")
   3. A Bulgarian user's free-text input (Cyrillic characters) passes through `sanitizeText()` and arrives at the AI prompt intact — no Cyrillic characters are stripped
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 10-01-PLAN.md — DB migration + submitAudit/fetchReport wiring + sanitization fix
+- [ ] 10-02-PLAN.md — Admin email language/sub-niche display and language-aware URLs
 
 ### Phase 11: Bulgarian Content and AI Reports
 **Goal**: Users accessing `/bg/` experience a fully Bulgarian product — UI, form options, and AI-generated report — with Bulgarian-market-specific content
