@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 7 of 11 (English Translation Pass)
-Plan: 2 of 6 complete (Phase 7 executing, next: 07-03)
+Plan: 3 of 6 complete (Phase 7 executing, next: 07-04)
 Status: Executing
-Last activity: 2026-02-22 — Completed 07-02 (audit form chrome + shared component i18n extraction)
+Last activity: 2026-02-22 — Completed 07-03 (Step 1-4 form field i18n extraction)
 
-Progress: [======              ] 33% (Phase 7) — 2/6 plans
+Progress: [==========          ] 50% (Phase 7) — 3/6 plans
 
 ## Performance Metrics
 
@@ -43,6 +43,7 @@ Progress: [======              ] 33% (Phase 7) — 2/6 plans
 | 6 | 06-04 | 2min | 1 | 1 |
 | 7 | 07-01 | 3min | 2 | 16 |
 | 7 | 07-02 | 3min | 2 | 4 |
+| 7 | 07-03 | 3min | 2 | 5 |
 
 ## Accumulated Context
 
@@ -63,6 +64,8 @@ Key v1.1 architectural decisions (from research):
 - useSuspense: false for i18n — DONE (07-01), avoids Suspense wrapper complexity in SPA
 - TFunction param passing for validateStep — DONE (07-02), pure functions outside component receive t as parameter
 - Nullish coalescing for i18n prop defaults — DONE (07-02), explicit props override t() fallback in RatingButtons/StyledSelect
+- Niche-conditional i18n uses hs/re sub-keys, shared fields use flat keys — DONE (07-03), consistent pattern for Steps 1-4
+- Option arrays (toOptions) intentionally untranslated — DONE (07-03), values are scoring keys, label translation deferred to Phase 11
 - Config-driven sub-niche branching (TypeScript discriminated union) — never boolean flags
 - Phase 9 (scoring weights) can partially overlap with Phase 8 — same config schema
 
@@ -80,5 +83,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 07-02-PLAN.md
-Resume file: .planning/phases/07-english-translation-pass/07-03-PLAN.md
+Stopped at: Completed 07-03-PLAN.md
+Resume file: .planning/phases/07-english-translation-pass/07-04-PLAN.md
