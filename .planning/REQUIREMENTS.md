@@ -51,7 +51,7 @@ Requirements for v1.1 Localization & Sub-Niche Specialization. Each maps to road
 ### Backend
 
 - [x] **DB-01**: Audit records store the language and sub-niche used during the audit
-- [ ] **DB-02**: Admin notification email includes the language and sub-niche of the completed audit
+- [x] **DB-02**: Admin notification email includes the language and sub-niche of the completed audit
 - [x] **DB-03**: `sanitizeText()` correctly handles Cyrillic characters (no stripping of Bulgarian input)
 
 ## v1.2 Requirements
@@ -111,7 +111,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AI-02 | Phase 11 | Pending |
 | AI-03 | Phase 11 | Pending |
 | DB-01 | Phase 10 | Complete |
-| DB-02 | Phase 10 | Pending |
+| DB-02 | Phase 10 | Complete |
 | DB-03 | Phase 10 | Complete |
 
 **Coverage:**

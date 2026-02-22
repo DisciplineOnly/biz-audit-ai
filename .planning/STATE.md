@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 10 of 11 (Database and Backend Extension)
-Plan: 1 of 2 complete (Phase 10, next: 10-02)
+Plan: 2 of 2 complete (Phase 10 complete, next: Phase 11)
 Status: Executing
-Last activity: 2026-02-22 — Completed 10-01-PLAN.md
+Last activity: 2026-02-22 — Completed 10-02-PLAN.md
 
-Progress: [██████████████░░░░░░] 65% (v1.1) — 20/20 plans planned, 19 complete
+Progress: [████████████████████] 70% (v1.1) — 20/20 plans planned, 20 complete
 
 ## Performance Metrics
 
@@ -56,6 +56,7 @@ Progress: [██████████████░░░░░░] 65% (v1
 | 9 | 09-02 | 2min | 3 | 1 |
 | 9 | 09-03 | 2min | 1 | 0 |
 | 10 | 10-01 | 2min | 3 | 6 |
+| 10 | 10-02 | 2min | 2 | 1 |
 
 ## Accumulated Context
 
@@ -106,6 +107,9 @@ Key v1.1 architectural decisions (from research):
 - Nullable language/sub_niche columns (no DEFAULT, no backfill) — DONE (10-01), legacy rows untouched
 - Unicode sanitization via \p{L}\p{N} with /gu flag — DONE (10-01), replaces ASCII-only \w to preserve Cyrillic
 - \p{Emoji_Presentation} for emoji stripping — DONE (10-01), avoids false matches on ASCII digits/#
+- Bulgarian default no URL prefix, English uses /en/ — DONE (10-02), matches actual app routing behavior
+- Duplicated SUB_NICHE_LABELS in send-notification — DONE (10-02), edge functions deploy independently
+- Fallback to raw key for unknown language/sub-niche values — DONE (10-02), future-proofs against new entries
 
 ### Pending Todos
 
@@ -121,5 +125,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 10-01-PLAN.md
-Resume file: .planning/phases/10-database-and-backend-extension/10-01-SUMMARY.md
+Stopped at: Completed 10-02-PLAN.md (Phase 10 complete)
+Resume file: .planning/phases/10-database-and-backend-extension/10-02-SUMMARY.md

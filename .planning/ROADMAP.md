@@ -27,7 +27,7 @@
 - [x] **Phase 7: English Translation Pass** — Extract all hardcoded strings into English JSON namespaces; verify zero regressions
 - [x] **Phase 8: Sub-Niche Config and Selection UI** — Config-driven option branching for all 17 sub-niches; selection card grid in Step 1
 - [x] **Phase 9: Scoring Engine Sub-Niche Weights** — Config-driven weight overrides per sub-niche group; scoring identical across languages
-- [ ] **Phase 10: Database and Backend Extension** — Persist language and sub-niche; fix Cyrillic sanitization; wire fields through to edge function
+- [x] **Phase 10: Database and Backend Extension** — Persist language and sub-niche; fix Cyrillic sanitization; wire fields through to edge function (completed 2026-02-22)
 - [ ] **Phase 11: Bulgarian Content and AI Reports** — Full Bulgarian translation namespaces, BG-market options, AI report in Bulgarian
 
 ## Phase Details
@@ -106,7 +106,7 @@ Plans:
   1. A completed English audit row in the `audits` table has `language = 'en'` and `sub_niche = '<selected sub-niche>'` — both fields present and correct
   2. The admin notification email body includes the language and sub-niche of the audit (e.g., "Language: Bulgarian | Sub-niche: HVAC")
   3. A Bulgarian user's free-text input (Cyrillic characters) passes through `sanitizeText()` and arrives at the AI prompt intact — no Cyrillic characters are stripped
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [ ] 10-01-PLAN.md — DB migration + submitAudit/fetchReport wiring + sanitization fix
 - [ ] 10-02-PLAN.md — Admin email language/sub-niche display and language-aware URLs
@@ -136,5 +136,5 @@ Plans:
 | 7. English Translation Pass | v1.1 | 6/6 | Complete | 2026-02-22 |
 | 8. Sub-Niche Config and Selection UI | v1.1 | 5/5 | Complete | 2026-02-22 |
 | 9. Scoring Engine Sub-Niche Weights | v1.1 | 3/3 | Complete | 2026-02-22 |
-| 10. Database and Backend Extension | 1/2 | In Progress|  | - |
+| 10. Database and Backend Extension | 2/2 | Complete   | 2026-02-22 | - |
 | 11. Bulgarian Content and AI Reports | v1.1 | 0/? | Not started | - |
