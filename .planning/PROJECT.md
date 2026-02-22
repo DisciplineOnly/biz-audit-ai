@@ -47,9 +47,9 @@ Business owners complete the audit and receive a personalized, AI-driven analysi
 - ✓ i18n infrastructure with URL-based language routing — Phase 6
 - [ ] Full Bulgarian localization (UI, form steps, landing page, report)
 - [ ] Bulgarian-market content adaptation (CRMs, tools, pricing, regulations)
-- [ ] Sub-niche specialization with research-driven question adaptation (both languages)
+- ✓ Sub-niche specialization with research-driven question adaptation (both languages) — Phase 8
 - [ ] AI report generation in Bulgarian
-- [ ] Scoring engine adaptation per sub-niche
+- ✓ Scoring engine adaptation per sub-niche — Phase 9
 
 ### Out of Scope
 
@@ -97,7 +97,8 @@ EMAIL-02 and custom Resend domain completed post-v1.0.
 | URL-based i18n routing | /bg/ path prefix for Bulgarian, default for English; avoids subdomain complexity | ✓ Good — /:lang? optional segment, LangLayout syncs i18n with URL, /bg/ redirects to / (Bulgarian default) |
 | Value/label separation in form components | Store English scoring keys as values, display text as labels — scoring never breaks across languages | ✓ Good — toOptions() bridge, SelectOption {value, label} API |
 | Namespace-based i18n with HTTP backend | 5 JSON namespaces (common, landing, steps, generating, report) loaded via i18next-http-backend from public/locales/ | ✓ Good — all strings extracted, English experience identical |
-| Research-driven sub-niche questions | Let domain research determine which questions/options differ per sub-niche rather than guessing | — Pending |
+| Research-driven sub-niche questions | Let domain research determine which questions/options differ per sub-niche rather than guessing | ✓ Good — 3-group HS strategy (reactive/recurring/project-based), 5 RE sub-niches individually configured |
+| Config-driven sub-niche weight overrides | Scoring engine adapts category weights per sub-niche group; base weights unchanged when no sub-niche | ✓ Good — 7 override groups, all sum to 1.0, architectural language neutrality |
 
 ---
-*Last updated: 2026-02-22 after Phase 7*
+*Last updated: 2026-02-22 after Phase 9*
