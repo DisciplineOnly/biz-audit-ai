@@ -57,7 +57,14 @@ Plans:
   1. All 8 form step labels, descriptions, placeholders, and validation messages are served from `en/steps.json` via `t()` calls — no hardcoded English strings remain in step components
   2. The landing page, audit form, and report page render identically to v1.0 in English (no visual or behavioral regressions)
   3. The report page headings, section labels, and score display text are served from `en/report.json`
-**Plans**: TBD
+**Plans**: 6 plans
+Plans:
+- [ ] 07-01-PLAN.md — i18n namespace restructure + landing page extraction
+- [ ] 07-02-PLAN.md — Audit form chrome + form component extraction
+- [ ] 07-03-PLAN.md — Steps 1-4 field label/hint/placeholder extraction
+- [ ] 07-04-PLAN.md — Steps 5-8 field label/hint/placeholder extraction
+- [ ] 07-05-PLAN.md — Loading page + Report page + scoring display label extraction
+- [ ] 07-06-PLAN.md — Verification checkpoint
 
 ### Phase 8: Sub-Niche Config and Selection UI
 **Goal**: Users can select their specific sub-niche and all relevant form option lists adapt to that selection in English
@@ -113,7 +120,7 @@ Plans:
 | 4. Rate Limiting | v1.0 | 2/2 | Complete | 2026-02-20 |
 | 5. Frontend Integration | v1.0 | 3/3 | Complete | 2026-02-20 |
 | 6. i18n Infrastructure and Routing | v1.1 | 4/4 | Complete | 2026-02-22 |
-| 7. English Translation Pass | v1.1 | 0/? | Not started | - |
+| 7. English Translation Pass | v1.1 | 0/6 | Not started | - |
 | 8. Sub-Niche Config and Selection UI | v1.1 | 0/? | Not started | - |
 | 9. Scoring Engine Sub-Niche Weights | v1.1 | 0/? | Not started | - |
 | 10. Database and Backend Extension | v1.1 | 0/? | Not started | - |
