@@ -27,6 +27,8 @@ interface AuditRecord {
   report_status: string
   email_status: string
   created_at: string
+  language: string | null     // null for legacy audits
+  sub_niche: string | null    // null for legacy audits
 }
 
 interface WebhookPayload {
@@ -50,6 +52,23 @@ interface AiReport {
   gaps?: unknown[]
   quickWins?: unknown[]
   strategicRecommendations?: StrategicRecommendation[]
+}
+
+// Language display labels — full names per CONTEXT.md decision
+const LANGUAGE_LABELS: Record<string, string> = {
+  en: 'English',
+  bg: 'Bulgarian',
+}
+
+// Sub-niche display labels — must stay in sync with SUB_NICHE_REGISTRY in src/config/subNicheConfig.ts
+const SUB_NICHE_LABELS: Record<string, string> = {
+  hvac: 'HVAC', plumbing: 'Plumbing', electrical: 'Electrical', garage_doors: 'Garage Doors',
+  pest_control: 'Pest Control', landscaping: 'Landscaping', cleaning: 'Cleaning',
+  roofing: 'Roofing', painting: 'Painting', general_contracting: 'General Contracting',
+  construction: 'Construction', interior_design: 'Interior Design',
+  residential_sales: 'Residential Sales', commercial: 'Commercial / Office',
+  property_management: 'Property Management', new_construction: 'New Construction',
+  luxury_resort: 'Luxury / Resort',
 }
 
 // --- Email helpers ---
