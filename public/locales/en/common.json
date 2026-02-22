@@ -1,0 +1,44 @@
+{
+  "brand": {
+    "name": "E&P Systems",
+    "initials": "E&P",
+    "tagline": "AI-Powered Business Growth Solutions"
+  },
+  "nav": {
+    "freeAuditTool": "Free AI Business Audit Tool"
+  },
+  "buttons": {
+    "next": "Next Step",
+    "back": "Back",
+    "backToHome": "Back to Home",
+    "save": "Save Progress",
+    "saved": "Saved!",
+    "generateReport": "Generate My AI Audit Report",
+    "startNewAudit": "Start a New Audit",
+    "share": "Share",
+    "copied": "Copied!",
+    "downloadPdf": "Download PDF",
+    "retry": "Retry",
+    "skipToReport": "Skip to Report",
+    "refreshPage": "Refresh Page"
+  },
+  "validation": {
+    "fixFollowing": "Please fix the following:",
+    "businessNameRequired": "Business name is required",
+    "nameRequired": "Your name is required",
+    "emailRequired": "Email address is required",
+    "emailInvalid": "Please enter a valid email address",
+    "crmRequired": "Please select your primary CRM or software",
+    "crmSatisfactionRequired": "Please rate your satisfaction with your current software",
+    "leadSourceRequired": "Please select at least one lead source",
+    "responseSpeedRequired": "Please select your lead response speed"
+  },
+  "niche": {
+    "hs": "Home Services & Trades",
+    "re": "Real Estate Teams & Brokerages",
+    "hsShort": "Home Services & Trades",
+    "reShort": "Real Estate"
+  },
+  "stepOf": "Step {{current}} of {{total}}",
+  "copyright": "\u00a9 {{year}} E&P Systems \u00b7 AI-Powered Business Growth Solutions"
+}

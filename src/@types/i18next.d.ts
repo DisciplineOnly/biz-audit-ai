@@ -1,11 +1,13 @@
 import 'i18next';
-import type translation from '../locales/en/translation.json';
+import type common from '../../public/locales/en/common.json';
+import type landing from '../../public/locales/en/landing.json';
 
 declare module 'i18next' {
   interface CustomTypeOptions {
-    defaultNS: 'translation';
+    defaultNS: 'common';
     resources: {
-      translation: typeof translation;
+      common: typeof common;
+      landing: typeof landing;
     };
   }
 }

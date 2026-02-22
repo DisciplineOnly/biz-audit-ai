@@ -1,0 +1,68 @@
+{
+  "partner": {
+    "referredBy": "Referred by Partner: {{code}}"
+  },
+  "hero": {
+    "badge": "FREE \u00b7 AI-POWERED \u00b7 PERSONALIZED",
+    "title": "Get Your Free",
+    "titleHighlight": "AI Business Audit",
+    "subtitle": "Answer a few questions about your business and we'll generate a personalized report showing <strong>exactly where you're leaving money on the table</strong> \u2014 and how to fix it.",
+    "subtitleStrong": "exactly where you're leaving money on the table"
+  },
+  "benefits": [
+    "Discover exactly where you're losing money",
+    "Get a personalized AI-generated score for 7 business areas",
+    "Receive actionable recommendations you can implement immediately",
+    "Compare your performance to industry benchmarks",
+    "Takes only 8\u201310 minutes to complete"
+  ],
+  "stats": {
+    "categoriesScored": {
+      "value": "7",
+      "label": "Business Categories Scored"
+    },
+    "avgTime": {
+      "value": "~8 min",
+      "label": "Avg. Time to Complete"
+    },
+    "aiReport": {
+      "value": "Free",
+      "label": "AI-Generated Report"
+    }
+  },
+  "nicheSelect": {
+    "prompt": "Select your business type to get started:",
+    "hs": {
+      "title": "Home Services & Trades",
+      "description": "HVAC, Plumbing, Electrical, Roofing, Landscaping, Pest Control, and more",
+      "tags": ["HVAC", "Plumbing", "Electrical", "Roofing", "Landscaping", "More"],
+      "cta": "Start My Audit"
+    },
+    "re": {
+      "title": "Real Estate Teams & Brokerages",
+      "description": "Agents, teams, brokerages, property management, and mortgage teams",
+      "tags": ["Residential", "Teams", "Brokerages", "Property Mgmt", "Mortgage", "More"],
+      "cta": "Start My Audit"
+    }
+  },
+  "howItWorks": {
+    "title": "How It Works",
+    "steps": [
+      {
+        "step": "01",
+        "title": "Answer 8 Quick Sections",
+        "description": "Tell us about your technology, leads, operations, and financials. Takes about 8 minutes."
+      },
+      {
+        "step": "02",
+        "title": "AI Analyzes Your Answers",
+        "description": "Our AI scores your business across 7 critical categories and benchmarks you against industry standards."
+      },
+      {
+        "step": "03",
+        "title": "Get Your Personalized Report",
+        "description": "Receive your full audit report with scores, critical gaps, quick wins, and strategic recommendations."
+      }
+    ]
+  }
+}
