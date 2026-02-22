@@ -21,6 +21,12 @@
   "rateLimit": {
     "heading": "Too Many Submissions",
     "savedMessage": "Your audit data has been saved. You'll receive your report once the limit resets.",
-    "defaultMessage": "Too many submissions. Please try again later."
+    "defaultMessage": "Too many submissions. Please try again later.",
+    "message": "You've already submitted 3 audits today. Try again {{timeHint}}.",
+    "timeHints": {
+      "oneHour": "in about 1 hour",
+      "hours": "in about {{count}} hours",
+      "tomorrow": "tomorrow"
+    }
   }
 }
