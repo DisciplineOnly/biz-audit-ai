@@ -437,6 +437,21 @@ Deno.serve(async (req: Request) => {
     const biggestChallenge = sanitizeText(formState?.step8?.biggestChallenge, 500)
     const niche = formState?.niche || 'home_services'
 
+    // Sub-niche: read from request body, resolve to human-readable label
+    const subNicheKey: string | null = body.subNiche ?? body.formState?.subNiche ?? null
+
+    // Sub-niche display labels — must stay in sync with SUB_NICHE_REGISTRY in src/config/subNicheConfig.ts
+    const SUB_NICHE_LABELS: Record<string, string> = {
+      hvac: 'HVAC', plumbing: 'Plumbing', electrical: 'Electrical', garage_doors: 'Garage Doors',
+      pest_control: 'Pest Control', landscaping: 'Landscaping', cleaning: 'Cleaning',
+      roofing: 'Roofing', painting: 'Painting', general_contracting: 'General Contracting',
+      construction: 'Construction', interior_design: 'Interior Design',
+      residential_sales: 'Residential Sales', commercial: 'Commercial / Office',
+      property_management: 'Property Management', new_construction: 'New Construction',
+      luxury_resort: 'Luxury / Resort',
+    }
+    const subNicheLabel = subNicheKey ? (SUB_NICHE_LABELS[subNicheKey] ?? null) : null
+
     // Build prompts
     const { system, user } = buildPrompt({
       niche,
@@ -445,6 +460,7 @@ Deno.serve(async (req: Request) => {
       formState,
       techFrustrations,
       biggestChallenge,
+      subNiche: subNicheLabel,
     })
 
     // Call Claude Haiku 4.5
