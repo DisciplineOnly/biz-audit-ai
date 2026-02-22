@@ -1,23 +1,18 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation, Trans } from "react-i18next";
 import { Wrench, Home, ArrowRight, CheckCircle, Star, BarChart3, Zap } from "lucide-react";
 import { useLang } from "@/hooks/useLang";
 import { LanguageToggle } from "@/components/LanguageToggle";
 
 const STORAGE_KEY = "ep_audit_state";
 
-const benefits = [
-  "Discover exactly where you're losing money",
-  "Get a personalized AI-generated score for 7 business areas",
-  "Receive actionable recommendations you can implement immediately",
-  "Compare your performance to industry benchmarks",
-  "Takes only 8–10 minutes to complete",
-];
-
 export default function Index() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { prefix } = useLang();
+  const { t } = useTranslation('landing');
+  const { t: tc } = useTranslation('common');
   const partnerCode = searchParams.get("ref") || searchParams.get("partner");
 
   useEffect(() => {
@@ -40,6 +35,11 @@ export default function Index() {
     }
   };
 
+  const benefits = t('benefits', { returnObjects: true }) as string[];
+  const hsTags = t('nicheSelect.hs.tags', { returnObjects: true }) as string[];
+  const reTags = t('nicheSelect.re.tags', { returnObjects: true }) as string[];
+  const howSteps = t('howItWorks.steps', { returnObjects: true }) as Array<{ step: string; title: string; description: string }>;
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -50,13 +50,13 @@ export default function Index() {
               className="w-8 h-8 rounded-md flex items-center justify-center text-white font-bold text-sm"
               style={{ backgroundColor: "hsl(var(--coral))" }}
             >
-              E&P
+              {tc('brand.initials')}
             </div>
-            <span className="text-white font-semibold text-lg">E&P Systems</span>
+            <span className="text-white font-semibold text-lg">{tc('brand.name')}</span>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-white/60 text-sm hidden sm:block">
-              Free AI Business Audit Tool
+              {tc('nav.freeAuditTool')}
             </span>
             <LanguageToggle />
           </div>
@@ -72,7 +72,7 @@ export default function Index() {
               style={{ backgroundColor: "hsl(var(--coral) / 0.2)", border: "1px solid hsl(var(--coral) / 0.4)" }}
             >
               <Star className="w-3.5 h-3.5" style={{ color: "hsl(var(--coral))" }} />
-              Referred by Partner: {partnerCode}
+              {t('partner.referredBy', { code: partnerCode })}
             </div>
           )}
 
@@ -81,22 +81,25 @@ export default function Index() {
             style={{ backgroundColor: "hsl(var(--coral) / 0.15)", color: "hsl(var(--coral))" }}
           >
             <Zap className="w-3.5 h-3.5" />
-            FREE · AI-POWERED · PERSONALIZED
+            {t('hero.badge')}
           </div>
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
-            Get Your Free{" "}
-            <span style={{ color: "hsl(var(--coral))" }}>AI Business Audit</span>
+            {t('hero.title')}{" "}
+            <span style={{ color: "hsl(var(--coral))" }}>{t('hero.titleHighlight')}</span>
           </h1>
 
           <p className="text-xl text-white/70 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Answer a few questions about your business and we'll generate a personalized report
-            showing <strong className="text-white">exactly where you're leaving money on the table</strong> — and how to fix it.
+            <Trans
+              i18nKey="hero.subtitle"
+              ns="landing"
+              components={{ strong: <strong className="text-white" /> }}
+            />
           </p>
 
           {/* Benefits */}
           <div className="grid sm:grid-cols-2 gap-3 max-w-2xl mx-auto mb-12 text-left">
-            {benefits.map((benefit, i) => (
+            {Array.isArray(benefits) && benefits.map((benefit, i) => (
               <div key={i} className="flex items-start gap-3">
                 <CheckCircle
                   className="w-5 h-5 mt-0.5 flex-shrink-0"
@@ -110,9 +113,9 @@ export default function Index() {
           {/* Stats */}
           <div className="flex flex-wrap justify-center gap-8 mb-8">
             {[
-              { icon: BarChart3, label: "Business Categories Scored", value: "7" },
-              { icon: Zap, label: "Avg. Time to Complete", value: "~8 min" },
-              { icon: Star, label: "AI-Generated Report", value: "Free" },
+              { icon: BarChart3, label: t('stats.categoriesScored.label'), value: t('stats.categoriesScored.value') },
+              { icon: Zap, label: t('stats.avgTime.label'), value: t('stats.avgTime.value') },
+              { icon: Star, label: t('stats.aiReport.label'), value: t('stats.aiReport.value') },
             ].map(({ icon: Icon, label, value }) => (
               <div key={label} className="text-center">
                 <div className="text-3xl font-bold text-white">{value}</div>
@@ -127,7 +130,7 @@ export default function Index() {
       <section className="px-6 -mt-12 pb-16">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
-            <p className="text-muted-foreground font-medium">Select your business type to get started:</p>
+            <p className="text-muted-foreground font-medium">{t('nicheSelect.prompt')}</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
@@ -148,13 +151,13 @@ export default function Index() {
                 />
               </div>
 
-              <h2 className="text-2xl font-bold text-foreground mb-2">Home Services & Trades</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-2">{t('nicheSelect.hs.title')}</h2>
               <p className="text-muted-foreground mb-5">
-                HVAC, Plumbing, Electrical, Roofing, Landscaping, Pest Control, and more
+                {t('nicheSelect.hs.description')}
               </p>
 
               <div className="flex flex-wrap gap-2">
-                {["HVAC", "Plumbing", "Electrical", "Roofing", "Landscaping", "More"].map((tag) => (
+                {Array.isArray(hsTags) && hsTags.map((tag) => (
                   <span
                     key={tag}
                     className="text-xs px-3 py-1 rounded-full bg-secondary text-secondary-foreground font-medium"
@@ -168,7 +171,7 @@ export default function Index() {
                 className="mt-6 flex items-center gap-2 font-semibold text-sm transition-colors"
                 style={{ color: "hsl(var(--coral))" }}
               >
-                Start My Audit
+                {t('nicheSelect.hs.cta')}
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </button>
@@ -190,13 +193,13 @@ export default function Index() {
                 />
               </div>
 
-              <h2 className="text-2xl font-bold text-foreground mb-2">Real Estate Teams & Brokerages</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-2">{t('nicheSelect.re.title')}</h2>
               <p className="text-muted-foreground mb-5">
-                Agents, teams, brokerages, property management, and mortgage teams
+                {t('nicheSelect.re.description')}
               </p>
 
               <div className="flex flex-wrap gap-2">
-                {["Residential", "Teams", "Brokerages", "Property Mgmt", "Mortgage", "More"].map((tag) => (
+                {Array.isArray(reTags) && reTags.map((tag) => (
                   <span
                     key={tag}
                     className="text-xs px-3 py-1 rounded-full bg-secondary text-secondary-foreground font-medium"
@@ -210,7 +213,7 @@ export default function Index() {
                 className="mt-6 flex items-center gap-2 font-semibold text-sm transition-colors"
                 style={{ color: "hsl(var(--coral))" }}
               >
-                Start My Audit
+                {t('nicheSelect.re.cta')}
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </button>
@@ -221,25 +224,9 @@ export default function Index() {
       {/* How it works */}
       <section className="py-16 px-6 bg-secondary/30">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold text-center text-foreground mb-10">How It Works</h2>
+          <h2 className="text-2xl font-bold text-center text-foreground mb-10">{t('howItWorks.title')}</h2>
           <div className="grid sm:grid-cols-3 gap-8">
-            {[
-              {
-                step: "01",
-                title: "Answer 8 Quick Sections",
-                desc: "Tell us about your technology, leads, operations, and financials. Takes about 8 minutes.",
-              },
-              {
-                step: "02",
-                title: "AI Analyzes Your Answers",
-                desc: "Our AI scores your business across 7 critical categories and benchmarks you against industry standards.",
-              },
-              {
-                step: "03",
-                title: "Get Your Personalized Report",
-                desc: "Receive your full audit report with scores, critical gaps, quick wins, and strategic recommendations.",
-              },
-            ].map(({ step, title, desc }) => (
+            {Array.isArray(howSteps) && howSteps.map(({ step, title, description }) => (
               <div key={step} className="text-center">
                 <div
                   className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold mx-auto mb-4"
@@ -248,7 +235,7 @@ export default function Index() {
                   {step}
                 </div>
                 <h3 className="font-semibold text-foreground mb-2">{title}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">{desc}</p>
+                <p className="text-muted-foreground text-sm leading-relaxed">{description}</p>
               </div>
             ))}
           </div>
@@ -261,7 +248,7 @@ export default function Index() {
         style={{ backgroundColor: "hsl(var(--navy))" }}
       >
         <p className="text-white/40 text-sm">
-          © {new Date().getFullYear()} E&P Systems · AI-Powered Business Growth Solutions
+          {tc('copyright', { year: new Date().getFullYear() })}
         </p>
       </footer>
     </div>
