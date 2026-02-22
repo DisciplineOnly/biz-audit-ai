@@ -26,7 +26,7 @@
 - [x] **Phase 6: i18n Infrastructure and Routing** — Install i18next, wire `/bg/*` URL routing, fix component value/label API before any translation work
 - [x] **Phase 7: English Translation Pass** — Extract all hardcoded strings into English JSON namespaces; verify zero regressions
 - [x] **Phase 8: Sub-Niche Config and Selection UI** — Config-driven option branching for all 17 sub-niches; selection card grid in Step 1
-- [ ] **Phase 9: Scoring Engine Sub-Niche Weights** — Config-driven weight overrides per sub-niche group; scoring identical across languages
+- [x] **Phase 9: Scoring Engine Sub-Niche Weights** — Config-driven weight overrides per sub-niche group; scoring identical across languages
 - [ ] **Phase 10: Database and Backend Extension** — Persist language and sub-niche; fix Cyrillic sanitization; wire fields through to edge function
 - [ ] **Phase 11: Bulgarian Content and AI Reports** — Full Bulgarian translation namespaces, BG-market options, AI report in Bulgarian
 
@@ -94,9 +94,9 @@ Plans:
   3. The same answers submitted in English and Bulgarian produce identical numerical scores — language does not affect score output
 **Plans**: 3 plans
 Plans:
-- [ ] 09-01-PLAN.md — Research-driven weight config, computeScores() integration, AuditForm wiring
-- [ ] 09-02-PLAN.md — AI prompt sub-niche context in generate-report edge function
-- [ ] 09-03-PLAN.md — Verification checkpoint
+- [x] 09-01-PLAN.md — Research-driven weight config, computeScores() integration, AuditForm wiring
+- [x] 09-02-PLAN.md — AI prompt sub-niche context in generate-report edge function
+- [x] 09-03-PLAN.md — Verification checkpoint
 
 ### Phase 10: Database and Backend Extension
 **Goal**: Completed audits persist language and sub-niche, the admin email reports both fields, and Bulgarian free-text reaches the AI unstripped
@@ -132,6 +132,6 @@ Plans:
 | 6. i18n Infrastructure and Routing | v1.1 | 4/4 | Complete | 2026-02-22 |
 | 7. English Translation Pass | v1.1 | 6/6 | Complete | 2026-02-22 |
 | 8. Sub-Niche Config and Selection UI | v1.1 | 5/5 | Complete | 2026-02-22 |
-| 9. Scoring Engine Sub-Niche Weights | v1.1 | 0/3 | Not started | - |
+| 9. Scoring Engine Sub-Niche Weights | v1.1 | 3/3 | Complete | 2026-02-22 |
 | 10. Database and Backend Extension | v1.1 | 0/? | Not started | - |
 | 11. Bulgarian Content and AI Reports | v1.1 | 0/? | Not started | - |
