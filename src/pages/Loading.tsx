@@ -62,7 +62,7 @@ export default function Loading() {
 
       try {
         const generateCall = supabase.functions.invoke("generate-report", {
-          body: { auditId, formState: formStateRef.current, scores: scoresRef.current },
+          body: { auditId, formState: formStateRef.current, scores: scoresRef.current, language: lang },
         });
 
         const [result] = await Promise.all([generateCall, minTimer]);
@@ -74,7 +74,16 @@ export default function Loading() {
           const body = await invokeError.context.json();
           if (body?.rateLimited) {
             setIsRateLimited(true);
-            setRateLimitMessage(body.message ?? t('rateLimit.defaultMessage'));
+            const hours = body.hoursRemaining ?? 24;
+            let timeHint: string;
+            if (hours <= 1) {
+              timeHint = t('rateLimit.timeHints.oneHour');
+            } else if (hours < 20) {
+              timeHint = t('rateLimit.timeHints.hours', { count: hours });
+            } else {
+              timeHint = t('rateLimit.timeHints.tomorrow');
+            }
+            setRateLimitMessage(t('rateLimit.message', { timeHint }));
             return; // Stay on loading screen — do NOT navigate
           }
           throw invokeError; // Non-429 HTTP error
@@ -105,7 +114,7 @@ export default function Loading() {
         // Show Retry + Skip buttons — user can retry or skip to template report
       }
     },
-    [navigate, prefix, t]
+    [navigate, prefix, t, lang]
   );
 
   const handleRetry = useCallback(() => {
