@@ -75,7 +75,7 @@ Each task was committed atomically:
 1. **Task 1: Add Bulgarian market options to subNicheConfig and EUR revenue tiers to Step1** - `c2476ac` (feat)
 2. **Task 2: Wire Step2, Step3, Step7 to use language-aware sub-niche options** - `b0fdb19` (feat)
 
-**Plan metadata:** (pending)
+**Plan metadata:** `5a22b16` (docs: complete plan)
 
 ## Files Created/Modified
 - `src/config/subNicheConfig.ts` - Added BG_SUB_NICHE_OPTIONS (full Bulgarian-market config map) and getSubNicheOptionsForLang function

@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 MVP** — Phases 1-5 (shipped 2026-02-21) | [Archive](milestones/v1.0-ROADMAP.md)
-- 🚧 **v1.1 Localization & Sub-Niche Specialization** — Phases 6-11 (in progress)
+- ✅ **v1.1 Localization & Sub-Niche Specialization** — Phases 6-11 (completed 2026-02-22)
 
 ## Phases
 
@@ -19,7 +19,7 @@
 
 </details>
 
-### 🚧 v1.1 Localization & Sub-Niche Specialization (In Progress)
+### ✅ v1.1 Localization & Sub-Niche Specialization (Completed 2026-02-22)
 
 **Milestone Goal:** Bulgarian language support with market-adapted content and sub-niche specialization of form questions across both languages.
 
@@ -28,7 +28,7 @@
 - [x] **Phase 8: Sub-Niche Config and Selection UI** — Config-driven option branching for all 17 sub-niches; selection card grid in Step 1
 - [x] **Phase 9: Scoring Engine Sub-Niche Weights** — Config-driven weight overrides per sub-niche group; scoring identical across languages
 - [x] **Phase 10: Database and Backend Extension** — Persist language and sub-niche; fix Cyrillic sanitization; wire fields through to edge function (completed 2026-02-22)
-- [ ] **Phase 11: Bulgarian Content and AI Reports** — Full Bulgarian translation namespaces, BG-market options, AI report in Bulgarian
+- [x] **Phase 11: Bulgarian Content and AI Reports** — Full Bulgarian translation namespaces, BG-market options, AI report in Bulgarian (completed 2026-02-22)
 
 ## Phase Details
 
@@ -108,8 +108,8 @@ Plans:
   3. A Bulgarian user's free-text input (Cyrillic characters) passes through `sanitizeText()` and arrives at the AI prompt intact — no Cyrillic characters are stripped
 **Plans:** 2/2 plans complete
 Plans:
-- [ ] 10-01-PLAN.md — DB migration + submitAudit/fetchReport wiring + sanitization fix
-- [ ] 10-02-PLAN.md — Admin email language/sub-niche display and language-aware URLs
+- [x] 10-01-PLAN.md — DB migration + submitAudit/fetchReport wiring + sanitization fix
+- [x] 10-02-PLAN.md — Admin email language/sub-niche display and language-aware URLs
 
 ### Phase 11: Bulgarian Content and AI Reports
 **Goal**: Users accessing `/bg/` experience a fully Bulgarian product — UI, form options, and AI-generated report — with Bulgarian-market-specific content
@@ -123,10 +123,10 @@ Plans:
   5. The rate-limit error displayed to a Bulgarian user reads in Bulgarian (frontend translates a machine-readable code, not a hardcoded English string from the edge function)
 **Plans**: 4 plans
 Plans:
-- [ ] 11-01-PLAN.md — Populate all 5 Bulgarian translation files (common, landing, steps, generating, report)
-- [ ] 11-02-PLAN.md — Bulgarian market options (imot.bg, OLX.bg, Viber) and EUR revenue/GCI tiers
-- [ ] 11-03-PLAN.md — Language-aware AI report generation with Bulgarian prompt template and i18n rate-limit errors
-- [ ] 11-04-PLAN.md — Verification checkpoint
+- [x] 11-01-PLAN.md — Populate all 5 Bulgarian translation files (common, landing, steps, generating, report)
+- [x] 11-02-PLAN.md — Bulgarian market options (imot.bg, OLX.bg, Viber) and EUR revenue/GCI tiers
+- [x] 11-03-PLAN.md — Language-aware AI report generation with Bulgarian prompt template and i18n rate-limit errors
+- [x] 11-04-PLAN.md — Verification checkpoint
 
 ## Progress
 
@@ -141,5 +141,5 @@ Plans:
 | 7. English Translation Pass | v1.1 | 6/6 | Complete | 2026-02-22 |
 | 8. Sub-Niche Config and Selection UI | v1.1 | 5/5 | Complete | 2026-02-22 |
 | 9. Scoring Engine Sub-Niche Weights | v1.1 | 3/3 | Complete | 2026-02-22 |
-| 10. Database and Backend Extension | 2/2 | Complete    | 2026-02-22 | - |
-| 11. Bulgarian Content and AI Reports | 3/4 | In Progress|  | - |
+| 10. Database and Backend Extension | v1.1 | 2/2 | Complete | 2026-02-22 |
+| 11. Bulgarian Content and AI Reports | v1.1 | 4/4 | Complete | 2026-02-22 |
