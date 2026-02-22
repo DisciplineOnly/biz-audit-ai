@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 7 of 11 (English Translation Pass)
-Plan: 3 of 6 complete (Phase 7 executing, next: 07-04)
+Plan: 4 of 6 complete (Phase 7 executing, next: 07-05)
 Status: Executing
-Last activity: 2026-02-22 — Completed 07-03 (Step 1-4 form field i18n extraction)
+Last activity: 2026-02-22 — Completed 07-04 (Steps 5-8 field label i18n extraction)
 
-Progress: [==========          ] 50% (Phase 7) — 3/6 plans
+Progress: [=============       ] 67% (Phase 7) — 4/6 plans
 
 ## Performance Metrics
 
@@ -44,6 +44,7 @@ Progress: [==========          ] 50% (Phase 7) — 3/6 plans
 | 7 | 07-01 | 3min | 2 | 16 |
 | 7 | 07-02 | 3min | 2 | 4 |
 | 7 | 07-03 | 3min | 2 | 5 |
+| 7 | 07-04 | 4min | 2 | 5 |
 
 ## Accumulated Context
 
@@ -66,6 +67,9 @@ Key v1.1 architectural decisions (from research):
 - Nullish coalescing for i18n prop defaults — DONE (07-02), explicit props override t() fallback in RatingButtons/StyledSelect
 - Niche-conditional i18n uses hs/re sub-keys, shared fields use flat keys — DONE (07-03), consistent pattern for Steps 1-4
 - Option arrays (toOptions) intentionally untranslated — DONE (07-03), values are scoring keys, label translation deferred to Phase 11
+- Steps 5-6 fully niche-separated field labels (all under hs/re.fields) — DONE (07-04), HS and RE have entirely different fields
+- Steps 7-8 mixed pattern: niche fields under hs/re.fields, shared fields at step-level — DONE (07-04), KPI and biggest challenge shared
+- Step 8 completion banner extracted to i18n — DONE (07-04), t('step8.completionBanner.title/description')
 - Config-driven sub-niche branching (TypeScript discriminated union) — never boolean flags
 - Phase 9 (scoring weights) can partially overlap with Phase 8 — same config schema
 
@@ -83,5 +87,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 07-03-PLAN.md
-Resume file: .planning/phases/07-english-translation-pass/07-04-PLAN.md
+Stopped at: Completed 07-04-PLAN.md
+Resume file: .planning/phases/07-english-translation-pass/07-05-PLAN.md
