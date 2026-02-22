@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Zap } from "lucide-react";
 import { submitAudit } from "@/lib/submitAudit";
 import { supabase } from "@/lib/supabase";
@@ -9,21 +10,12 @@ import { useLang } from "@/hooks/useLang";
 
 const MIN_WAIT_MS = 8000;
 
-const steps = [
-  "Analyzing your technology stack...",
-  "Evaluating your lead funnel...",
-  "Scoring your scheduling & operations...",
-  "Assessing your communication systems...",
-  "Reviewing your follow-up & retention...",
-  "Identifying revenue opportunities...",
-  "Benchmarking against industry standards...",
-  "Generating personalized recommendations...",
-];
-
 export default function Loading() {
   const navigate = useNavigate();
   const location = useLocation();
   const { prefix } = useLang();
+  const { t } = useTranslation('generating');
+  const { t: tc } = useTranslation('common');
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -36,6 +28,10 @@ export default function Loading() {
   const mountedRef = useRef(true);
   const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const apiResolvedRef = useRef(false);
+
+  // Steps from i18n namespace
+  const steps = (t('steps', { returnObjects: true }) as string[]);
+  const stepsArray = Array.isArray(steps) ? steps : [];
 
   // Capture location state once at mount
   const locationStateRef = useRef(
@@ -78,7 +74,7 @@ export default function Loading() {
           const body = await invokeError.context.json();
           if (body?.rateLimited) {
             setIsRateLimited(true);
-            setRateLimitMessage(body.message ?? "Too many submissions. Please try again later.");
+            setRateLimitMessage(body.message ?? t('rateLimit.defaultMessage'));
             return; // Stay on loading screen — do NOT navigate
           }
           throw invokeError; // Non-429 HTTP error
@@ -86,7 +82,7 @@ export default function Loading() {
 
         if (invokeError || !data?.success) {
           throw new Error(
-            invokeError?.message || data?.error || "Report generation failed"
+            invokeError?.message || data?.error || t('errors.reportFailed')
           );
         }
 
@@ -105,11 +101,11 @@ export default function Loading() {
         });
       } catch (err) {
         if (!mountedRef.current) return;
-        setAiError((err as Error).message || "Report generation failed");
+        setAiError((err as Error).message || t('errors.reportFailed'));
         // Show Retry + Skip buttons — user can retry or skip to template report
       }
     },
-    [navigate, prefix]
+    [navigate, prefix, t]
   );
 
   const handleRetry = useCallback(() => {
@@ -133,13 +129,13 @@ export default function Loading() {
 
     // Validate required data
     if (!formState || !scores) {
-      setError("Missing form data. Please start over.");
+      setError(t('errors.missingFormData'));
       setTimeout(() => { if (mountedRef.current) navigate(prefix || "/"); }, 3000);
       return;
     }
 
     if (!formState.niche) {
-      setError("Missing niche selection. Please start over.");
+      setError(t('errors.missingNiche'));
       setTimeout(() => { if (mountedRef.current) navigate(prefix || "/"); }, 3000);
       return;
     }
@@ -150,7 +146,7 @@ export default function Loading() {
     const stepInterval = setInterval(() => {
       if (!mountedRef.current) return;
       setCurrentStep((prev) => {
-        if (prev >= steps.length - 1) {
+        if (prev >= stepsArray.length - 1) {
           clearInterval(stepInterval);
           return prev;
         }
@@ -202,7 +198,7 @@ export default function Loading() {
       clearInterval(stepInterval);
       if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
     };
-  }, [navigate, callGenerateReport, prefix]);
+  }, [navigate, callGenerateReport, prefix, t, stepsArray.length]);
 
   return (
     <div
@@ -215,9 +211,9 @@ export default function Loading() {
           className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold"
           style={{ backgroundColor: "hsl(var(--coral))" }}
         >
-          E&P
+          {tc('brand.initials')}
         </div>
-        <span className="text-white font-bold text-xl">E&P Systems</span>
+        <span className="text-white font-bold text-xl">{tc('brand.name')}</span>
       </div>
 
       {/* Spinner */}
@@ -236,10 +232,10 @@ export default function Loading() {
       </div>
 
       <h1 className="text-2xl md:text-3xl font-bold text-white mb-2 text-center">
-        Generating Your AI Audit Report
+        {t('heading')}
       </h1>
       <p className="text-white/50 text-sm mb-10 text-center">
-        This takes about 15–20 seconds — please don't close this tab
+        {t('subtitle')}
       </p>
 
       {/* DB save error (non-blocking notice) */}
@@ -253,10 +249,10 @@ export default function Loading() {
       {isRateLimited ? (
         <div className="w-full max-w-md text-center">
           <div className="mb-4 text-4xl">🚫</div>
-          <h2 className="text-xl font-bold text-white mb-3">Too Many Submissions</h2>
+          <h2 className="text-xl font-bold text-white mb-3">{t('rateLimit.heading')}</h2>
           <p className="text-white/70 mb-6">{rateLimitMessage}</p>
           <p className="text-white/40 text-sm">
-            Your audit data has been saved. You'll receive your report once the limit resets.
+            {t('rateLimit.savedMessage')}
           </p>
         </div>
       ) : (
@@ -264,7 +260,7 @@ export default function Loading() {
           {/* Progress bar */}
           <div className="w-full max-w-md mb-8">
             <div className="flex justify-between text-xs text-white/40 mb-2">
-              <span>Analyzing...</span>
+              <span>{t('analyzing')}</span>
               <span>{progress}%</span>
             </div>
             <div className="h-2 rounded-full bg-white/10 overflow-hidden">
@@ -283,7 +279,7 @@ export default function Loading() {
             <div className="w-full max-w-md space-y-3 mb-6">
               <div className="p-4 bg-red-500/20 border border-red-500/50 rounded-lg">
                 <p className="text-red-200 text-sm text-center mb-3">
-                  Report generation encountered an issue.
+                  {t('errors.reportIssue')}
                 </p>
                 <div className="flex gap-3 justify-center">
                   <button
@@ -291,13 +287,13 @@ export default function Loading() {
                     className="px-4 py-2 rounded-lg text-white font-medium text-sm"
                     style={{ backgroundColor: "hsl(var(--coral))" }}
                   >
-                    Retry
+                    {tc('buttons.retry')}
                   </button>
                   <button
                     onClick={handleSkipToReport}
                     className="px-4 py-2 rounded-lg text-white/70 hover:text-white font-medium text-sm border border-white/20 hover:border-white/40"
                   >
-                    Skip to Report
+                    {tc('buttons.skipToReport')}
                   </button>
                 </div>
               </div>
@@ -306,7 +302,7 @@ export default function Loading() {
 
           {/* Steps list */}
           <div className="w-full max-w-md space-y-3">
-            {steps.map((step, index) => {
+            {stepsArray.map((step, index) => {
               const isActive = index === currentStep;
               const isDone = index < currentStep;
 
@@ -330,7 +326,7 @@ export default function Loading() {
                         : "bg-white/10 text-white/20"
                     }`}
                   >
-                    {isDone ? "✓" : index + 1}
+                    {isDone ? "\u2713" : index + 1}
                   </div>
                   <span className={isActive ? "font-medium" : ""}>{step}</span>
                   {isActive && (
