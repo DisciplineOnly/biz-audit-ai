@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { FormField, StepHeader, StyledSelect, StepProps, toOptions } from "./AuditFormComponents";
 
 const HS_POST_JOB = toOptions([
@@ -33,6 +34,7 @@ const RE_ANNIVERSARY = toOptions(["Yes — automated", "Yes — manual", "No"]);
 const RE_REPEAT = toOptions(["Over 50%", "30–50%", "10–30%", "Under 10%", "We don't track this"]);
 
 export function Step6FollowUp({ state, dispatch, isHS }: StepProps) {
+  const { t } = useTranslation('steps');
   const { step6 } = state;
   const update = (payload: Partial<typeof step6>) => dispatch({ type: "UPDATE_STEP6", payload });
 
@@ -40,49 +42,49 @@ export function Step6FollowUp({ state, dispatch, isHS }: StepProps) {
     <div>
       <StepHeader
         step={6}
-        title={isHS ? "Follow-Up & Customer Retention" : "Follow-Up & Client Retention"}
-        subtitle="How you stay connected after the sale and build long-term loyalty"
+        title={isHS ? t('step6.hs.title') : t('step6.re.title')}
+        subtitle={isHS ? t('step6.hs.subtitle') : t('step6.re.subtitle')}
       />
 
       <div className="space-y-7">
         {isHS ? (
           <>
-            <FormField label="What happens after a job is completed?">
+            <FormField label={t('step6.hs.fields.postJobFollowUp.label')}>
               <StyledSelect
                 value={step6.postJobFollowUp || ""}
                 onChange={(v) => update({ postJobFollowUp: v })}
                 options={HS_POST_JOB}
               />
             </FormField>
-            <FormField label="Do you send maintenance or seasonal reminders to past customers?">
+            <FormField label={t('step6.hs.fields.maintenanceReminders.label')}>
               <StyledSelect
                 value={step6.maintenanceReminders || ""}
                 onChange={(v) => update({ maintenanceReminders: v })}
                 options={HS_MAINTENANCE}
               />
             </FormField>
-            <FormField label="Do you offer service agreements/maintenance plans/memberships?">
+            <FormField label={t('step6.hs.fields.serviceAgreements.label')}>
               <StyledSelect
                 value={step6.serviceAgreements || ""}
                 onChange={(v) => update({ serviceAgreements: v })}
                 options={HS_AGREEMENTS}
               />
             </FormField>
-            <FormField label="How do you follow up on unsold estimates/unbooked quotes?">
+            <FormField label={t('step6.hs.fields.estimateFollowUp.label')}>
               <StyledSelect
                 value={step6.estimateFollowUp || ""}
                 onChange={(v) => update({ estimateFollowUp: v })}
                 options={HS_ESTIMATE_FU}
               />
             </FormField>
-            <FormField label="How do you track equipment warranties and recall opportunities?">
+            <FormField label={t('step6.hs.fields.warrantyTracking.label')}>
               <StyledSelect
                 value={step6.warrantyTracking || ""}
                 onChange={(v) => update({ warrantyTracking: v })}
                 options={HS_WARRANTY}
               />
             </FormField>
-            <FormField label="What percentage of your business comes from repeat customers?">
+            <FormField label={t('step6.hs.fields.repeatBusinessPercent.label')}>
               <StyledSelect
                 value={step6.repeatBusinessPercent}
                 onChange={(v) => update({ repeatBusinessPercent: v })}
@@ -92,42 +94,42 @@ export function Step6FollowUp({ state, dispatch, isHS }: StepProps) {
           </>
         ) : (
           <>
-            <FormField label="What happens after a deal closes?">
+            <FormField label={t('step6.re.fields.postCloseFollowUp.label')}>
               <StyledSelect
                 value={step6.postCloseFollowUp || ""}
                 onChange={(v) => update({ postCloseFollowUp: v })}
                 options={RE_POST_CLOSE}
               />
             </FormField>
-            <FormField label="How do you stay in touch with past clients?">
+            <FormField label={t('step6.re.fields.pastClientContact.label')}>
               <StyledSelect
                 value={step6.pastClientContact || ""}
                 onChange={(v) => update({ pastClientContact: v })}
                 options={RE_PAST_CLIENT}
               />
             </FormField>
-            <FormField label="Do you have a formal referral request process for past clients?">
+            <FormField label={t('step6.re.fields.referralProcess.label')}>
               <StyledSelect
                 value={step6.referralProcess || ""}
                 onChange={(v) => update({ referralProcess: v })}
                 options={RE_REFERRAL}
               />
             </FormField>
-            <FormField label="How do you follow up with leads who toured but didn't buy/list?">
+            <FormField label={t('step6.re.fields.lostLeadFollowUp.label')}>
               <StyledSelect
                 value={step6.lostLeadFollowUp || ""}
                 onChange={(v) => update({ lostLeadFollowUp: v })}
                 options={RE_LOST_LEAD}
               />
             </FormField>
-            <FormField label="Do you track client anniversaries (move-in date, birthday) for touchpoints?">
+            <FormField label={t('step6.re.fields.anniversaryTracking.label')}>
               <StyledSelect
                 value={step6.anniversaryTracking || ""}
                 onChange={(v) => update({ anniversaryTracking: v })}
                 options={RE_ANNIVERSARY}
               />
             </FormField>
-            <FormField label="What percentage of your deals come from repeat clients or referrals?">
+            <FormField label={t('step6.re.fields.repeatBusinessPercent.label')}>
               <StyledSelect
                 value={step6.repeatBusinessPercent}
                 onChange={(v) => update({ repeatBusinessPercent: v })}

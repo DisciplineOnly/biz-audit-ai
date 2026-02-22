@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { FormField, StepHeader, StyledSelect, MultiCheckbox, StepProps, toOptions } from "./AuditFormComponents";
 
 const HS_PERFORMANCE = toOptions([
@@ -52,6 +53,7 @@ const RE_KPIS = toOptions([
 ]);
 
 export function Step7Operations({ state, dispatch, isHS }: StepProps) {
+  const { t } = useTranslation('steps');
   const { step7 } = state;
   const update = (payload: Partial<typeof step7>) => dispatch({ type: "UPDATE_STEP7", payload });
 
@@ -59,42 +61,42 @@ export function Step7Operations({ state, dispatch, isHS }: StepProps) {
     <div>
       <StepHeader
         step={7}
-        title="Operations & Accountability"
-        subtitle="How you measure performance and run a tight operation"
+        title={t('step7.title')}
+        subtitle={t('step7.subtitle')}
       />
 
       <div className="space-y-7">
         {isHS ? (
           <>
-            <FormField label="How do you measure technician performance?">
+            <FormField label={t('step7.hs.fields.performanceMeasurement.label')}>
               <StyledSelect
                 value={step7.performanceMeasurement || ""}
                 onChange={(v) => update({ performanceMeasurement: v })}
                 options={HS_PERFORMANCE}
               />
             </FormField>
-            <FormField label="How accurate is your job costing?">
+            <FormField label={t('step7.hs.fields.jobCosting.label')}>
               <StyledSelect
                 value={step7.jobCosting || ""}
                 onChange={(v) => update({ jobCosting: v })}
                 options={HS_JOB_COSTING}
               />
             </FormField>
-            <FormField label="How do you manage parts and inventory?">
+            <FormField label={t('step7.hs.fields.inventoryManagement.label')}>
               <StyledSelect
                 value={step7.inventoryManagement || ""}
                 onChange={(v) => update({ inventoryManagement: v })}
                 options={HS_INVENTORY}
               />
             </FormField>
-            <FormField label="How do technicians log their time?">
+            <FormField label={t('step7.hs.fields.timeTracking.label')}>
               <StyledSelect
                 value={step7.timeTracking || ""}
                 onChange={(v) => update({ timeTracking: v })}
                 options={HS_TIME}
               />
             </FormField>
-            <FormField label="How do you ensure job quality and handle callbacks?">
+            <FormField label={t('step7.hs.fields.qualityControl.label')}>
               <StyledSelect
                 value={step7.qualityControl || ""}
                 onChange={(v) => update({ qualityControl: v })}
@@ -104,28 +106,28 @@ export function Step7Operations({ state, dispatch, isHS }: StepProps) {
           </>
         ) : (
           <>
-            <FormField label="How do you measure agent performance?">
+            <FormField label={t('step7.re.fields.agentPerformanceMeasurement.label')}>
               <StyledSelect
                 value={step7.agentPerformanceMeasurement || ""}
                 onChange={(v) => update({ agentPerformanceMeasurement: v })}
                 options={RE_PERFORMANCE}
               />
             </FormField>
-            <FormField label="How do you hold agents accountable to activity standards?">
+            <FormField label={t('step7.re.fields.agentAccountability.label')}>
               <StyledSelect
                 value={step7.agentAccountability || ""}
                 onChange={(v) => update({ agentAccountability: v })}
                 options={RE_ACCOUNTABILITY}
               />
             </FormField>
-            <FormField label="How do you manage transaction workflows?">
+            <FormField label={t('step7.re.fields.transactionWorkflow.label')}>
               <StyledSelect
                 value={step7.transactionWorkflow || ""}
                 onChange={(v) => update({ transactionWorkflow: v })}
                 options={RE_TRANSACTION}
               />
             </FormField>
-            <FormField label="How do you onboard new agents to the team?">
+            <FormField label={t('step7.re.fields.agentOnboarding.label')}>
               <StyledSelect
                 value={step7.agentOnboarding || ""}
                 onChange={(v) => update({ agentOnboarding: v })}
@@ -136,8 +138,8 @@ export function Step7Operations({ state, dispatch, isHS }: StepProps) {
         )}
 
         <FormField
-          label="Do you track these KPIs regularly?"
-          hint="Select all that apply"
+          label={t('step7.fields.kpisTracked.label')}
+          hint={t('step7.fields.kpisTracked.hint')}
         >
           <MultiCheckbox
             options={isHS ? HS_KPIS : RE_KPIS}

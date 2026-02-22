@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { FormField, StepHeader, StyledSelect, StepProps, toOptions } from "./AuditFormComponents";
 
 const HS_REMINDERS = toOptions([
@@ -40,6 +41,7 @@ const RE_AFTERHOURS = toOptions([
 const RE_PORTAL = toOptions(["Yes — through our software", "No but we'd like one", "No and not a priority"]);
 
 export function Step5Communication({ state, dispatch, isHS }: StepProps) {
+  const { t } = useTranslation('steps');
   const { step5 } = state;
   const update = (payload: Partial<typeof step5>) => dispatch({ type: "UPDATE_STEP5", payload });
 
@@ -47,49 +49,49 @@ export function Step5Communication({ state, dispatch, isHS }: StepProps) {
     <div>
       <StepHeader
         step={5}
-        title={isHS ? "Customer Communication" : "Client Communication"}
-        subtitle="How you stay connected with customers at every stage"
+        title={isHS ? t('step5.hs.title') : t('step5.re.title')}
+        subtitle={isHS ? t('step5.hs.subtitle') : t('step5.re.subtitle')}
       />
 
       <div className="space-y-7">
         {isHS ? (
           <>
-            <FormField label="Do you send automated appointment reminders to customers?">
+            <FormField label={t('step5.hs.fields.appointmentReminders.label')}>
               <StyledSelect
                 value={step5.appointmentReminders || ""}
                 onChange={(v) => update({ appointmentReminders: v })}
                 options={HS_REMINDERS}
               />
             </FormField>
-            <FormField label='Do you send "on-the-way" notifications with technician info?'>
+            <FormField label={t('step5.hs.fields.onTheWayNotifications.label')}>
               <StyledSelect
                 value={step5.onTheWayNotifications || ""}
                 onChange={(v) => update({ onTheWayNotifications: v })}
                 options={HS_ONWAY}
               />
             </FormField>
-            <FormField label="How do customers know when a job is complete or what was done?">
+            <FormField label={t('step5.hs.fields.jobCompletionComms.label')}>
               <StyledSelect
                 value={step5.jobCompletionComms || ""}
                 onChange={(v) => update({ jobCompletionComms: v })}
                 options={HS_JOB_COMPLETE}
               />
             </FormField>
-            <FormField label="How does your office communicate with field technicians?">
+            <FormField label={t('step5.hs.fields.internalComms.label')}>
               <StyledSelect
                 value={step5.internalComms}
                 onChange={(v) => update({ internalComms: v })}
                 options={HS_INTERNAL}
               />
             </FormField>
-            <FormField label="How do you handle after-hours customer communication?">
+            <FormField label={t('step5.hs.fields.afterHoursComms.label')}>
               <StyledSelect
                 value={step5.afterHoursComms}
                 onChange={(v) => update({ afterHoursComms: v })}
                 options={HS_AFTERHOURS}
               />
             </FormField>
-            <FormField label="Do customers have an online portal or app to view their account?">
+            <FormField label={t('step5.hs.fields.clientPortal.label')}>
               <StyledSelect
                 value={step5.clientPortal}
                 onChange={(v) => update({ clientPortal: v })}
@@ -99,42 +101,42 @@ export function Step5Communication({ state, dispatch, isHS }: StepProps) {
           </>
         ) : (
           <>
-            <FormField label="How do agents communicate with active clients?">
+            <FormField label={t('step5.re.fields.agentClientComms.label')}>
               <StyledSelect
                 value={step5.agentClientComms || ""}
                 onChange={(v) => update({ agentClientComms: v })}
                 options={RE_AGENT_COMMS}
               />
             </FormField>
-            <FormField label="Do you send automated updates during the transaction process?">
+            <FormField label={t('step5.re.fields.transactionUpdates.label')}>
               <StyledSelect
                 value={step5.transactionUpdates || ""}
                 onChange={(v) => update({ transactionUpdates: v })}
                 options={RE_TRANSACTION_UPDATES}
               />
             </FormField>
-            <FormField label="How do you keep past clients engaged after closing?">
+            <FormField label={t('step5.re.fields.pastClientEngagement.label')}>
               <StyledSelect
                 value={step5.pastClientEngagement || ""}
                 onChange={(v) => update({ pastClientEngagement: v })}
                 options={RE_PAST_CLIENT}
               />
             </FormField>
-            <FormField label="How does the team communicate internally?">
+            <FormField label={t('step5.re.fields.internalComms.label')}>
               <StyledSelect
                 value={step5.internalComms}
                 onChange={(v) => update({ internalComms: v })}
                 options={RE_INTERNAL}
               />
             </FormField>
-            <FormField label="How do you handle after-hours client inquiries?">
+            <FormField label={t('step5.re.fields.afterHoursComms.label')}>
               <StyledSelect
                 value={step5.afterHoursComms}
                 onChange={(v) => update({ afterHoursComms: v })}
                 options={RE_AFTERHOURS}
               />
             </FormField>
-            <FormField label="Do clients have a portal to track their transaction?">
+            <FormField label={t('step5.re.fields.clientPortal.label')}>
               <StyledSelect
                 value={step5.clientPortal}
                 onChange={(v) => update({ clientPortal: v })}

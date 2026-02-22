@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { FormField, StepHeader, StyledSelect, MultiCheckbox, StyledTextarea, StepProps, toOptions } from "./AuditFormComponents";
 
 const HS_ESTIMATE = toOptions([
@@ -41,6 +42,7 @@ const RE_PAYMENT_METHODS = toOptions([
 ]);
 
 export function Step8Financial({ state, dispatch, isHS }: StepProps) {
+  const { t } = useTranslation('steps');
   const { step8 } = state;
   const update = (payload: Partial<typeof step8>) => dispatch({ type: "UPDATE_STEP8", payload });
 
@@ -48,28 +50,28 @@ export function Step8Financial({ state, dispatch, isHS }: StepProps) {
     <div>
       <StepHeader
         step={8}
-        title="Financial Operations"
-        subtitle="The final piece — how you price, invoice, and manage your money"
+        title={t('step8.title')}
+        subtitle={t('step8.subtitle')}
       />
 
       <div className="space-y-7">
         {isHS ? (
           <>
-            <FormField label="How do you create and deliver estimates?">
+            <FormField label={t('step8.hs.fields.estimateProcess.label')}>
               <StyledSelect
                 value={step8.estimateProcess || ""}
                 onChange={(v) => update({ estimateProcess: v })}
                 options={HS_ESTIMATE}
               />
             </FormField>
-            <FormField label="What pricing model do you primarily use?">
+            <FormField label={t('step8.hs.fields.pricingModel.label')}>
               <StyledSelect
                 value={step8.pricingModel || ""}
                 onChange={(v) => update({ pricingModel: v })}
                 options={HS_PRICING}
               />
             </FormField>
-            <FormField label="When is the invoice sent after job completion?">
+            <FormField label={t('step8.hs.fields.invoiceTiming.label')}>
               <StyledSelect
                 value={step8.invoiceTiming || ""}
                 onChange={(v) => update({ invoiceTiming: v })}
@@ -77,8 +79,8 @@ export function Step8Financial({ state, dispatch, isHS }: StepProps) {
               />
             </FormField>
             <FormField
-              label="What payment methods do you accept?"
-              hint="Select all that apply"
+              label={t('step8.hs.fields.paymentMethods.label')}
+              hint={t('step8.hs.fields.paymentMethods.hint')}
             >
               <MultiCheckbox
                 options={HS_PAYMENT_METHODS}
@@ -86,14 +88,14 @@ export function Step8Financial({ state, dispatch, isHS }: StepProps) {
                 onChange={(v) => update({ paymentMethods: v })}
               />
             </FormField>
-            <FormField label="How do you handle overdue invoices/collections?">
+            <FormField label={t('step8.hs.fields.collectionsProcess.label')}>
               <StyledSelect
                 value={step8.collectionsProcess || ""}
                 onChange={(v) => update({ collectionsProcess: v })}
                 options={HS_COLLECTIONS}
               />
             </FormField>
-            <FormField label="How do you review financial performance?">
+            <FormField label={t('step8.hs.fields.financialReview.label')}>
               <StyledSelect
                 value={step8.financialReview || ""}
                 onChange={(v) => update({ financialReview: v })}
@@ -103,28 +105,28 @@ export function Step8Financial({ state, dispatch, isHS }: StepProps) {
           </>
         ) : (
           <>
-            <FormField label="How do agents track their expenses and commission splits?">
+            <FormField label={t('step8.re.fields.expenseTracking.label')}>
               <StyledSelect
                 value={step8.expenseTracking || ""}
                 onChange={(v) => update({ expenseTracking: v })}
                 options={RE_EXPENSE}
               />
             </FormField>
-            <FormField label="How do you track team P&L?">
+            <FormField label={t('step8.re.fields.teamPnL.label')}>
               <StyledSelect
                 value={step8.teamPnL || ""}
                 onChange={(v) => update({ teamPnL: v })}
                 options={RE_PNL}
               />
             </FormField>
-            <FormField label="How do you handle commission disbursements?">
+            <FormField label={t('step8.re.fields.commissionDisbursement.label')}>
               <StyledSelect
                 value={step8.commissionDisbursement || ""}
                 onChange={(v) => update({ commissionDisbursement: v })}
                 options={RE_COMMISSION}
               />
             </FormField>
-            <FormField label="Do you have a marketing budget with ROI tracking per channel?">
+            <FormField label={t('step8.re.fields.marketingBudget.label')}>
               <StyledSelect
                 value={step8.marketingBudget || ""}
                 onChange={(v) => update({ marketingBudget: v })}
@@ -132,8 +134,8 @@ export function Step8Financial({ state, dispatch, isHS }: StepProps) {
               />
             </FormField>
             <FormField
-              label="What payment methods do you accept for client-facing fees?"
-              hint="Select all that apply"
+              label={t('step8.re.fields.paymentMethods.label')}
+              hint={t('step8.re.fields.paymentMethods.hint')}
             >
               <MultiCheckbox
                 options={RE_PAYMENT_METHODS}
@@ -145,13 +147,13 @@ export function Step8Financial({ state, dispatch, isHS }: StepProps) {
         )}
 
         <FormField
-          label="What's the single biggest operational challenge in your business right now?"
-          hint="Optional — this helps our AI personalize your recommendations"
+          label={t('step8.fields.biggestChallenge.label')}
+          hint={t('step8.fields.biggestChallenge.hint')}
         >
           <StyledTextarea
             value={step8.biggestChallenge}
             onChange={(v) => update({ biggestChallenge: v })}
-            placeholder="e.g., We can't seem to keep good technicians, our invoicing is a mess, we're losing leads to competitors..."
+            placeholder={t('step8.fields.biggestChallenge.placeholder')}
             rows={4}
           />
         </FormField>
@@ -163,10 +165,9 @@ export function Step8Financial({ state, dispatch, isHS }: StepProps) {
           }}
         >
           <div className="text-2xl mb-2">&#9889;</div>
-          <p className="text-white font-semibold text-lg mb-1">You're almost done!</p>
+          <p className="text-white font-semibold text-lg mb-1">{t('step8.completionBanner.title')}</p>
           <p className="text-white/60 text-sm">
-            Click "Generate My AI Audit Report" below to get your personalized business audit with scores,
-            gaps, and actionable recommendations.
+            {t('step8.completionBanner.description')}
           </p>
         </div>
       </div>
