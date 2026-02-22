@@ -113,29 +113,111 @@
   "step5": {
     "hs": {
       "title": "Customer Communication",
-      "subtitle": "How you stay connected with customers at every stage"
+      "subtitle": "How you stay connected with customers at every stage",
+      "fields": {
+        "appointmentReminders": { "label": "Do you send automated appointment reminders to customers?" },
+        "onTheWayNotifications": { "label": "Do you send \"on-the-way\" notifications with technician info?" },
+        "jobCompletionComms": { "label": "How do customers know when a job is complete or what was done?" },
+        "internalComms": { "label": "How does your office communicate with field technicians?" },
+        "afterHoursComms": { "label": "How do you handle after-hours customer communication?" },
+        "clientPortal": { "label": "Do customers have an online portal or app to view their account?" }
+      }
     },
     "re": {
       "title": "Client Communication",
-      "subtitle": "How you stay connected with customers at every stage"
+      "subtitle": "How you stay connected with customers at every stage",
+      "fields": {
+        "agentClientComms": { "label": "How do agents communicate with active clients?" },
+        "transactionUpdates": { "label": "Do you send automated updates during the transaction process?" },
+        "pastClientEngagement": { "label": "How do you keep past clients engaged after closing?" },
+        "internalComms": { "label": "How does the team communicate internally?" },
+        "afterHoursComms": { "label": "How do you handle after-hours client inquiries?" },
+        "clientPortal": { "label": "Do clients have a portal to track their transaction?" }
+      }
     }
   },
   "step6": {
     "hs": {
       "title": "Follow-Up & Customer Retention",
-      "subtitle": "How you stay connected after the sale and build long-term loyalty"
+      "subtitle": "How you stay connected after the sale and build long-term loyalty",
+      "fields": {
+        "postJobFollowUp": { "label": "What happens after a job is completed?" },
+        "maintenanceReminders": { "label": "Do you send maintenance or seasonal reminders to past customers?" },
+        "serviceAgreements": { "label": "Do you offer service agreements/maintenance plans/memberships?" },
+        "estimateFollowUp": { "label": "How do you follow up on unsold estimates/unbooked quotes?" },
+        "warrantyTracking": { "label": "How do you track equipment warranties and recall opportunities?" },
+        "repeatBusinessPercent": { "label": "What percentage of your business comes from repeat customers?" }
+      }
     },
     "re": {
       "title": "Follow-Up & Client Retention",
-      "subtitle": "How you stay connected after the sale and build long-term loyalty"
+      "subtitle": "How you stay connected after the sale and build long-term loyalty",
+      "fields": {
+        "postCloseFollowUp": { "label": "What happens after a deal closes?" },
+        "pastClientContact": { "label": "How do you stay in touch with past clients?" },
+        "referralProcess": { "label": "Do you have a formal referral request process for past clients?" },
+        "lostLeadFollowUp": { "label": "How do you follow up with leads who toured but didn't buy/list?" },
+        "anniversaryTracking": { "label": "Do you track client anniversaries (move-in date, birthday) for touchpoints?" },
+        "repeatBusinessPercent": { "label": "What percentage of your deals come from repeat clients or referrals?" }
+      }
     }
   },
   "step7": {
     "title": "Operations & Accountability",
-    "subtitle": "How you measure performance and run a tight operation"
+    "subtitle": "How you measure performance and run a tight operation",
+    "hs": {
+      "fields": {
+        "performanceMeasurement": { "label": "How do you measure technician performance?" },
+        "jobCosting": { "label": "How accurate is your job costing?" },
+        "inventoryManagement": { "label": "How do you manage parts and inventory?" },
+        "timeTracking": { "label": "How do technicians log their time?" },
+        "qualityControl": { "label": "How do you ensure job quality and handle callbacks?" }
+      }
+    },
+    "re": {
+      "fields": {
+        "agentPerformanceMeasurement": { "label": "How do you measure agent performance?" },
+        "agentAccountability": { "label": "How do you hold agents accountable to activity standards?" },
+        "transactionWorkflow": { "label": "How do you manage transaction workflows?" },
+        "agentOnboarding": { "label": "How do you onboard new agents to the team?" }
+      }
+    },
+    "fields": {
+      "kpisTracked": { "label": "Do you track these KPIs regularly?", "hint": "Select all that apply" }
+    }
   },
   "step8": {
     "title": "Financial Operations",
-    "subtitle": "The final piece \u2014 how you price, invoice, and manage your money"
+    "subtitle": "The final piece \u2014 how you price, invoice, and manage your money",
+    "hs": {
+      "fields": {
+        "estimateProcess": { "label": "How do you create and deliver estimates?" },
+        "pricingModel": { "label": "What pricing model do you primarily use?" },
+        "invoiceTiming": { "label": "When is the invoice sent after job completion?" },
+        "paymentMethods": { "label": "What payment methods do you accept?", "hint": "Select all that apply" },
+        "collectionsProcess": { "label": "How do you handle overdue invoices/collections?" },
+        "financialReview": { "label": "How do you review financial performance?" }
+      }
+    },
+    "re": {
+      "fields": {
+        "expenseTracking": { "label": "How do agents track their expenses and commission splits?" },
+        "teamPnL": { "label": "How do you track team P&L?" },
+        "commissionDisbursement": { "label": "How do you handle commission disbursements?" },
+        "marketingBudget": { "label": "Do you have a marketing budget with ROI tracking per channel?" },
+        "paymentMethods": { "label": "What payment methods do you accept for client-facing fees?", "hint": "Select all that apply" }
+      }
+    },
+    "fields": {
+      "biggestChallenge": {
+        "label": "What's the single biggest operational challenge in your business right now?",
+        "hint": "Optional \u2014 this helps our AI personalize your recommendations",
+        "placeholder": "e.g., We can't seem to keep good technicians, our invoicing is a mess, we're losing leads to competitors..."
+      }
+    },
+    "completionBanner": {
+      "title": "You're almost done!",
+      "description": "Click \"Generate My AI Audit Report\" below to get your personalized business audit with scores, gaps, and actionable recommendations."
+    }
   }
 }
