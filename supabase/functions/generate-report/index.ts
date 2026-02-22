@@ -13,9 +13,10 @@ const MAX_TOKENS = 4096
 function sanitizeText(input: string | undefined, maxLen: number = 500): string {
   if (!input) return ''
   return input
-    .replace(/<[^>]*>/g, '')           // strip HTML tags
-    .replace(/[^\w\s.,!?'-]/g, ' ')    // strip special chars except common punctuation
-    .replace(/\s+/g, ' ')              // normalize whitespace
+    .replace(/<[^>]*>/g, '')                    // strip HTML tags
+    .replace(/\p{Emoji_Presentation}/gu, '')    // strip emoji (keep text chars)
+    .replace(/[^\p{L}\p{N}\s.,!?'-]/gu, ' ')   // keep letters (any script), digits, common punctuation
+    .replace(/\s+/g, ' ')                       // normalize whitespace
     .trim()
     .slice(0, maxLen)
 }
@@ -23,9 +24,10 @@ function sanitizeText(input: string | undefined, maxLen: number = 500): string {
 function sanitizeBusinessName(name: string | undefined): string {
   if (!name) return 'Your Business'
   return name
-    .replace(/<[^>]*>/g, '')           // strip HTML tags
-    .replace(/[^\w\s.,&'-]/g, ' ')     // allow & and ' common in business names
-    .replace(/\s+/g, ' ')              // normalize whitespace
+    .replace(/<[^>]*>/g, '')                    // strip HTML tags
+    .replace(/\p{Emoji_Presentation}/gu, '')    // strip emoji
+    .replace(/[^\p{L}\p{N}\s.,&'-]/gu, ' ')    // keep letters, digits, & for business names
+    .replace(/\s+/g, ' ')                       // normalize whitespace
     .trim()
     .slice(0, 100)
 }
