@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { FormField, StepHeader, StyledInput, StyledSelect, StepProps, toOptions } from "./AuditFormComponents";
 import { SubNicheSelector } from "./SubNicheSelector";
 import { SubNiche } from "@/types/audit";
+import { useLang } from "@/hooks/useLang";
 
 const HS_INDUSTRIES = toOptions([
   "HVAC", "Plumbing", "Electrical", "Roofing", "Landscaping",
@@ -18,8 +19,19 @@ const RE_VOLUMES = toOptions(["Under 25 deals", "25–50 deals", "50–100 deals
 const RE_GCI = toOptions(["Under $250K", "$250K–$500K", "$500K–$1M", "$1M–$3M", "$3M+"]);
 const RE_MARKETS = toOptions(["Residential resale", "New construction", "Luxury", "Commercial", "Mixed"]);
 
+// Bulgarian EUR-denominated revenue tiers (Phase 11)
+const BG_HS_REVENUES = toOptions([
+  "Под 25 000 €", "25 000 - 50 000 €", "50 000 - 100 000 €",
+  "100 000 - 250 000 €", "250 000 - 500 000 €", "Над 500 000 €",
+]);
+const BG_RE_GCI = toOptions([
+  "Под 15 000 €", "15 000 - 30 000 €", "30 000 - 60 000 €",
+  "60 000 - 150 000 €", "Над 150 000 €",
+]);
+
 export function Step1BusinessInfo({ state, dispatch, isHS }: StepProps) {
   const { t } = useTranslation('steps');
+  const { lang } = useLang();
   const { step1 } = state;
   const update = (payload: Partial<typeof step1>) => dispatch({ type: "UPDATE_STEP1", payload });
 
@@ -95,7 +107,7 @@ export function Step1BusinessInfo({ state, dispatch, isHS }: StepProps) {
                 <StyledSelect
                   value={step1.annualRevenue || ""}
                   onChange={(v) => update({ annualRevenue: v })}
-                  options={HS_REVENUES}
+                  options={lang === 'bg' ? BG_HS_REVENUES : HS_REVENUES}
                 />
               </FormField>
 
@@ -145,7 +157,7 @@ export function Step1BusinessInfo({ state, dispatch, isHS }: StepProps) {
                 <StyledSelect
                   value={step1.annualGCI || ""}
                   onChange={(v) => update({ annualGCI: v })}
-                  options={RE_GCI}
+                  options={lang === 'bg' ? BG_RE_GCI : RE_GCI}
                 />
               </FormField>
 

@@ -288,6 +288,211 @@ export function getSubNicheOptions(subNiche: SubNiche): SubNicheOptions {
 }
 
 /**
+ * Bulgarian market option overrides (shared base + local additions framework).
+ * Keeps widely-used international tools, adds Bulgarian platforms, removes US-only platforms.
+ * Lead source values are scored by array length only (not by specific string), so BG-specific
+ * values like "imot.bg" are safe. They also flow to AI formContext, which is desirable.
+ */
+export const BG_SUB_NICHE_OPTIONS: Record<SubNicheGroup, SubNicheOptions> = {
+  // HS Group A: Reactive Service (HVAC, Plumbing, Electrical, Garage Doors)
+  reactive: {
+    crms: [
+      "ServiceTitan", "Housecall Pro", "Jobber", "FieldEdge",
+      "Successware", "ServiceM8", "No CRM/Software", "Other",
+    ],
+    toolsExtra: ["Viber"],
+    leadSources: [
+      "Google Търсене/SEO", "Google Ads", "Facebook/Instagram реклами",
+      "OLX.bg", "bazar.bg", "Alo.bg", "Viber групи",
+      "Препоръки от клиенти",
+    ],
+    kpis: [
+      "Average Ticket/Job Value", "First-Time Fix Rate",
+      "Callback/Redo Rate", "Revenue Per Technician",
+      "Lead-to-Booked Rate", "Membership/Maintenance Plan Count",
+      "Customer Satisfaction Score", "Emergency Call Response Time",
+      "Profit Margins Per Job Type", "We don't track any KPIs",
+    ],
+  },
+
+  // HS Group B: Recurring/Scheduled (Pest Control, Landscaping, Cleaning)
+  recurring: {
+    crms: [
+      "Jobber", "Housecall Pro", "GorillaDesk", "ZenMaid",
+      "Pocomos", "Lawn Buddy", "No CRM/Software", "Other",
+    ],
+    toolsExtra: [
+      "Route Optimization Software", "Service Agreement Management Platform",
+      "Recurring Payment/Subscription Processor", "Viber",
+    ],
+    leadSources: [
+      "Google Търсене/SEO", "Google Ads", "Facebook/Instagram реклами",
+      "OLX.bg", "bazar.bg", "Alo.bg",
+      "Флаери/Директен маркетинг", "Етажна собственост",
+      "Сезонни кампании", "Препоръки от клиенти", "Viber групи",
+    ],
+    kpis: [
+      "Service Agreement Retention Rate", "Customer Churn Rate",
+      "Revenue Per Route/Crew", "Monthly Recurring Revenue (MRR)",
+      "Average Service Agreement Value", "Customer Acquisition Cost",
+      "On-Time Completion Rate", "Chemical/Material Cost Per Job",
+      "We don't track any KPIs",
+    ],
+  },
+
+  // HS Group C: Project-Based (Roofing, Painting, GC, Construction, Interior Design)
+  project_based: {
+    crms: [
+      "Buildertrend", "JobTread", "Procore", "CoConstruct",
+      "Houzz Pro", "Jobber", "No CRM/Software", "Other",
+    ],
+    toolsExtra: [
+      "BIM/CAD Software (AutoCAD, Revit, SketchUp)",
+      "Takeoff/Estimating Software (PlanSwift, Bluebeam)",
+      "3D Rendering Tools (Enscape, Lumion)",
+      "FF&E Specification Software (Studio Designer, Programa)",
+      "Viber",
+    ],
+    leadSources: [
+      "Google Търсене/SEO", "Google Ads", "OLX.bg",
+      "Facebook/Instagram реклами", "Facebook групи",
+      "Архитект/Инженер партньорства", "Препоръки от строители",
+      "Instagram/Pinterest", "Препоръки от клиенти",
+    ],
+    kpis: [
+      "Average Job/Project Value", "Estimate Close Rate",
+      "Gross Margin Per Project", "Budget Adherence (CPI)",
+      "Schedule Performance (SPI)", "Labor Productivity Rate",
+      "Callback/Warranty Claim Rate", "Project Backlog Value",
+      "Billable Hours Ratio", "We don't track any KPIs",
+    ],
+  },
+
+  // RE: Residential Sales
+  residential_sales: {
+    crms: [
+      "Follow Up Boss", "KVCore/Inside Real Estate", "Lofty (formerly Chime)",
+      "Sierra Interactive", "LionDesk", "Wise Agent", "HubSpot",
+      "Salesforce", "No CRM", "Other",
+    ],
+    toolsExtra: ["Viber"],
+    leadSources: [
+      "imot.bg", "imoti.net", "homes.bg", "address.bg", "OLX.bg",
+      "Google Ads", "Facebook/Instagram реклами",
+      "Открити показвания", "Препоръки от клиенти",
+      "Уебсайт на агенцията/IDX", "YouTube/Видео",
+      "Строител/Предприемач партньорства",
+    ],
+    kpis: [
+      "Leads Generated Per Agent", "Appointments Set Per Agent",
+      "Conversion Rate (Lead to Client)", "Average Days to Close",
+      "Cost Per Lead by Source", "GCI Per Agent",
+      "Client Satisfaction Score", "Average List-to-Sale Price Ratio",
+      "We don't track any KPIs",
+    ],
+  },
+
+  // RE: Commercial / Office
+  commercial: {
+    crms: [
+      "Apto", "Buildout", "REThink CRM", "Salesforce",
+      "HubSpot", "No CRM", "Other",
+    ],
+    toolsExtra: ["Viber"],
+    leadSources: [
+      "imot.bg Бизнес", "OLX.bg", "LinkedIn",
+      "Брокерска мрежа", "Директно проучване/Обаждане",
+      "Търговски асоциации", "RFP/Тръжни отговори",
+      "Съществуващи наематели",
+    ],
+    kpis: [
+      "Deals Closed Per Quarter", "Total Square Footage Leased",
+      "Average Lease Value/Commission", "Pipeline Value",
+      "Average Deal Cycle Length", "Commission Per Deal",
+      "Tenant Retention Rate", "Prospecting Activity Per Broker",
+      "We don't track any KPIs",
+    ],
+  },
+
+  // RE: Property Management
+  property_management: {
+    crms: [
+      "Buildium", "AppFolio", "Propertyware", "Rent Manager",
+      "Rentec Direct", "TenantCloud", "No CRM/Software", "Other",
+    ],
+    toolsExtra: ["Viber"],
+    leadSources: [
+      "Препоръки от агенти по продажби", "Директен контакт със собственици",
+      "imot.bg Наеми", "OLX.bg",
+      "LinkedIn (Търговски ПМ)", "Facebook групи за имоти",
+      "Връзки с наемодатели",
+    ],
+    kpis: [
+      "Occupancy Rate", "Average Days to Re-Lease",
+      "Rent Collection Rate", "Maintenance Request Resolution Time",
+      "Lease Renewal Rate", "Units Under Management Growth",
+      "Net Operating Income (NOI) Per Property", "Owner Retention/Churn Rate",
+      "We don't track any KPIs",
+    ],
+  },
+
+  // RE: New Construction
+  new_construction: {
+    crms: [
+      "Lasso CRM", "Buildertrend", "Zoho CRM",
+      "Salesforce", "HubSpot", "No CRM", "Other",
+    ],
+    toolsExtra: ["Viber"],
+    leadSources: [
+      "Списъци за предварителна продажба", "Програма за препоръки от строители",
+      "Брокерска ко-оп мрежа", "Имотни изложения",
+      "Facebook/Instagram реклами", "Google Ads",
+      "Имейл кампании",
+    ],
+    kpis: [
+      "Units Sold Per Month", "Presale Reservation Conversion Rate",
+      "Average Time from Reservation to Contract",
+      "Price Per SqFt vs Market Benchmark", "Co-Op Broker Deal Percentage",
+      "Marketing Cost Per Unit Sold", "Cancellation/Refund Rate",
+      "We don't track any KPIs",
+    ],
+  },
+
+  // RE: Luxury / Resort
+  luxury_resort: {
+    crms: [
+      "Salesforce", "Follow Up Boss", "LionDesk",
+      "Top Producer", "Contactually", "No CRM", "Other",
+    ],
+    toolsExtra: ["Viber"],
+    leadSources: [
+      "Препоръки от луксозни клиенти",
+      "imot.bg Луксозни", "homes.bg",
+      "Партньорства с луксозни мрежи",
+      "Instagram/Таргетирани социални медии",
+      "Партньорства с финансови консултанти",
+      "Преса/Редакционни материали", "Частни клиентски събития",
+    ],
+    kpis: [
+      "Average Transaction Value", "International vs Domestic Buyer Ratio",
+      "Time on Market for Luxury Listings", "Close Rate from Qualified Showings",
+      "Referral/Repeat Client Rate", "Average Commission Per Transaction",
+      "Qualified Buyer Introductions Per Month",
+      "We don't track any KPIs",
+    ],
+  },
+};
+
+/**
+ * Get language-aware sub-niche options.
+ * Returns Bulgarian-market options for 'bg', English/US options otherwise.
+ */
+export function getSubNicheOptionsForLang(subNiche: SubNiche, lang: string): SubNicheOptions {
+  const group = getSubNicheGroup(subNiche);
+  return lang === 'bg' ? BG_SUB_NICHE_OPTIONS[group] : SUB_NICHE_OPTIONS[group];
+}
+
+/**
  * Weight overrides for scoring categories per sub-niche group.
  * All 7 values must sum to 1.0. Only groups with meaningfully
  * different priorities from the base weights get an entry.
