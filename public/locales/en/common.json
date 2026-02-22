@@ -40,5 +40,25 @@
     "reShort": "Real Estate"
   },
   "stepOf": "Step {{current}} of {{total}}",
-  "copyright": "\u00a9 {{year}} E&P Systems \u00b7 AI-Powered Business Growth Solutions"
+  "copyright": "\u00a9 {{year}} E&P Systems \u00b7 AI-Powered Business Growth Solutions",
+  "stepLabels": ["BUSINESS", "TECHNOLOGY", "LEADS", "SCHEDULING", "COMMUNICATION", "FOLLOW-UP", "OPERATIONS", "FINANCIAL"],
+  "stepLabelsAlt": {
+    "step4hs": "SCHEDULING",
+    "step4re": "LEAD MGMT"
+  },
+  "audit": {
+    "nicheBadge": {
+      "hs": "Home Services & Trades Audit",
+      "re": "Real Estate Teams & Brokerages Audit"
+    }
+  },
+  "rating": {
+    "labels": ["Very Unsatisfied", "Unsatisfied", "Neutral", "Satisfied", "Very Satisfied"]
+  },
+  "form": {
+    "selectPlaceholder": "Select an option...",
+    "selectAll": "Select all that apply",
+    "required": "required",
+    "optional": "Optional"
+  }
 }

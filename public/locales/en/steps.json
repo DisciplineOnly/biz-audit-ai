@@ -1,1 +1,52 @@
-{}
+{
+  "step1": {
+    "title": "Tell Us About Your Business",
+    "subtitle": "Basic info to personalize your audit report"
+  },
+  "step2": {
+    "title": "Your Technology & Software Stack",
+    "subtitle": "Let's understand the tools powering your business today"
+  },
+  "step3": {
+    "title": "Lead Funnel & Marketing",
+    "subtitle": "How you attract, respond to, and convert new leads"
+  },
+  "step4": {
+    "hs": {
+      "title": "Scheduling & Dispatching",
+      "subtitle": "How you manage your calendar, crew, and daily operations"
+    },
+    "re": {
+      "title": "Lead Management & Follow-Up",
+      "subtitle": "How you nurture leads from inquiry through closing"
+    }
+  },
+  "step5": {
+    "hs": {
+      "title": "Customer Communication",
+      "subtitle": "How you stay connected with customers at every stage"
+    },
+    "re": {
+      "title": "Client Communication",
+      "subtitle": "How you stay connected with customers at every stage"
+    }
+  },
+  "step6": {
+    "hs": {
+      "title": "Follow-Up & Customer Retention",
+      "subtitle": "How you stay connected after the sale and build long-term loyalty"
+    },
+    "re": {
+      "title": "Follow-Up & Client Retention",
+      "subtitle": "How you stay connected after the sale and build long-term loyalty"
+    }
+  },
+  "step7": {
+    "title": "Operations & Accountability",
+    "subtitle": "How you measure performance and run a tight operation"
+  },
+  "step8": {
+    "title": "Financial Operations",
+    "subtitle": "The final piece \u2014 how you price, invoice, and manage your money"
+  }
+}
