@@ -116,7 +116,7 @@ export default function AuditForm() {
 
     if (currentStep === 8) {
       // Generate report
-      const scores = computeScores(state);
+      const scores = computeScores(state, state.subNiche);
       const auditId = "demo-" + Date.now();
       localStorage.setItem(STORAGE_KEY + "_scores", JSON.stringify(scores));
       localStorage.setItem(STORAGE_KEY + "_form", JSON.stringify(state));

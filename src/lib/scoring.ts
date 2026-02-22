@@ -1,4 +1,5 @@
-import { AuditFormState, AuditScores, CategoryScore } from "@/types/audit";
+import { AuditFormState, AuditScores, CategoryScore, SubNiche } from "@/types/audit";
+import { getWeightsForSubNiche } from "@/config/subNicheConfig";
 
 // Maps dropdown values to 0-3 scores
 // 0 = No process/major gap, 1 = Manual/inconsistent, 2 = Partial/somewhat, 3 = Fully optimized
@@ -182,7 +183,7 @@ function calcCategory(scores: number[], maxPerItem: number = 3): number {
   return Math.round((sum / max) * 100);
 }
 
-export function computeScores(state: AuditFormState): AuditScores {
+export function computeScores(state: AuditFormState, subNiche?: SubNiche | null): AuditScores {
   const isHS = state.niche === "home_services";
 
   // Technology (Step 2)
@@ -511,15 +512,20 @@ export function computeScores(state: AuditFormState): AuditScores {
   const financial = calcCategory(finScores);
 
   // Overall weighted score
-  const weights = {
-    technology: 0.1,
-    leads: 0.2,
+  // Base weights — used when no sub-niche or no override exists
+  const baseWeights = {
+    technology: 0.10,
+    leads: 0.20,
     scheduling: 0.15,
-    communication: 0.1,
+    communication: 0.10,
     followUp: 0.15,
     operations: 0.15,
     financial: 0.15,
   };
+
+  // Apply sub-niche weight overrides when available
+  const subNicheWeights = getWeightsForSubNiche(subNiche ?? null);
+  const weights = subNicheWeights ?? baseWeights;
 
   const overall = Math.round(
     technology * weights.technology +
@@ -534,13 +540,13 @@ export function computeScores(state: AuditFormState): AuditScores {
   const schedulingLabel = isHS ? "Scheduling & Dispatch" : "Lead Management";
 
   const categories: CategoryScore[] = [
-    { category: "technology", label: "Technology & Software", score: technology, weight: 10 },
-    { category: "leads", label: "Lead Funnel & Marketing", score: leads, weight: 20 },
-    { category: "scheduling", label: schedulingLabel, score: scheduling, weight: 15 },
-    { category: "communication", label: "Communication", score: communication, weight: 10 },
-    { category: "followUp", label: "Follow-Up & Retention", score: followUp, weight: 15 },
-    { category: "operations", label: "Operations & Accountability", score: operations, weight: 15 },
-    { category: "financial", label: "Financial Operations", score: financial, weight: 15 },
+    { category: "technology", label: "Technology & Software", score: technology, weight: Math.round(weights.technology * 100) },
+    { category: "leads", label: "Lead Funnel & Marketing", score: leads, weight: Math.round(weights.leads * 100) },
+    { category: "scheduling", label: schedulingLabel, score: scheduling, weight: Math.round(weights.scheduling * 100) },
+    { category: "communication", label: "Communication", score: communication, weight: Math.round(weights.communication * 100) },
+    { category: "followUp", label: "Follow-Up & Retention", score: followUp, weight: Math.round(weights.followUp * 100) },
+    { category: "operations", label: "Operations & Accountability", score: operations, weight: Math.round(weights.operations * 100) },
+    { category: "financial", label: "Financial Operations", score: financial, weight: Math.round(weights.financial * 100) },
   ];
 
   return { technology, leads, scheduling, communication, followUp, operations, financial, overall, categories };
