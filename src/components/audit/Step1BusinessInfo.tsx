@@ -4,10 +4,6 @@ import { SubNicheSelector } from "./SubNicheSelector";
 import { SubNiche } from "@/types/audit";
 import { useLang } from "@/hooks/useLang";
 
-const HS_INDUSTRIES = toOptions([
-  "HVAC", "Plumbing", "Electrical", "Roofing", "Landscaping",
-  "Pest Control", "Garage Doors", "Painting", "General Contracting", "Other",
-]);
 const HS_EMPLOYEE_COUNTS = toOptions(["Solo", "2–5", "6–15", "16–30", "31–50", "50+"]);
 const HS_REVENUES = toOptions(["Under $250K", "$250K–$500K", "$500K–$1M", "$1M–$3M", "$3M–$5M", "$5M+"]);
 const HS_YEARS = toOptions(["Less than 1", "1–3", "3–5", "5–10", "10+"]);
@@ -87,14 +83,6 @@ export function Step1BusinessInfo({ state, dispatch, isHS }: StepProps) {
 
           {isHS ? (
             <div className="grid sm:grid-cols-2 gap-5">
-              <FormField label={t('step1.hs.industry.label')} required>
-                <StyledSelect
-                  value={step1.industry || ""}
-                  onChange={(v) => update({ industry: v })}
-                  options={HS_INDUSTRIES}
-                />
-              </FormField>
-
               <FormField label={t('step1.hs.employeeCount.label')}>
                 <StyledSelect
                   value={step1.employeeCount || ""}

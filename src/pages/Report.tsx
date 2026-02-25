@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation, Trans } from "react-i18next";
 import { AuditFormState, AuditScores, AIReportData } from "@/types/audit";
 import { getScoreColor, getScoreLabel, getBenchmark, generateMockReport } from "@/lib/scoring";
+import { SUB_NICHE_REGISTRY } from "@/config/subNicheConfig";
 import { fetchReport } from "@/lib/fetchReport";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar, Download, Share2, CheckCircle, AlertTriangle, TrendingUp, BarChart3, Zap } from "lucide-react";
@@ -66,6 +67,7 @@ export default function Report() {
   const { prefix } = useLang();
   const { t } = useTranslation('report');
   const { t: tc } = useTranslation('common');
+  const { t: tSteps } = useTranslation('steps');
   const [copied, setCopied] = useState(false);
   const [pollStartTime] = useState(() => Date.now());
   const POLL_TIMEOUT_MS = 90_000; // 90 seconds max polling
@@ -127,6 +129,12 @@ export default function Report() {
   };
 
   const isHS = formState?.niche === "home_services";
+
+  // Resolve sub-niche display name (i18n-aware) for badge and template
+  const subNicheEntry = formState?.subNiche
+    ? SUB_NICHE_REGISTRY.find(sn => sn.id === formState.subNiche)
+    : null;
+  const subNicheName = subNicheEntry ? tSteps(subNicheEntry.labelKey) : null;
 
   const categoryLabels: Record<string, string> = {
     technology: t('categories.technology'),
@@ -323,7 +331,7 @@ export default function Report() {
   // Niche description for executive summary template
   const nicheDescription = isHS
     ? t('executiveSummaryTemplate.hsNicheDescription', {
-        industry: formState.step1.industry || "home service",
+        industry: subNicheName || "home service",
         employees: formState.step1.employeeCount || "your",
       })
     : t('executiveSummaryTemplate.reNicheDescription', {
@@ -363,8 +371,8 @@ export default function Report() {
               <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">{businessName}</h1>
               <p className="text-white/60 mb-1">{t('hero.reportTitle', { date: new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) })}</p>
               <div className="flex flex-wrap gap-2 mt-4">
-                {formState.step1.industry && (
-                  <span className="text-xs px-3 py-1 rounded-full text-white/80 bg-white/10">{formState.step1.industry}</span>
+                {subNicheName && (
+                  <span className="text-xs px-3 py-1 rounded-full text-white/80 bg-white/10">{subNicheName}</span>
                 )}
                 {formState.step1.employeeCount && (
                   <span className="text-xs px-3 py-1 rounded-full text-white/80 bg-white/10">{t('hero.employees', { count: formState.step1.employeeCount })}</span>

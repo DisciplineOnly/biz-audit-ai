@@ -17,7 +17,7 @@
 - Helper functions: camelCase (e.g., `scoreMap`, `calcCategory`, `validateStep`)
 
 **Variables:**
-- Constants in module scope: SCREAMING_SNAKE_CASE (e.g., `STORAGE_KEY`, `STEP_LABELS`, `HS_INDUSTRIES`)
+- Constants in module scope: SCREAMING_SNAKE_CASE (e.g., `STORAGE_KEY`, `STEP_LABELS`, `HS_EMPLOYEE_COUNTS`)
 - Regular variables: camelCase (e.g., `isHS`, `currentStep`, `formState`)
 - State variables: camelCase (e.g., `state`, `dispatch`, `errors`, `savedToast`)
 
