@@ -6,6 +6,9 @@ export interface SelectOption {
   label: string;   // Displayed text — changes per language in Phase 7
 }
 
+export const localizeOptions = (opts: SelectOption[], labelMap: Record<string, string>): SelectOption[] =>
+  opts.map(o => ({ value: o.value, label: labelMap[o.value] ?? o.label }));
+
 interface StepProps {
   state: AuditFormState;
   dispatch: React.Dispatch<AuditAction>;

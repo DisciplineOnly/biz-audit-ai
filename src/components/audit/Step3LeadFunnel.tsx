@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import {
-  FormField, StepHeader, StyledSelect, MultiCheckbox, StepProps, toOptions
+  FormField, StepHeader, StyledSelect, MultiCheckbox, StepProps, SelectOption, toOptions, localizeOptions
 } from "./AuditFormComponents";
 import { getSubNicheOptionsForLang } from "@/config/subNicheConfig";
 import { useLang } from "@/hooks/useLang";
@@ -77,6 +77,58 @@ const RE_REVIEW_AUTOMATION = toOptions([
   "Yes — automated", "Yes — manual/sometimes", "No",
 ]);
 
+const BG_LABELS: Record<string, string> = {
+  // Response speeds
+  "Under 5 minutes": "Под 5 минути",
+  "5–30 minutes": "5–30 минути",
+  "30–60 minutes": "30–60 минути",
+  "1–4 hours": "1–4 часа",
+  "Same business day": "В рамките на работния ден",
+  "Next business day or later": "Следващ работен ден или по-късно",
+  "No consistent process": "Без последователен процес",
+  "It depends on the agent": "Зависи от агента",
+  // Lead tracking
+  "CRM with pipeline stages": "CRM с етапи на фунията",
+  "Spreadsheet/Google Sheets": "Таблица/Google Sheets",
+  "Notebook/whiteboard": "Тетрадка/бяла дъска",
+  "Software but not consistently": "Софтуер, но не последователно",
+  "We don't really track this": "Не проследяваме това",
+  // HS conversion rates
+  "Yes — above 50%": "Да — над 50%",
+  "Yes — 30–50%": "Да — 30–50%",
+  "Yes — under 30%": "Да — под 30%",
+  "No — we don't track this": "Не — не проследяваме",
+  // RE conversion rates
+  "Above 10%": "Над 10%",
+  "Under 2%": "Под 2%",
+  "We don't track this": "Не проследяваме",
+  // Missed call handling
+  "Auto text-back within seconds": "Автоматичен SMS отговор за секунди",
+  "Voicemail — we call back ASAP": "Гласова поща — обаждаме се възможно най-скоро",
+  "Voicemail — we call back when we can": "Гласова поща — обаждаме се когато можем",
+  "Answering service": "Услуга за отговаряне на обаждания",
+  "We probably miss some and never follow up": "Вероятно пропускаме някои и не се обаждаме",
+  // Lead distribution
+  "Round robin — automated": "Ротация — автоматична",
+  "Round robin — manual": "Ротация — ръчна",
+  "Pond/claim system": "Система за заявяване",
+  "Assigned by source or area": "Разпределение по източник или район",
+  "First to grab it": "Първият, който го вземе",
+  "No formal system": "Без формална система",
+  // Touches in 7 days
+  "8+ touches": "8+ контакта",
+  "5–7 touches": "5–7 контакта",
+  "2–4 touches": "2–4 контакта",
+  "1 touch": "1 контакт",
+  "No consistent follow-up plan": "Без последователен план за проследяване",
+  // Review automation
+  "Yes — automated via software": "Да — автоматизирано чрез софтуер",
+  "Yes — manually ask sometimes": "Да — питаме ръчно понякога",
+  "Yes — automated": "Да — автоматизирано",
+  "Yes — manual/sometimes": "Да — ръчно/понякога",
+  "No": "Не",
+};
+
 export function Step3LeadFunnel({ state, dispatch, isHS }: StepProps) {
   const { t } = useTranslation('steps');
   const { lang } = useLang();
@@ -90,6 +142,7 @@ export function Step3LeadFunnel({ state, dispatch, isHS }: StepProps) {
     : (isHS
       ? (lang === 'bg' ? BG_HS_LEAD_SOURCES : HS_LEAD_SOURCES)
       : (lang === 'bg' ? BG_RE_LEAD_SOURCES : RE_LEAD_SOURCES));
+  const loc = (opts: SelectOption[]) => lang === 'bg' ? localizeOptions(opts, BG_LABELS) : opts;
 
   return (
     <div>
@@ -122,7 +175,7 @@ export function Step3LeadFunnel({ state, dispatch, isHS }: StepProps) {
           <StyledSelect
             value={step3.responseSpeed}
             onChange={(v) => update({ responseSpeed: v })}
-            options={isHS ? HS_RESPONSE_SPEEDS : RE_RESPONSE_SPEEDS}
+            options={loc(isHS ? HS_RESPONSE_SPEEDS : RE_RESPONSE_SPEEDS)}
           />
         </FormField>
 
@@ -131,7 +184,7 @@ export function Step3LeadFunnel({ state, dispatch, isHS }: StepProps) {
             <StyledSelect
               value={step3.leadDistribution || ""}
               onChange={(v) => update({ leadDistribution: v })}
-              options={LEAD_DISTRIBUTION}
+              options={loc(LEAD_DISTRIBUTION)}
             />
           </FormField>
         )}
@@ -145,7 +198,7 @@ export function Step3LeadFunnel({ state, dispatch, isHS }: StepProps) {
           <StyledSelect
             value={step3.leadTracking}
             onChange={(v) => update({ leadTracking: v })}
-            options={LEAD_TRACKING}
+            options={loc(LEAD_TRACKING)}
           />
         </FormField>
 
@@ -158,7 +211,7 @@ export function Step3LeadFunnel({ state, dispatch, isHS }: StepProps) {
           <StyledSelect
             value={step3.conversionRate}
             onChange={(v) => update({ conversionRate: v })}
-            options={isHS ? HS_CONVERSION_RATES : RE_CONVERSION_RATES}
+            options={loc(isHS ? HS_CONVERSION_RATES : RE_CONVERSION_RATES)}
           />
         </FormField>
 
@@ -167,7 +220,7 @@ export function Step3LeadFunnel({ state, dispatch, isHS }: StepProps) {
             <StyledSelect
               value={step3.missedCallHandling || ""}
               onChange={(v) => update({ missedCallHandling: v })}
-              options={MISSED_CALL}
+              options={loc(MISSED_CALL)}
             />
           </FormField>
         ) : (
@@ -175,7 +228,7 @@ export function Step3LeadFunnel({ state, dispatch, isHS }: StepProps) {
             <StyledSelect
               value={step3.touchesIn7Days || ""}
               onChange={(v) => update({ touchesIn7Days: v })}
-              options={TOUCHES_7DAYS}
+              options={loc(TOUCHES_7DAYS)}
             />
           </FormField>
         )}
@@ -189,7 +242,7 @@ export function Step3LeadFunnel({ state, dispatch, isHS }: StepProps) {
           <StyledSelect
             value={step3.googleReviews}
             onChange={(v) => update({ googleReviews: v })}
-            options={REVIEWS_COUNT}
+            options={loc(REVIEWS_COUNT)}
           />
         </FormField>
 
@@ -202,7 +255,7 @@ export function Step3LeadFunnel({ state, dispatch, isHS }: StepProps) {
           <StyledSelect
             value={step3.reviewAutomation}
             onChange={(v) => update({ reviewAutomation: v })}
-            options={isHS ? REVIEW_AUTOMATION : RE_REVIEW_AUTOMATION}
+            options={loc(isHS ? REVIEW_AUTOMATION : RE_REVIEW_AUTOMATION)}
           />
         </FormField>
       </div>

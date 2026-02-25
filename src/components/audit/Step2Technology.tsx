@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import {
   FormField, StepHeader, StyledSelect, MultiCheckbox,
-  StyledTextarea, RatingButtons, StepProps, toOptions
+  StyledTextarea, RatingButtons, StepProps, toOptions, localizeOptions
 } from "./AuditFormComponents";
 import { getSubNicheOptionsForLang } from "@/config/subNicheConfig";
 import { useLang } from "@/hooks/useLang";
@@ -34,6 +34,29 @@ const RE_TOOLS = toOptions([
   "Automation (Zapier, Make, etc.)", "Team Communication (Slack, Teams)", "Accounting Software",
 ]);
 
+const BG_HS_TOOLS = toOptions([
+  "Бизнес уебсайт", "Онлайн резервации / Планиране", "Google Business профил",
+  "Социални мрежи", "Имейл маркетинг (Mailchimp и др.)", "Проследяване на обаждания",
+  "GPS / Проследяване на превозни средства", "Счетоводен софтуер", "Бизнес SMS платформа",
+  "Софтуер за управление на репутацията", "Чат / Чатбот на сайта", "Софтуер за оферти / Калкулации",
+  "Управление на инвентар / Части", "Инструмент за управление на проекти", "AI инструменти (ChatGPT и др.)",
+  "Автоматизация (Zapier, Make и др.)",
+]);
+
+const BG_RE_TOOLS = toOptions([
+  "Уебсайт с обяви за имоти", "Създаване на целеви страници", "Имейл маркетинг / Drip кампании",
+  "Инструмент за социални мрежи", "Проследяване на обаждания", "Бизнес SMS",
+  "Видео имейл (BombBomb и др.)", "Управление на сделки (Dotloop, SkySlope и др.)",
+  "Електронен подпис (DocuSign, Dotloop)", "Виртуални турове / 3D инструменти", "AI инструменти (ChatGPT и др.)",
+  "Автоматизация (Zapier, Make и др.)", "Екипна комуникация (Slack, Teams)", "Счетоводен софтуер",
+]);
+
+const BG_CRM_LABELS: Record<string, string> = {
+  "No CRM/Software": "Без CRM/Софтуер",
+  "No CRM": "Без CRM",
+  "Other": "Друго",
+};
+
 export function Step2Technology({ state, dispatch, isHS }: StepProps) {
   const { t } = useTranslation('steps');
   const { lang } = useLang();
@@ -42,10 +65,13 @@ export function Step2Technology({ state, dispatch, isHS }: StepProps) {
 
   // Sub-niche-aware + language-aware option resolution
   const subNicheOpts = state.subNiche ? getSubNicheOptionsForLang(state.subNiche, lang) : null;
-  const crmOptions = subNicheOpts && subNicheOpts.crms.length > 0
+  const crmOptionsRaw = subNicheOpts && subNicheOpts.crms.length > 0
     ? toOptions(subNicheOpts.crms)
     : (isHS ? HS_CRMS : RE_CRMS);
-  const baseTools = isHS ? HS_TOOLS : RE_TOOLS;
+  const crmOptions = lang === 'bg' ? localizeOptions(crmOptionsRaw, BG_CRM_LABELS) : crmOptionsRaw;
+  const baseTools = isHS
+    ? (lang === 'bg' ? BG_HS_TOOLS : HS_TOOLS)
+    : (lang === 'bg' ? BG_RE_TOOLS : RE_TOOLS);
   const toolOptions = subNicheOpts && subNicheOpts.toolsExtra.length > 0
     ? [...baseTools, ...toOptions(subNicheOpts.toolsExtra)]
     : baseTools;
