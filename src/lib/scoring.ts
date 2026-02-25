@@ -1,4 +1,9 @@
-import { AuditFormState, AuditScores, CategoryScore, SubNiche } from "@/types/audit";
+import {
+  AuditFormState,
+  AuditScores,
+  CategoryScore,
+  SubNiche,
+} from "@/types/audit";
 import { getWeightsForSubNiche } from "@/config/subNicheConfig";
 
 // Maps dropdown values to 0-3 scores
@@ -24,10 +29,10 @@ const leadTrackingScore: Record<string, number> = {
 };
 
 const conversionRateScore: Record<string, number> = {
-  "Yes — above 50%": 3,
-  "Yes — 30–50%": 2,
-  "Yes — under 30%": 1,
-  "No — we don't track this": 0,
+  "Yes - above 50%": 3,
+  "Yes - 30–50%": 2,
+  "Yes - under 30%": 1,
+  "No - we don't track this": 0,
   "Above 10%": 3,
   "5–10%": 2,
   "2–5%": 1,
@@ -44,11 +49,11 @@ const reviewsScore: Record<string, number> = {
 };
 
 const automationScore: Record<string, number> = {
-  "Yes — automated via software": 3,
-  "Yes — automated": 3,
-  "Yes — manual/sometimes": 1,
-  "Yes — manually ask sometimes": 1,
-  "No": 0,
+  "Yes - automated via software": 3,
+  "Yes - automated": 3,
+  "Yes - manual/sometimes": 1,
+  "Yes - manually ask sometimes": 1,
+  No: 0,
 };
 
 const schedulingScore: Record<string, number> = {
@@ -61,15 +66,15 @@ const schedulingScore: Record<string, number> = {
 
 const dispatchScore: Record<string, number> = {
   "Automated through software": 3,
-  "Manual — office calls/texts techs": 1,
+  "Manual - office calls/texts techs": 1,
   "Techs check a shared calendar": 1,
   "Mixed approach": 1,
 };
 
 const followUpPlanScore: Record<string, number> = {
-  "Yes — automated drip campaigns": 3,
-  "Yes — manual but documented": 2,
-  "Sort of — agents do their own thing": 1,
+  "Yes - automated drip campaigns": 3,
+  "Yes - manual but documented": 2,
+  "Sort of - agents do their own thing": 1,
   "No formal plan": 0,
 };
 
@@ -83,14 +88,14 @@ const nurtureDurationScore: Record<string, number> = {
 };
 
 const communicationScore: Record<string, number> = {
-  "Yes — text and email": 3,
-  "Yes — email only": 2,
-  "Yes — text only": 2,
-  "No — we call manually": 1,
+  "Yes - text and email": 3,
+  "Yes - email only": 2,
+  "Yes - text only": 2,
+  "No - we call manually": 1,
   "No reminders sent": 0,
-  "Yes — automated": 3,
+  "Yes - automated": 3,
   "Sometimes manually": 1,
-  "No": 0,
+  No: 0,
   "CRM-based communication (logged)": 3,
   "Personal phone/text (not logged)": 0,
   "Mix of both": 1,
@@ -157,7 +162,7 @@ function scoreToolsUsed(tools: string[]): number {
 }
 
 function scoreKPIs(kpis: string[]): number {
-  const noKPI = kpis.some(k => k.includes("don't track"));
+  const noKPI = kpis.some((k) => k.includes("don't track"));
   if (noKPI) return 0;
   if (kpis.length >= 6) return 3;
   if (kpis.length >= 4) return 2;
@@ -183,12 +188,15 @@ function calcCategory(scores: number[], maxPerItem: number = 3): number {
   return Math.round((sum / max) * 100);
 }
 
-export function computeScores(state: AuditFormState, subNiche?: SubNiche | null): AuditScores {
+export function computeScores(
+  state: AuditFormState,
+  subNiche?: SubNiche | null,
+): AuditScores {
   const isHS = state.niche === "home_services";
 
   // Technology (Step 2)
   const techScores = [
-    state.step2.crmSatisfaction ? (state.step2.crmSatisfaction - 1) : 1, // 0-4 → normalize 0-3
+    state.step2.crmSatisfaction ? state.step2.crmSatisfaction - 1 : 1, // 0-4 → normalize 0-3
     scoreToolsUsed(state.step2.toolsUsed),
   ];
   const technology = calcCategory(techScores);
@@ -203,29 +211,35 @@ export function computeScores(state: AuditFormState, subNiche?: SubNiche | null)
     scoreMap(state.step3.reviewAutomation, automationScore),
   ];
   if (isHS) {
-    leadScores.push(scoreMap(state.step3.missedCallHandling || "", {
-      "Auto text-back within seconds": 3,
-      "Voicemail — we call back ASAP": 2,
-      "Voicemail — we call back when we can": 1,
-      "Answering service": 2,
-      "We probably miss some and never follow up": 0,
-    }));
+    leadScores.push(
+      scoreMap(state.step3.missedCallHandling || "", {
+        "Auto text-back within seconds": 3,
+        "Voicemail - we call back ASAP": 2,
+        "Voicemail - we call back when we can": 1,
+        "Answering service": 2,
+        "We probably miss some and never follow up": 0,
+      }),
+    );
   } else {
-    leadScores.push(scoreMap(state.step3.touchesIn7Days || "", {
-      "8+ touches": 3,
-      "5–7 touches": 2,
-      "2–4 touches": 1,
-      "1 touch": 0,
-      "No consistent follow-up plan": 0,
-    }));
-    leadScores.push(scoreMap(state.step3.leadDistribution || "", {
-      "Round robin — automated": 3,
-      "Round robin — manual": 2,
-      "Pond/claim system": 1,
-      "Assigned by source or area": 2,
-      "First to grab it": 1,
-      "No formal system": 0,
-    }));
+    leadScores.push(
+      scoreMap(state.step3.touchesIn7Days || "", {
+        "8+ touches": 3,
+        "5–7 touches": 2,
+        "2–4 touches": 1,
+        "1 touch": 0,
+        "No consistent follow-up plan": 0,
+      }),
+    );
+    leadScores.push(
+      scoreMap(state.step3.leadDistribution || "", {
+        "Round robin - automated": 3,
+        "Round robin - manual": 2,
+        "Pond/claim system": 1,
+        "Assigned by source or area": 2,
+        "First to grab it": 1,
+        "No formal system": 0,
+      }),
+    );
   }
   const leads = calcCategory(leadScores);
 
@@ -236,13 +250,13 @@ export function computeScores(state: AuditFormState, subNiche?: SubNiche | null)
       scoreMap(state.step4.schedulingMethod || "", schedulingScore),
       scoreMap(state.step4.dispatchMethod || "", dispatchScore),
       scoreMap(state.step4.routeOptimization || "", {
-        "Yes — software optimized": 3,
+        "Yes - software optimized": 3,
         "We try to cluster jobs manually": 1,
-        "No": 0,
+        No: 0,
       }),
       scoreMap(state.step4.realTimeTracking || "", {
-        "Yes — GPS tracking": 3,
-        "No": 0,
+        "Yes - GPS tracking": 3,
+        No: 0,
       }),
       scoreMap(state.step4.capacityPlanning || "", {
         "Software manages availability": 3,
@@ -262,9 +276,9 @@ export function computeScores(state: AuditFormState, subNiche?: SubNiche | null)
       scoreMap(state.step4.followUpPlan || "", followUpPlanScore),
       scoreMap(state.step4.nurtureDuration || "", nurtureDurationScore),
       scoreMap(state.step4.automatedDrip || "", {
-        "Yes — fully automated": 3,
-        "Yes — partially automated": 1,
-        "No": 0,
+        "Yes - fully automated": 3,
+        "Yes - partially automated": 1,
+        No: 0,
       }),
       scoreMap(state.step4.leadTemperatureTracking || "", {
         "CRM lead scoring": 3,
@@ -273,9 +287,9 @@ export function computeScores(state: AuditFormState, subNiche?: SubNiche | null)
         "We don't differentiate": 0,
       }),
       scoreMap(state.step4.activityLogging || "", {
-        "Yes — consistently": 3,
-        "Sometimes": 1,
-        "Rarely": 0,
+        "Yes - consistently": 3,
+        Sometimes: 1,
+        Rarely: 0,
         "We don't require it": 0,
       }),
       scoreMap(state.step4.coldLeadHandling || "", {
@@ -296,14 +310,14 @@ export function computeScores(state: AuditFormState, subNiche?: SubNiche | null)
       "Group text/chat app": 2,
       "Group text": 1,
       "Phone calls": 1,
-      "Email": 1,
+      Email: 1,
       "Mixed/inconsistent": 0,
       "In-person meetings only": 0,
     }),
     scoreMap(state.step5.afterHoursComms, afterHoursScore),
     scoreMap(state.step5.clientPortal, {
-      "Yes": 3,
-      "Yes — through our software": 3,
+      Yes: 3,
+      "Yes - through our software": 3,
       "No but we want one": 1,
       "No and not a priority": 0,
     }),
@@ -323,9 +337,9 @@ export function computeScores(state: AuditFormState, subNiche?: SubNiche | null)
     commScores.push(
       scoreMap(state.step5.agentClientComms || "", communicationScore),
       scoreMap(state.step5.transactionUpdates || "", {
-        "Yes — key milestones automated": 3,
+        "Yes - key milestones automated": 3,
         "Some manual updates": 1,
-        "No — agents handle individually": 0,
+        "No - agents handle individually": 0,
       }),
       scoreMap(state.step5.pastClientEngagement || "", {
         "Automated long-term drip": 3,
@@ -358,9 +372,9 @@ export function computeScores(state: AuditFormState, subNiche?: SubNiche | null)
       }),
       scoreMap(state.step6.maintenanceReminders || "", automationScore),
       scoreMap(state.step6.serviceAgreements || "", {
-        "Yes — actively sold": 3,
-        "Yes — but rarely sell them": 1,
-        "No": 0,
+        "Yes - actively sold": 3,
+        "Yes - but rarely sell them": 1,
+        No: 0,
       }),
       scoreMap(state.step6.estimateFollowUp || "", {
         "Automated follow-up sequence": 3,
@@ -389,8 +403,8 @@ export function computeScores(state: AuditFormState, subNiche?: SubNiche | null)
         "We don't have a system": 0,
       }),
       scoreMap(state.step6.referralProcess || "", {
-        "Yes — automated asks at key milestones": 3,
-        "Yes — manual but consistent": 2,
+        "Yes - automated asks at key milestones": 3,
+        "Yes - manual but consistent": 2,
         "We ask occasionally": 1,
         "No formal process": 0,
       }),
@@ -401,9 +415,9 @@ export function computeScores(state: AuditFormState, subNiche?: SubNiche | null)
         "No process": 0,
       }),
       scoreMap(state.step6.anniversaryTracking || "", {
-        "Yes — automated": 3,
-        "Yes — manual": 1,
-        "No": 0,
+        "Yes - automated": 3,
+        "Yes - manual": 1,
+        No: 0,
       }),
     );
   }
@@ -490,7 +504,7 @@ export function computeScores(state: AuditFormState, subNiche?: SubNiche | null)
     finScores.push(
       scoreMap(state.step8.expenseTracking || "", {
         "Team/brokerage software": 3,
-        "Spreadsheet": 1,
+        Spreadsheet: 1,
         "Accounting software": 2,
         "Agents handle their own": 0,
         "No system": 0,
@@ -502,8 +516,8 @@ export function computeScores(state: AuditFormState, subNiche?: SubNiche | null)
         "Ad hoc": 0,
       }),
       scoreMap(state.step8.marketingBudget || "", {
-        "Yes — detailed per-channel tracking": 3,
-        "Yes — total spend tracked": 2,
+        "Yes - detailed per-channel tracking": 3,
+        "Yes - total spend tracked": 2,
         "We spend but don't track ROI": 1,
         "No formal marketing budget": 0,
       }),
@@ -512,12 +526,12 @@ export function computeScores(state: AuditFormState, subNiche?: SubNiche | null)
   const financial = calcCategory(finScores);
 
   // Overall weighted score
-  // Base weights — used when no sub-niche or no override exists
+  // Base weights - used when no sub-niche or no override exists
   const baseWeights = {
-    technology: 0.10,
-    leads: 0.20,
+    technology: 0.1,
+    leads: 0.2,
     scheduling: 0.15,
-    communication: 0.10,
+    communication: 0.1,
     followUp: 0.15,
     operations: 0.15,
     financial: 0.15,
@@ -529,27 +543,72 @@ export function computeScores(state: AuditFormState, subNiche?: SubNiche | null)
 
   const overall = Math.round(
     technology * weights.technology +
-    leads * weights.leads +
-    scheduling * weights.scheduling +
-    communication * weights.communication +
-    followUp * weights.followUp +
-    operations * weights.operations +
-    financial * weights.financial
+      leads * weights.leads +
+      scheduling * weights.scheduling +
+      communication * weights.communication +
+      followUp * weights.followUp +
+      operations * weights.operations +
+      financial * weights.financial,
   );
 
   const schedulingLabel = isHS ? "Scheduling & Dispatch" : "Lead Management";
 
   const categories: CategoryScore[] = [
-    { category: "technology", label: "Technology & Software", score: technology, weight: Math.round(weights.technology * 100) },
-    { category: "leads", label: "Lead Funnel & Marketing", score: leads, weight: Math.round(weights.leads * 100) },
-    { category: "scheduling", label: schedulingLabel, score: scheduling, weight: Math.round(weights.scheduling * 100) },
-    { category: "communication", label: "Communication", score: communication, weight: Math.round(weights.communication * 100) },
-    { category: "followUp", label: "Follow-Up & Retention", score: followUp, weight: Math.round(weights.followUp * 100) },
-    { category: "operations", label: "Operations & Accountability", score: operations, weight: Math.round(weights.operations * 100) },
-    { category: "financial", label: "Financial Operations", score: financial, weight: Math.round(weights.financial * 100) },
+    {
+      category: "technology",
+      label: "Technology & Software",
+      score: technology,
+      weight: Math.round(weights.technology * 100),
+    },
+    {
+      category: "leads",
+      label: "Lead Funnel & Marketing",
+      score: leads,
+      weight: Math.round(weights.leads * 100),
+    },
+    {
+      category: "scheduling",
+      label: schedulingLabel,
+      score: scheduling,
+      weight: Math.round(weights.scheduling * 100),
+    },
+    {
+      category: "communication",
+      label: "Communication",
+      score: communication,
+      weight: Math.round(weights.communication * 100),
+    },
+    {
+      category: "followUp",
+      label: "Follow-Up & Retention",
+      score: followUp,
+      weight: Math.round(weights.followUp * 100),
+    },
+    {
+      category: "operations",
+      label: "Operations & Accountability",
+      score: operations,
+      weight: Math.round(weights.operations * 100),
+    },
+    {
+      category: "financial",
+      label: "Financial Operations",
+      score: financial,
+      weight: Math.round(weights.financial * 100),
+    },
   ];
 
-  return { technology, leads, scheduling, communication, followUp, operations, financial, overall, categories };
+  return {
+    technology,
+    leads,
+    scheduling,
+    communication,
+    followUp,
+    operations,
+    financial,
+    overall,
+    categories,
+  };
 }
 
 export function getScoreColor(score: number): string {
@@ -581,27 +640,35 @@ export function generateMockReport(state: AuditFormState, scores: AuditScores) {
   const weakest = sorted.slice(0, 3);
 
   const criticalGaps = weakest.map((cat) => {
-    const gapMap: Record<string, { title: string; description: string; impact: string }> = {
+    const gapMap: Record<
+      string,
+      { title: string; description: string; impact: string }
+    > = {
       leads: {
         title: "Lead Response & Conversion Gaps",
         description: isHS
           ? `Your lead response time and conversion tracking are costing you jobs. Businesses that respond within 5 minutes are 21x more likely to qualify a lead than those who respond after 30 minutes.`
           : `Your lead response speed and nurture cadence are leaving deals on the table. Teams that respond within 5 minutes convert 3x more internet leads into appointments.`,
-        impact: "Estimated 15–30% more closed deals with immediate response automation",
+        impact:
+          "Estimated 15–30% more closed deals with immediate response automation",
       },
       technology: {
         title: "Technology Stack Underutilization",
         description: isHS
-          ? `Your current software isn't working hard enough for you. Modern field service platforms automate scheduling, dispatch, invoicing, and follow-up — eliminating manual work and human error.`
+          ? `Your current software isn't working hard enough for you. Modern field service platforms automate scheduling, dispatch, invoicing, and follow-up - eliminating manual work and human error.`
           : `Your CRM isn't delivering its full value. The best teams use their CRM as the single source of truth for all lead and client activity, enabling coaching, forecasting, and automation.`,
         impact: "10–20 hours/week recovered through automation",
       },
       scheduling: {
-        title: isHS ? "Scheduling & Dispatch Inefficiency" : "Lead Management Process Gaps",
+        title: isHS
+          ? "Scheduling & Dispatch Inefficiency"
+          : "Lead Management Process Gaps",
         description: isHS
           ? `Manual scheduling and dispatching creates gaps in your calendar, wastes technician drive time, and makes it nearly impossible to handle emergency calls efficiently.`
-          : `Without a documented, automated lead follow-up system, leads fall through the cracks. The average lead requires 8–12 touches before converting — most teams give up after 2–3.`,
-        impact: isHS ? "15–25% more jobs completed per week with route optimization" : "20–40% more leads converted with systematic nurture",
+          : `Without a documented, automated lead follow-up system, leads fall through the cracks. The average lead requires 8–12 touches before converting - most teams give up after 2–3.`,
+        impact: isHS
+          ? "15–25% more jobs completed per week with route optimization"
+          : "20–40% more leads converted with systematic nurture",
       },
       communication: {
         title: "Customer Communication Breakdowns",
@@ -613,65 +680,75 @@ export function generateMockReport(state: AuditFormState, scores: AuditScores) {
       followUp: {
         title: "Follow-Up & Retention Failures",
         description: isHS
-          ? `You're leaving repeat and referral revenue on the table. Most businesses get 40–60% of revenue from repeat customers — but only if they stay top-of-mind with consistent follow-up.`
-          : `Post-close follow-up and referral systems are the most profitable activity in real estate — but only if systematized. Without automation, it simply doesn't happen consistently.`,
+          ? `You're leaving repeat and referral revenue on the table. Most businesses get 40–60% of revenue from repeat customers - but only if they stay top-of-mind with consistent follow-up.`
+          : `Post-close follow-up and referral systems are the most profitable activity in real estate - but only if systematized. Without automation, it simply doesn't happen consistently.`,
         impact: "30–50% increase in repeat/referral revenue",
       },
       operations: {
         title: "Operations & KPI Blind Spots",
         description: isHS
-          ? `Without tracking key performance indicators, you're flying blind. You can't improve what you don't measure — and your competitors are using data to optimize every aspect of their business.`
+          ? `Without tracking key performance indicators, you're flying blind. You can't improve what you don't measure - and your competitors are using data to optimize every aspect of their business.`
           : `Without clear agent KPIs and accountability systems, top performers carry underperformers and overall team productivity suffers. Data-driven coaching is the differentiator.`,
-        impact: "15–25% productivity improvement through accountability systems",
+        impact:
+          "15–25% productivity improvement through accountability systems",
       },
       financial: {
         title: "Financial Operations Gaps",
         description: isHS
           ? `Inconsistent pricing, slow invoicing, and poor collections are directly impacting your cash flow and profitability. Businesses with standardized pricing and same-day digital invoicing collect 30% faster.`
           : `Without detailed P&L tracking and per-channel marketing ROI, you can't make smart investment decisions or identify which lead sources are actually profitable.`,
-        impact: "Improved cash flow and 10–20% reduction in uncollected revenue",
+        impact:
+          "Improved cash flow and 10–20% reduction in uncollected revenue",
       },
     };
-    return gapMap[cat.category] || {
-      title: `${cat.label} Improvement Needed`,
-      description: `Your ${cat.label.toLowerCase()} score of ${cat.score}% indicates significant room for improvement with the right systems and processes.`,
-      impact: "Significant efficiency and revenue gains available",
-    };
+    return (
+      gapMap[cat.category] || {
+        title: `${cat.label} Improvement Needed`,
+        description: `Your ${cat.label.toLowerCase()} score of ${cat.score}% indicates significant room for improvement with the right systems and processes.`,
+        impact: "Significant efficiency and revenue gains available",
+      }
+    );
   });
 
   const quickWins = isHS
     ? [
         {
           title: "Set Up Missed Call Text-Back",
-          description: "Configure your CRM or a tool like Hatch or Missed Call Text Back to automatically text every missed caller within 60 seconds with a link to book online.",
+          description:
+            "Configure your CRM or a tool like Hatch or Missed Call Text Back to automatically text every missed caller within 60 seconds with a link to book online.",
           timeframe: "Can be live in 24–48 hours",
         },
         {
           title: "Activate Review Request Automation",
-          description: "Set up an automated text message requesting a Google review immediately after every completed job. This alone can double your review count within 90 days.",
+          description:
+            "Set up an automated text message requesting a Google review immediately after every completed job. This alone can double your review count within 90 days.",
           timeframe: "Set up in 1–2 hours with most field service platforms",
         },
         {
           title: "Create a Post-Job Follow-Up Sequence",
-          description: "Build a simple 3-message follow-up: (1) Thank you + review request, (2) Maintenance tip related to the job, (3) Seasonal service reminder. Set it to run automatically.",
+          description:
+            "Build a simple 3-message follow-up: (1) Thank you + review request, (2) Maintenance tip related to the job, (3) Seasonal service reminder. Set it to run automatically.",
           timeframe: "1–2 days to create and activate",
         },
       ]
     : [
         {
           title: "Implement 5-Minute Lead Response SOP",
-          description: "Create a written standard operating procedure requiring all internet leads to receive a call + text within 5 minutes. Use round-robin automation in your CRM to enforce it.",
+          description:
+            "Create a written standard operating procedure requiring all internet leads to receive a call + text within 5 minutes. Use round-robin automation in your CRM to enforce it.",
           timeframe: "Can be implemented in 24 hours",
         },
         {
           title: "Build a 30-Day Lead Nurture Sequence",
-          description: "Create a minimum 8-touch email + text drip sequence for all new leads who don't immediately convert to appointments. Most CRMs have this built in and unused.",
+          description:
+            "Create a minimum 8-touch email + text drip sequence for all new leads who don't immediately convert to appointments. Most CRMs have this built in and unused.",
           timeframe: "3–5 hours to set up in your existing CRM",
         },
         {
           title: "Launch a Past Client Referral Campaign",
-          description: "Send a simple personal email to your last 2 years of closed clients asking if they know anyone who needs help buying or selling. Personal outreach converts at 20–30%.",
-          timeframe: "Can send today — takes 1 hour",
+          description:
+            "Send a simple personal email to your last 2 years of closed clients asking if they know anyone who needs help buying or selling. Personal outreach converts at 20–30%.",
+          timeframe: "Can send today - takes 1 hour",
         },
       ];
 
@@ -679,34 +756,40 @@ export function generateMockReport(state: AuditFormState, scores: AuditScores) {
     ? [
         {
           title: "Implement an AI-Powered Answering & Booking System",
-          description: "Deploy an AI voice agent or chatbot that answers after-hours calls, qualifies leads, and books jobs directly into your scheduling software — 24/7, without staff.",
+          description:
+            "Deploy an AI voice agent or chatbot that answers after-hours calls, qualifies leads, and books jobs directly into your scheduling software - 24/7, without staff.",
           roi: "Estimated 15–25 additional booked jobs per month",
         },
         {
           title: "Upgrade to a Full Field Service Management Platform",
-          description: "Migrate to an all-in-one platform (ServiceTitan, Jobber, or Housecall Pro) that unifies scheduling, dispatch, invoicing, customer communication, and reporting in one place.",
+          description:
+            "Migrate to an all-in-one platform (ServiceTitan, Jobber, or Housecall Pro) that unifies scheduling, dispatch, invoicing, customer communication, and reporting in one place.",
           roi: "10–20 hours/week saved, 15–30% revenue increase typical within 12 months",
         },
         {
           title: "Launch a Membership/Maintenance Plan Program",
-          description: "Create recurring revenue with a seasonal maintenance plan. Even with 50 members at $150/year, that's $7,500 in predictable annual revenue — plus priority customers who refer.",
+          description:
+            "Create recurring revenue with a seasonal maintenance plan. Even with 50 members at $150/year, that's $7,500 in predictable annual revenue - plus priority customers who refer.",
           roi: "$50K–$200K in new recurring revenue depending on your customer base size",
         },
       ]
     : [
         {
           title: "Deploy a Comprehensive CRM Follow-Up System",
-          description: "Implement automated long-term lead nurture sequences (6–18 months) and a systematic past-client touchpoint plan. The average buyer/seller transaction takes 6–18 months to close.",
+          description:
+            "Implement automated long-term lead nurture sequences (6–18 months) and a systematic past-client touchpoint plan. The average buyer/seller transaction takes 6–18 months to close.",
           roi: "30–50% more closings from your existing lead database",
         },
         {
           title: "Build an AI-Powered Lead Qualification System",
-          description: "Implement AI chat or voice qualification on your website and portals to engage leads instantly, qualify their timeline and motivation, and route hot leads to agents immediately.",
+          description:
+            "Implement AI chat or voice qualification on your website and portals to engage leads instantly, qualify their timeline and motivation, and route hot leads to agents immediately.",
           roi: "3–5x improvement in internet lead conversion rates",
         },
         {
           title: "Create Agent Performance Dashboards",
-          description: "Build weekly KPI dashboards showing each agent's leads, contacts, appointments, and contracts. Data-driven coaching sessions improve team productivity by 20–35%.",
+          description:
+            "Build weekly KPI dashboards showing each agent's leads, contacts, appointments, and contracts. Data-driven coaching sessions improve team productivity by 20–35%.",
           roi: "15–30% increase in team GCI within 6 months",
         },
       ];

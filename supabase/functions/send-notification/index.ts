@@ -1,110 +1,120 @@
-import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
-import { createClient } from 'npm:@supabase/supabase-js@2'
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 // --- Types ---
 
 interface CategoryScore {
-  category: string
-  label: string
-  score: number
-  weight: number
+  category: string;
+  label: string;
+  score: number;
+  weight: number;
 }
 
 interface AuditScores {
-  overall: number
-  categories: CategoryScore[]
+  overall: number;
+  categories: CategoryScore[];
 }
 
 interface AuditRecord {
-  id: string
-  contact_name: string
-  contact_email: string
-  contact_phone: string | null
-  niche: string
-  overall_score: number
-  scores: AuditScores | Record<string, unknown>
-  form_data: Record<string, unknown>
-  report_status: string
-  email_status: string
-  created_at: string
-  language: string | null     // null for legacy audits
-  sub_niche: string | null    // null for legacy audits
+  id: string;
+  contact_name: string;
+  contact_email: string;
+  contact_phone: string | null;
+  niche: string;
+  overall_score: number;
+  scores: AuditScores | Record<string, unknown>;
+  form_data: Record<string, unknown>;
+  report_status: string;
+  email_status: string;
+  created_at: string;
+  language: string | null; // null for legacy audits
+  sub_niche: string | null; // null for legacy audits
 }
 
 interface WebhookPayload {
-  type: 'UPDATE' | 'INSERT' | 'DELETE'
-  table: string
-  schema: string
-  record: AuditRecord
-  old_record: Record<string, unknown>
+  type: "UPDATE" | "INSERT" | "DELETE";
+  table: string;
+  schema: string;
+  record: AuditRecord;
+  old_record: Record<string, unknown>;
 }
 
 interface StrategicRecommendation {
-  title: string
-  description: string
-  roi?: string
-  priority?: string
-  cta?: string
+  title: string;
+  description: string;
+  roi?: string;
+  priority?: string;
+  cta?: string;
 }
 
 interface AiReport {
-  executiveSummary?: string
-  gaps?: unknown[]
-  quickWins?: unknown[]
-  strategicRecommendations?: StrategicRecommendation[]
+  executiveSummary?: string;
+  gaps?: unknown[];
+  quickWins?: unknown[];
+  strategicRecommendations?: StrategicRecommendation[];
 }
 
-// Language display labels — full names per CONTEXT.md decision
+// Language display labels - full names per CONTEXT.md decision
 const LANGUAGE_LABELS: Record<string, string> = {
-  en: 'English',
-  bg: 'Bulgarian',
-}
+  en: "English",
+  bg: "Bulgarian",
+};
 
-// Sub-niche display labels — must stay in sync with SUB_NICHE_REGISTRY in src/config/subNicheConfig.ts
+// Sub-niche display labels - must stay in sync with SUB_NICHE_REGISTRY in src/config/subNicheConfig.ts
 const SUB_NICHE_LABELS: Record<string, string> = {
-  hvac: 'HVAC', plumbing: 'Plumbing', electrical: 'Electrical', garage_doors: 'Garage Doors',
-  pest_control: 'Pest Control', landscaping: 'Landscaping', cleaning: 'Cleaning',
-  roofing: 'Roofing', painting: 'Painting', general_contracting: 'General Contracting',
-  construction: 'Construction', interior_design: 'Interior Design',
-  residential_sales: 'Residential Sales', commercial: 'Commercial / Office',
-  property_management: 'Property Management', new_construction: 'New Construction',
-  luxury_resort: 'Luxury / Resort',
-}
+  hvac: "HVAC",
+  plumbing: "Plumbing",
+  electrical: "Electrical",
+  garage_doors: "Garage Doors",
+  pest_control: "Pest Control",
+  landscaping: "Landscaping",
+  cleaning: "Cleaning",
+  roofing: "Roofing",
+  painting: "Painting",
+  general_contracting: "General Contracting",
+  construction: "Construction",
+  interior_design: "Interior Design",
+  residential_sales: "Residential Sales",
+  commercial: "Commercial / Office",
+  property_management: "Property Management",
+  new_construction: "New Construction",
+  luxury_resort: "Luxury / Resort",
+};
 
 // --- Email helpers ---
 
 function getScoreColor(score: number): string {
-  if (score < 40) return '#dc2626'   // red
-  if (score < 60) return '#ea580c'   // orange
-  if (score < 75) return '#ca8a04'   // yellow/amber
-  return '#16a34a'                    // green
+  if (score < 40) return "#dc2626"; // red
+  if (score < 60) return "#ea580c"; // orange
+  if (score < 75) return "#ca8a04"; // yellow/amber
+  return "#16a34a"; // green
 }
 
 function escapeHtml(str: string): string {
   return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
-function buildCategoryScoresHtml(scores: AuditRecord['scores']): string {
+function buildCategoryScoresHtml(scores: AuditRecord["scores"]): string {
   try {
-    const parsed = scores as AuditScores
-    const categories = parsed?.categories
-    if (!Array.isArray(categories) || categories.length === 0) return ''
+    const parsed = scores as AuditScores;
+    const categories = parsed?.categories;
+    if (!Array.isArray(categories) || categories.length === 0) return "";
 
     const rows = categories
       .map((cat: CategoryScore) => {
-        const color = getScoreColor(cat.score)
+        const color = getScoreColor(cat.score);
         return `
           <tr>
             <td style="padding: 8px 12px; border-bottom: 1px solid #f0f0f0; font-size: 14px; color: #374151;">${escapeHtml(cat.label)}</td>
             <td style="padding: 8px 12px; border-bottom: 1px solid #f0f0f0; font-size: 14px; font-weight: 600; color: ${color}; text-align: right;">${cat.score}/100</td>
-          </tr>`
+          </tr>`;
       })
-      .join('')
+      .join("");
 
     return `
       <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin-top: 8px;">
@@ -116,55 +126,65 @@ function buildCategoryScoresHtml(scores: AuditRecord['scores']): string {
         </thead>
         <tbody>${rows}
         </tbody>
-      </table>`
+      </table>`;
   } catch {
-    return ''
+    return "";
   }
 }
 
 function buildRecommendationsHtml(aiReport: AiReport | null): string {
-  if (!aiReport) return ''
-  const recs = aiReport.strategicRecommendations
-  if (!Array.isArray(recs) || recs.length === 0) return ''
+  if (!aiReport) return "";
+  const recs = aiReport.strategicRecommendations;
+  if (!Array.isArray(recs) || recs.length === 0) return "";
 
-  const topRecs = recs.slice(0, 3)
+  const topRecs = recs.slice(0, 3);
   const recItems = topRecs
-    .map((rec: StrategicRecommendation, i: number) => `
+    .map(
+      (rec: StrategicRecommendation, i: number) => `
       <tr>
         <td style="padding: 12px; background-color: #f9fafb; border-radius: 6px; margin-bottom: 8px; display: block;">
-          <div style="font-size: 13px; font-weight: 600; color: #111827; margin-bottom: 4px;">${i + 1}. ${escapeHtml(rec.title || '')}</div>
-          <div style="font-size: 13px; color: #6b7280; line-height: 1.5;">${escapeHtml(rec.description || '')}</div>
+          <div style="font-size: 13px; font-weight: 600; color: #111827; margin-bottom: 4px;">${i + 1}. ${escapeHtml(rec.title || "")}</div>
+          <div style="font-size: 13px; color: #6b7280; line-height: 1.5;">${escapeHtml(rec.description || "")}</div>
         </td>
-      </tr>`)
-    .join('<tr><td style="height: 8px;"></td></tr>')
+      </tr>`,
+    )
+    .join('<tr><td style="height: 8px;"></td></tr>');
 
   return `
     <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin-top: 8px;">
       ${recItems}
-    </table>`
+    </table>`;
 }
 
-function buildAdminEmailHtml(record: AuditRecord, aiReport: AiReport | null): string {
-  const nicheLabel = record.niche === 'home_services' ? 'Home Services' : 'Real Estate'
-  const scoreColor = getScoreColor(record.overall_score)
-  const langPrefix = record.language === 'en' ? '/en' : ''
-  const reportUrl = `https://bizaudit.epsystems.dev${langPrefix}/report/${record.id}`
-  const categoryScoresHtml = buildCategoryScoresHtml(record.scores)
-  const recommendationsHtml = buildRecommendationsHtml(aiReport)
+function buildAdminEmailHtml(
+  record: AuditRecord,
+  aiReport: AiReport | null,
+): string {
+  const nicheLabel =
+    record.niche === "home_services" ? "Home Services" : "Real Estate";
+  const scoreColor = getScoreColor(record.overall_score);
+  const langPrefix = record.language === "en" ? "/en" : "";
+  const reportUrl = `https://bizaudit.epsystems.dev${langPrefix}/report/${record.id}`;
+  const categoryScoresHtml = buildCategoryScoresHtml(record.scores);
+  const recommendationsHtml = buildRecommendationsHtml(aiReport);
 
   const phoneDisplay = record.contact_phone
     ? `<tr><td style="padding: 4px 0; font-size: 14px; color: #6b7280; width: 100px;">Phone</td><td style="padding: 4px 0; font-size: 14px; color: #111827;">${escapeHtml(record.contact_phone)}</td></tr>`
-    : ''
+    : "";
 
-  const languageDisplay = record.language ? (LANGUAGE_LABELS[record.language] ?? record.language) : null
-  const subNicheDisplay = record.sub_niche ? (SUB_NICHE_LABELS[record.sub_niche] ?? record.sub_niche) : null
+  const languageDisplay = record.language
+    ? (LANGUAGE_LABELS[record.language] ?? record.language)
+    : null;
+  const subNicheDisplay = record.sub_niche
+    ? (SUB_NICHE_LABELS[record.sub_niche] ?? record.sub_niche)
+    : null;
 
   const languageRow = languageDisplay
     ? `<tr><td style="padding: 4px 0; font-size: 14px; color: #6b7280; width: 100px;">Language</td><td style="padding: 4px 0; font-size: 14px; color: #111827;">${escapeHtml(languageDisplay)}</td></tr>`
-    : ''
+    : "";
   const subNicheRow = subNicheDisplay
     ? `<tr><td style="padding: 4px 0; font-size: 14px; color: #6b7280; width: 100px;">Sub-niche</td><td style="padding: 4px 0; font-size: 14px; color: #111827;">${escapeHtml(subNicheDisplay)}</td></tr>`
-    : ''
+    : "";
 
   const categorySection = categoryScoresHtml
     ? `
@@ -175,7 +195,7 @@ function buildAdminEmailHtml(record: AuditRecord, aiReport: AiReport | null): st
           ${categoryScoresHtml}
         </td>
       </tr>`
-    : ''
+    : "";
 
   const recommendationsSection = recommendationsHtml
     ? `
@@ -186,7 +206,7 @@ function buildAdminEmailHtml(record: AuditRecord, aiReport: AiReport | null): st
           ${recommendationsHtml}
         </td>
       </tr>`
-    : ''
+    : "";
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -288,15 +308,19 @@ function buildAdminEmailHtml(record: AuditRecord, aiReport: AiReport | null): st
     </tr>
   </table>
 </body>
-</html>`
+</html>`;
 }
 
-function buildUserEmailHtml(record: AuditRecord, aiReport: AiReport | null): string {
-  const nicheLabel = record.niche === 'home_services' ? 'Home Services' : 'Real Estate'
-  const scoreColor = getScoreColor(record.overall_score)
-  const langPrefix = record.language === 'en' ? '/en' : ''
-  const reportUrl = `https://bizaudit.epsystems.dev${langPrefix}/report/${record.id}`
-  const categoryScoresHtml = buildCategoryScoresHtml(record.scores)
+function buildUserEmailHtml(
+  record: AuditRecord,
+  aiReport: AiReport | null,
+): string {
+  const nicheLabel =
+    record.niche === "home_services" ? "Home Services" : "Real Estate";
+  const scoreColor = getScoreColor(record.overall_score);
+  const langPrefix = record.language === "en" ? "/en" : "";
+  const reportUrl = `https://bizaudit.epsystems.dev${langPrefix}/report/${record.id}`;
+  const categoryScoresHtml = buildCategoryScoresHtml(record.scores);
 
   // Show executive summary if available
   const summarySection = aiReport?.executiveSummary
@@ -306,7 +330,7 @@ function buildUserEmailHtml(record: AuditRecord, aiReport: AiReport | null): str
           <div style="font-size: 14px; color: #374151; line-height: 1.6;">${escapeHtml(aiReport.executiveSummary)}</div>
         </td>
       </tr>`
-    : ''
+    : "";
 
   const categorySection = categoryScoresHtml
     ? `<tr>
@@ -315,7 +339,7 @@ function buildUserEmailHtml(record: AuditRecord, aiReport: AiReport | null): str
           ${categoryScoresHtml}
         </td>
       </tr>`
-    : ''
+    : "";
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -399,146 +423,183 @@ function buildUserEmailHtml(record: AuditRecord, aiReport: AiReport | null): str
     </tr>
   </table>
 </body>
-</html>`
+</html>`;
 }
 
 // --- Main handler ---
 
 Deno.serve(async (req: Request) => {
-  // Outermost catch — always return 200 to prevent webhook retries
+  // Outermost catch - always return 200 to prevent webhook retries
   try {
     // Parse webhook payload
-    let payload: WebhookPayload
+    let payload: WebhookPayload;
     try {
-      payload = await req.json() as WebhookPayload
+      payload = (await req.json()) as WebhookPayload;
     } catch (parseErr) {
-      console.error('Failed to parse webhook payload:', (parseErr as Error).message)
-      return new Response(JSON.stringify({ skipped: true, reason: 'parse_error' }), { status: 200 })
+      console.error(
+        "Failed to parse webhook payload:",
+        (parseErr as Error).message,
+      );
+      return new Response(
+        JSON.stringify({ skipped: true, reason: "parse_error" }),
+        { status: 200 },
+      );
     }
 
-    const record = payload?.record
+    const record = payload?.record;
 
     if (!record) {
-      console.error('Webhook payload missing record')
-      return new Response(JSON.stringify({ skipped: true, reason: 'no_record' }), { status: 200 })
+      console.error("Webhook payload missing record");
+      return new Response(
+        JSON.stringify({ skipped: true, reason: "no_record" }),
+        { status: 200 },
+      );
     }
 
     // Guard: only process when report is completed
-    if (record.report_status !== 'completed') {
-      return new Response(JSON.stringify({ skipped: true, reason: 'not_completed' }), { status: 200 })
+    if (record.report_status !== "completed") {
+      return new Response(
+        JSON.stringify({ skipped: true, reason: "not_completed" }),
+        { status: 200 },
+      );
     }
 
     // Guard: only process if email is still pending (prevents duplicate sends)
-    if (record.email_status !== 'pending') {
-      return new Response(JSON.stringify({ skipped: true, reason: 'email_not_pending' }), { status: 200 })
+    if (record.email_status !== "pending") {
+      return new Response(
+        JSON.stringify({ skipped: true, reason: "email_not_pending" }),
+        { status: 200 },
+      );
     }
 
     // Instantiate Supabase admin client inside handler (per_worker mode pattern)
     const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-    )
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
 
-    // Read AI report from audit_reports (may not exist — degrade gracefully)
-    let aiReport: AiReport | null = null
+    // Read AI report from audit_reports (may not exist - degrade gracefully)
+    let aiReport: AiReport | null = null;
     try {
       const { data: reportRow, error: reportError } = await supabaseAdmin
-        .from('audit_reports')
-        .select('report')
-        .eq('audit_id', record.id)
-        .single()
+        .from("audit_reports")
+        .select("report")
+        .eq("audit_id", record.id)
+        .single();
 
       if (reportError) {
-        console.error('audit_reports fetch error:', reportError.message)
+        console.error("audit_reports fetch error:", reportError.message);
       } else if (reportRow?.report) {
-        aiReport = reportRow.report as AiReport
+        aiReport = reportRow.report as AiReport;
       }
     } catch (reportFetchErr) {
-      console.error('audit_reports fetch failed:', (reportFetchErr as Error).message)
+      console.error(
+        "audit_reports fetch failed:",
+        (reportFetchErr as Error).message,
+      );
     }
 
     // Read env vars for email sending
-    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
-    const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL')!
+    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")!;
+    const ADMIN_EMAIL = Deno.env.get("ADMIN_EMAIL")!;
 
-    const nicheLabel = record.niche === 'home_services' ? 'Home Services' : 'Real Estate'
-    const subNicheDisplay = record.sub_niche ? (SUB_NICHE_LABELS[record.sub_niche] ?? record.sub_niche) : null
-    const subjectNiche = subNicheDisplay ? `${nicheLabel} / ${subNicheDisplay}` : nicheLabel
+    const nicheLabel =
+      record.niche === "home_services" ? "Home Services" : "Real Estate";
+    const subNicheDisplay = record.sub_niche
+      ? (SUB_NICHE_LABELS[record.sub_niche] ?? record.sub_niche)
+      : null;
+    const subjectNiche = subNicheDisplay
+      ? `${nicheLabel} / ${subNicheDisplay}`
+      : nicheLabel;
 
     // Send admin email via Resend
-    let emailStatus = 'failed'
+    let emailStatus = "failed";
     try {
-      const htmlBody = buildAdminEmailHtml(record, aiReport)
+      const htmlBody = buildAdminEmailHtml(record, aiReport);
 
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${RESEND_API_KEY}`,
         },
         body: JSON.stringify({
-          from: 'E&P Systems <engineering@epsystems.org>',
+          from: "E&P Systems <engineering@epsystems.org>",
           to: [ADMIN_EMAIL],
-          subject: `New Audit: ${record.contact_name} — ${subjectNiche} (${record.overall_score}/100)`,
+          subject: `New Audit: ${record.contact_name} - ${subjectNiche} (${record.overall_score}/100)`,
           html: htmlBody,
         }),
-      })
+      });
 
       if (!res.ok) {
-        const errorBody = await res.text()
-        console.error('Resend API error:', res.status, errorBody)
+        const errorBody = await res.text();
+        console.error("Resend API error:", res.status, errorBody);
       } else {
-        emailStatus = 'sent'
+        emailStatus = "sent";
       }
     } catch (emailErr) {
-      console.error('Email send failed:', (emailErr as Error).message)
+      console.error("Email send failed:", (emailErr as Error).message);
     }
 
     // Send user email via Resend (EMAIL-02)
-    let userEmailSent = false
+    let userEmailSent = false;
     if (record.contact_email) {
       try {
-        const userHtml = buildUserEmailHtml(record, aiReport)
+        const userHtml = buildUserEmailHtml(record, aiReport);
 
-        const userRes = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
+        const userRes = await fetch("https://api.resend.com/emails", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${RESEND_API_KEY}`,
           },
           body: JSON.stringify({
-            from: 'E&P Systems <engineering@epsystems.org>',
+            from: "E&P Systems <engineering@epsystems.org>",
             to: [record.contact_email],
-            subject: `Your ${nicheLabel} Audit Results — ${record.overall_score}/100`,
+            subject: `Your ${nicheLabel} Audit Results - ${record.overall_score}/100`,
             html: userHtml,
           }),
-        })
+        });
 
         if (!userRes.ok) {
-          const errorBody = await userRes.text()
-          console.error('User email Resend error:', userRes.status, errorBody)
+          const errorBody = await userRes.text();
+          console.error("User email Resend error:", userRes.status, errorBody);
         } else {
-          userEmailSent = true
+          userEmailSent = true;
         }
       } catch (userEmailErr) {
-        console.error('User email send failed:', (userEmailErr as Error).message)
+        console.error(
+          "User email send failed:",
+          (userEmailErr as Error).message,
+        );
       }
     }
 
-    // Update email_status (best-effort — don't let this failure change the response)
+    // Update email_status (best-effort - don't let this failure change the response)
     try {
       await supabaseAdmin
-        .from('audits')
+        .from("audits")
         .update({ email_status: emailStatus })
-        .eq('id', record.id)
+        .eq("id", record.id);
     } catch (statusErr) {
-      console.error('email_status update failed:', (statusErr as Error).message)
+      console.error(
+        "email_status update failed:",
+        (statusErr as Error).message,
+      );
     }
 
-    return new Response(JSON.stringify({ emailStatus, userEmailSent }), { status: 200 })
+    return new Response(JSON.stringify({ emailStatus, userEmailSent }), {
+      status: 200,
+    });
   } catch (outerErr) {
     // Catch-all: never return non-200 to the Database Webhook
-    console.error('Unhandled error in send-notification:', (outerErr as Error).message)
-    return new Response(JSON.stringify({ skipped: true, reason: 'unhandled_error' }), { status: 200 })
+    console.error(
+      "Unhandled error in send-notification:",
+      (outerErr as Error).message,
+    );
+    return new Response(
+      JSON.stringify({ skipped: true, reason: "unhandled_error" }),
+      { status: 200 },
+    );
   }
-})
+});

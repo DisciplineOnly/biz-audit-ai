@@ -14,8 +14,8 @@ export default function Loading() {
   const navigate = useNavigate();
   const location = useLocation();
   const { prefix, lang } = useLang();
-  const { t } = useTranslation('generating');
-  const { t: tc } = useTranslation('common');
+  const { t } = useTranslation("generating");
+  const { t: tc } = useTranslation("common");
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -26,16 +26,22 @@ export default function Loading() {
 
   const auditIdRef = useRef<string | null>(null);
   const mountedRef = useRef(true);
-  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+    null,
+  );
   const apiResolvedRef = useRef(false);
 
   // Steps from i18n namespace
-  const steps = (t('steps', { returnObjects: true }) as string[]);
+  const steps = t("steps", { returnObjects: true }) as string[];
   const stepsArray = Array.isArray(steps) ? steps : [];
 
   // Capture location state once at mount
   const locationStateRef = useRef(
-    location.state as { auditId?: string; formState?: AuditFormState; scores?: AuditScores } | null
+    location.state as {
+      auditId?: string;
+      formState?: AuditFormState;
+      scores?: AuditScores;
+    } | null,
   );
   const formStateRef = useRef(locationStateRef.current?.formState);
   const scoresRef = useRef(locationStateRef.current?.scores);
@@ -44,14 +50,20 @@ export default function Loading() {
     async (startTime: number) => {
       const auditId = auditIdRef.current;
       if (!auditId || auditId.startsWith("demo-")) {
-        // submitAudit failed — skip AI, go to report with template content
+        // submitAudit failed - skip AI, go to report with template content
         const elapsed = Date.now() - startTime;
-        await new Promise<void>((r) => setTimeout(r, Math.max(0, MIN_WAIT_MS - elapsed)));
+        await new Promise<void>((r) =>
+          setTimeout(r, Math.max(0, MIN_WAIT_MS - elapsed)),
+        );
         if (!mountedRef.current) return;
         apiResolvedRef.current = true;
         setProgress(100);
         navigate(`${prefix}/report/${auditId}`, {
-          state: { formState: formStateRef.current, scores: scoresRef.current, auditId },
+          state: {
+            formState: formStateRef.current,
+            scores: scoresRef.current,
+            auditId,
+          },
         });
         return;
       }
@@ -62,7 +74,12 @@ export default function Loading() {
 
       try {
         const generateCall = supabase.functions.invoke("generate-report", {
-          body: { auditId, formState: formStateRef.current, scores: scoresRef.current, language: lang },
+          body: {
+            auditId,
+            formState: formStateRef.current,
+            scores: scoresRef.current,
+            language: lang,
+          },
         });
 
         const [result] = await Promise.all([generateCall, minTimer]);
@@ -77,25 +94,25 @@ export default function Loading() {
             const hours = body.hoursRemaining ?? 24;
             let timeHint: string;
             if (hours <= 1) {
-              timeHint = t('rateLimit.timeHints.oneHour');
+              timeHint = t("rateLimit.timeHints.oneHour");
             } else if (hours < 20) {
-              timeHint = t('rateLimit.timeHints.hours', { count: hours });
+              timeHint = t("rateLimit.timeHints.hours", { count: hours });
             } else {
-              timeHint = t('rateLimit.timeHints.tomorrow');
+              timeHint = t("rateLimit.timeHints.tomorrow");
             }
-            setRateLimitMessage(t('rateLimit.message', { timeHint }));
-            return; // Stay on loading screen — do NOT navigate
+            setRateLimitMessage(t("rateLimit.message", { timeHint }));
+            return; // Stay on loading screen - do NOT navigate
           }
           throw invokeError; // Non-429 HTTP error
         }
 
         if (invokeError || !data?.success) {
           throw new Error(
-            invokeError?.message || data?.error || t('errors.reportFailed')
+            invokeError?.message || data?.error || t("errors.reportFailed"),
           );
         }
 
-        // Success — navigate to report with AI data
+        // Success - navigate to report with AI data
         if (!mountedRef.current) return;
         apiResolvedRef.current = true;
         setAiReport(data.report as AIReportData);
@@ -110,22 +127,26 @@ export default function Loading() {
         });
       } catch (err) {
         if (!mountedRef.current) return;
-        setAiError((err as Error).message || t('errors.reportFailed'));
-        // Show Retry + Skip buttons — user can retry or skip to template report
+        setAiError((err as Error).message || t("errors.reportFailed"));
+        // Show Retry + Skip buttons - user can retry or skip to template report
       }
     },
-    [navigate, prefix, t, lang]
+    [navigate, prefix, t, lang],
   );
 
   const handleRetry = useCallback(() => {
     setAiError(null);
-    callGenerateReport(Date.now()); // No min timer on retry — user already waited
+    callGenerateReport(Date.now()); // No min timer on retry - user already waited
   }, [callGenerateReport]);
 
   const handleSkipToReport = useCallback(() => {
     const auditId = auditIdRef.current || "demo-" + Date.now();
     navigate(`${prefix}/report/${auditId}`, {
-      state: { formState: formStateRef.current, scores: scoresRef.current, auditId },
+      state: {
+        formState: formStateRef.current,
+        scores: scoresRef.current,
+        auditId,
+      },
     });
   }, [navigate, prefix]);
 
@@ -138,14 +159,18 @@ export default function Loading() {
 
     // Validate required data
     if (!formState || !scores) {
-      setError(t('errors.missingFormData'));
-      setTimeout(() => { if (mountedRef.current) navigate(prefix || "/"); }, 3000);
+      setError(t("errors.missingFormData"));
+      setTimeout(() => {
+        if (mountedRef.current) navigate(prefix || "/");
+      }, 3000);
       return;
     }
 
     if (!formState.niche) {
-      setError(t('errors.missingNiche'));
-      setTimeout(() => { if (mountedRef.current) navigate(prefix || "/"); }, 3000);
+      setError(t("errors.missingNiche"));
+      setTimeout(() => {
+        if (mountedRef.current) navigate(prefix || "/");
+      }, 3000);
       return;
     }
 
@@ -181,7 +206,7 @@ export default function Loading() {
 
     // Async orchestration: submitAudit -> generate-report
     async function runAuditFlow() {
-      // Step 1: Submit audit to DB (must complete first — auditId needed for generate-report)
+      // Step 1: Submit audit to DB (must complete first - auditId needed for generate-report)
       try {
         const id = await submitAudit(formState!, scores!, lang);
         if (!mountedRef.current) return;
@@ -205,7 +230,8 @@ export default function Loading() {
     return () => {
       mountedRef.current = false;
       clearInterval(stepInterval);
-      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+      if (progressIntervalRef.current)
+        clearInterval(progressIntervalRef.current);
     };
   }, [navigate, callGenerateReport, prefix, t, stepsArray.length]);
 
@@ -220,9 +246,9 @@ export default function Loading() {
           className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold"
           style={{ backgroundColor: "hsl(var(--coral))" }}
         >
-          {tc('brand.initials')}
+          {tc("brand.initials")}
         </div>
-        <span className="text-white font-bold text-xl">{tc('brand.name')}</span>
+        <span className="text-white font-bold text-xl">{tc("brand.name")}</span>
       </div>
 
       {/* Spinner */}
@@ -241,11 +267,9 @@ export default function Loading() {
       </div>
 
       <h1 className="text-2xl md:text-3xl font-bold text-white mb-2 text-center">
-        {t('heading')}
+        {t("heading")}
       </h1>
-      <p className="text-white/50 text-sm mb-10 text-center">
-        {t('subtitle')}
-      </p>
+      <p className="text-white/50 text-sm mb-10 text-center">{t("subtitle")}</p>
 
       {/* DB save error (non-blocking notice) */}
       {error && (
@@ -254,22 +278,22 @@ export default function Loading() {
         </div>
       )}
 
-      {/* Rate limit block — replaces progress bar and step list */}
+      {/* Rate limit block - replaces progress bar and step list */}
       {isRateLimited ? (
         <div className="w-full max-w-md text-center">
           <div className="mb-4 text-4xl">🚫</div>
-          <h2 className="text-xl font-bold text-white mb-3">{t('rateLimit.heading')}</h2>
+          <h2 className="text-xl font-bold text-white mb-3">
+            {t("rateLimit.heading")}
+          </h2>
           <p className="text-white/70 mb-6">{rateLimitMessage}</p>
-          <p className="text-white/40 text-sm">
-            {t('rateLimit.savedMessage')}
-          </p>
+          <p className="text-white/40 text-sm">{t("rateLimit.savedMessage")}</p>
         </div>
       ) : (
         <>
           {/* Progress bar */}
           <div className="w-full max-w-md mb-8">
             <div className="flex justify-between text-xs text-white/40 mb-2">
-              <span>{t('analyzing')}</span>
+              <span>{t("analyzing")}</span>
               <span>{progress}%</span>
             </div>
             <div className="h-2 rounded-full bg-white/10 overflow-hidden">
@@ -283,12 +307,12 @@ export default function Loading() {
             </div>
           </div>
 
-          {/* AI error state — shown below progress bar */}
+          {/* AI error state - shown below progress bar */}
           {aiError && (
             <div className="w-full max-w-md space-y-3 mb-6">
               <div className="p-4 bg-red-500/20 border border-red-500/50 rounded-lg">
                 <p className="text-red-200 text-sm text-center mb-3">
-                  {t('errors.reportIssue')}
+                  {t("errors.reportIssue")}
                 </p>
                 <div className="flex gap-3 justify-center">
                   <button
@@ -296,13 +320,13 @@ export default function Loading() {
                     className="px-4 py-2 rounded-lg text-white font-medium text-sm"
                     style={{ backgroundColor: "hsl(var(--coral))" }}
                   >
-                    {tc('buttons.retry')}
+                    {tc("buttons.retry")}
                   </button>
                   <button
                     onClick={handleSkipToReport}
                     className="px-4 py-2 rounded-lg text-white/70 hover:text-white font-medium text-sm border border-white/20 hover:border-white/40"
                   >
-                    {tc('buttons.skipToReport')}
+                    {tc("buttons.skipToReport")}
                   </button>
                 </div>
               </div>
@@ -322,8 +346,8 @@ export default function Loading() {
                     isDone
                       ? "text-white/50"
                       : isActive
-                      ? "text-white"
-                      : "text-white/20"
+                        ? "text-white"
+                        : "text-white/20"
                   }`}
                 >
                   <div
@@ -331,8 +355,8 @@ export default function Loading() {
                       isDone
                         ? "bg-[hsl(var(--score-green))] text-white"
                         : isActive
-                        ? "bg-[hsl(var(--coral))] text-white"
-                        : "bg-white/10 text-white/20"
+                          ? "bg-[hsl(var(--coral))] text-white"
+                          : "bg-white/10 text-white/20"
                     }`}
                   >
                     {isDone ? "\u2713" : index + 1}

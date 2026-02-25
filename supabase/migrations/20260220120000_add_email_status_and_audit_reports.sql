@@ -1,6 +1,6 @@
 -- Add email_status column to audits table for notification tracking
 -- Values: pending (default) | sent | failed
--- 'partial' excluded — only admin email is sent in Phase 3
+-- 'partial' excluded - only admin email is sent in Phase 3
 ALTER TABLE public.audits
   ADD COLUMN email_status TEXT NOT NULL DEFAULT 'pending'
     CHECK (email_status IN ('pending', 'sent', 'failed'));
@@ -20,5 +20,5 @@ CREATE TABLE public.audit_reports (
 ALTER TABLE public.audit_reports ENABLE ROW LEVEL SECURITY;
 
 -- No RLS policies for anon = zero anon access (same pattern as audits table)
--- Service role bypasses RLS automatically — edge functions use service_role key
+-- Service role bypasses RLS automatically - edge functions use service_role key
 -- No explicit policy needed for service role reads/writes

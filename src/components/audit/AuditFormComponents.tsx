@@ -2,12 +2,15 @@ import { AuditFormState, AuditAction } from "@/types/audit";
 import { useTranslation } from "react-i18next";
 
 export interface SelectOption {
-  value: string;   // English scoring key — always stored in state
-  label: string;   // Displayed text — changes per language in Phase 7
+  value: string; // English scoring key - always stored in state
+  label: string; // Displayed text - changes per language in Phase 7
 }
 
-export const localizeOptions = (opts: SelectOption[], labelMap: Record<string, string>): SelectOption[] =>
-  opts.map(o => ({ value: o.value, label: labelMap[o.value] ?? o.label }));
+export const localizeOptions = (
+  opts: SelectOption[],
+  labelMap: Record<string, string>,
+): SelectOption[] =>
+  opts.map((o) => ({ value: o.value, label: labelMap[o.value] ?? o.label }));
 
 interface StepProps {
   state: AuditFormState;
@@ -27,7 +30,11 @@ export function FormField({ label, required, children, hint }: FieldProps) {
     <div className="space-y-2">
       <label className="block text-sm font-semibold text-foreground">
         {label}
-        {required && <span style={{ color: "hsl(var(--coral))" }} className="ml-1">*</span>}
+        {required && (
+          <span style={{ color: "hsl(var(--coral))" }} className="ml-1">
+            *
+          </span>
+        )}
       </label>
       {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
       {children}
@@ -46,8 +53,8 @@ export function StyledSelect({
   options: SelectOption[];
   placeholder?: string;
 }) {
-  const { t } = useTranslation('common');
-  const placeholderText = placeholder ?? t('form.selectPlaceholder');
+  const { t } = useTranslation("common");
+  const placeholderText = placeholder ?? t("form.selectPlaceholder");
   return (
     <select
       value={value}
@@ -128,7 +135,9 @@ export function MultiCheckbox({
   };
 
   return (
-    <div className={`grid gap-2 ${columns === 2 ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"}`}>
+    <div
+      className={`grid gap-2 ${columns === 2 ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"}`}
+    >
       {options.map((opt) => {
         const isSelected = selected.includes(opt.value);
         return (
@@ -149,12 +158,28 @@ export function MultiCheckbox({
               }`}
             >
               {isSelected && (
-                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                <svg
+                  className="w-3 h-3 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={3}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
               )}
             </div>
-            <span className={isSelected ? "font-medium text-foreground" : "text-foreground"}>{opt.label}</span>
+            <span
+              className={
+                isSelected ? "font-medium text-foreground" : "text-foreground"
+              }
+            >
+              {opt.label}
+            </span>
           </label>
         );
       })}
@@ -171,9 +196,17 @@ export function RatingButtons({
   onChange: (v: number) => void;
   labels?: string[];
 }) {
-  const { t } = useTranslation('common');
-  const ratingLabelsRaw = labels ?? t('rating.labels', { returnObjects: true });
-  const ratingLabels = Array.isArray(ratingLabelsRaw) ? ratingLabelsRaw as string[] : ["Very Unsatisfied", "Unsatisfied", "Neutral", "Satisfied", "Very Satisfied"];
+  const { t } = useTranslation("common");
+  const ratingLabelsRaw = labels ?? t("rating.labels", { returnObjects: true });
+  const ratingLabels = Array.isArray(ratingLabelsRaw)
+    ? (ratingLabelsRaw as string[])
+    : [
+        "Very Unsatisfied",
+        "Unsatisfied",
+        "Neutral",
+        "Satisfied",
+        "Very Satisfied",
+      ];
   return (
     <div className="space-y-2">
       <div className="flex gap-2">
@@ -197,7 +230,10 @@ export function RatingButtons({
         <span>{ratingLabels[4]}</span>
       </div>
       {value > 0 && (
-        <p className="text-sm text-center font-medium" style={{ color: "hsl(var(--coral))" }}>
+        <p
+          className="text-sm text-center font-medium"
+          style={{ color: "hsl(var(--coral))" }}
+        >
           {ratingLabels[value - 1]}
         </p>
       )}
@@ -205,20 +241,30 @@ export function RatingButtons({
   );
 }
 
-export function StepHeader({ step, title, subtitle }: { step: number; title: string; subtitle?: string }) {
-  const { t } = useTranslation('common');
+export function StepHeader({
+  step,
+  title,
+  subtitle,
+}: {
+  step: number;
+  title: string;
+  subtitle?: string;
+}) {
+  const { t } = useTranslation("common");
   return (
     <div className="mb-8">
       <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">
-        {t('stepOf', { current: step, total: 8 })}
+        {t("stepOf", { current: step, total: 8 })}
       </div>
-      <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">{title}</h2>
+      <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+        {title}
+      </h2>
       {subtitle && <p className="text-muted-foreground">{subtitle}</p>}
     </div>
   );
 }
 
-/** Convert plain string arrays to SelectOption[] (Phase 6 bridge — value === label in English) */
+/** Convert plain string arrays to SelectOption[] (Phase 6 bridge - value === label in English) */
 export const toOptions = (strings: string[]): SelectOption[] =>
   strings.map((s) => ({ value: s, label: s }));
 
