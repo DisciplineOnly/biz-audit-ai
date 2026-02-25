@@ -56,6 +56,25 @@
   "rating": {
     "labels": ["Very Unsatisfied", "Unsatisfied", "Neutral", "Satisfied", "Very Satisfied"]
   },
+  "subNiche": {
+    "hvac": "HVAC",
+    "plumbing": "Plumbing",
+    "electrical": "Electrical",
+    "garageDoors": "Garage Doors",
+    "pestControl": "Pest Control",
+    "landscaping": "Landscaping",
+    "cleaning": "Cleaning",
+    "roofing": "Roofing",
+    "painting": "Painting",
+    "generalContracting": "General Contracting",
+    "construction": "Construction",
+    "interiorDesign": "Interior Design",
+    "residentialSales": "Residential Sales",
+    "commercial": "Commercial / Office",
+    "propertyManagement": "Property Management",
+    "newConstruction": "New Construction",
+    "luxuryResort": "Luxury / Resort"
+  },
   "form": {
     "selectPlaceholder": "Select an option...",
     "selectAll": "Select all that apply",

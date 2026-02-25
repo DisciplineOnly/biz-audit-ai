@@ -56,6 +56,25 @@
   "rating": {
     "labels": ["Много недоволен", "Недоволен", "Неутрален", "Доволен", "Много доволен"]
   },
+  "subNiche": {
+    "hvac": "ОВК",
+    "plumbing": "ВиК",
+    "electrical": "Електроинсталации",
+    "garageDoors": "Гаражни врати",
+    "pestControl": "DDD / Дезинфекция",
+    "landscaping": "Озеленяване",
+    "cleaning": "Професионално почистване",
+    "roofing": "Покриви",
+    "painting": "Бояджийски услуги",
+    "generalContracting": "Строително предприемачество",
+    "construction": "Строителство",
+    "interiorDesign": "Интериорен дизайн",
+    "residentialSales": "Жилищни продажби",
+    "commercial": "Търговски имоти",
+    "propertyManagement": "Управление на имоти",
+    "newConstruction": "Ново строителство",
+    "luxuryResort": "Луксозни имоти"
+  },
   "form": {
     "selectPlaceholder": "Изберете опция...",
     "selectAll": "Изберете всички приложими",

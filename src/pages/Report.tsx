@@ -67,7 +67,7 @@ export default function Report() {
   const { prefix } = useLang();
   const { t } = useTranslation('report');
   const { t: tc } = useTranslation('common');
-  const { t: tSteps } = useTranslation('steps');
+  const { t: tCommon } = useTranslation('common');
   const [copied, setCopied] = useState(false);
   const [pollStartTime] = useState(() => Date.now());
   const POLL_TIMEOUT_MS = 90_000; // 90 seconds max polling
@@ -134,7 +134,7 @@ export default function Report() {
   const subNicheEntry = formState?.subNiche
     ? SUB_NICHE_REGISTRY.find(sn => sn.id === formState.subNiche)
     : null;
-  const subNicheName = subNicheEntry ? tSteps(subNicheEntry.labelKey) : null;
+  const subNicheName = subNicheEntry ? tCommon(subNicheEntry.labelKey) : null;
 
   const categoryLabels: Record<string, string> = {
     technology: t('categories.technology'),

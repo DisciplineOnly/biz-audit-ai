@@ -13,7 +13,7 @@
       "industry": { "label": "Industry / Trade" },
       "employeeCount": { "label": "Number of Employees (including techs)" },
       "annualRevenue": { "label": "Annual Revenue" },
-      "yearsInBusiness": { "label": "Years in Business" },
+      "yearsInBusiness": { "label": "Years in Business", "hint": "Approximate." },
       "serviceArea": { "label": "Service Area", "hint": "How broad is your coverage?" },
       "subNiche": { "title": "What type of trade business do you run?" }
     },

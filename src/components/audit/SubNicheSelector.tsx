@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { SubNiche } from "@/types/audit";
 import { getSubNichesForNiche, SubNicheInfo } from "@/config/subNicheConfig";
 
@@ -9,6 +10,7 @@ interface SubNicheSelectorProps {
 }
 
 export function SubNicheSelector({ niche, selected, onSelect, title }: SubNicheSelectorProps) {
+  const { t } = useTranslation('common');
   const subNiches = getSubNichesForNiche(niche);
 
   return (
@@ -32,7 +34,7 @@ export function SubNicheSelector({ niche, selected, onSelect, title }: SubNicheS
             >
               <span className="text-2xl">{sn.emoji}</span>
               <span className={isSelected ? "text-foreground font-semibold" : "text-foreground"}>
-                {sn.label}
+                {t(sn.labelKey)}
               </span>
             </button>
           );
