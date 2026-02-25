@@ -162,7 +162,7 @@ function scoreToolsUsed(tools: string[]): number {
 }
 
 function scoreKPIs(kpis: string[]): number {
-  const noKPI = kpis.some((k) => k.includes("don't track"));
+  const noKPI = kpis.some((k) => k.includes("don't track") || k.includes("Не проследяваме"));
   if (noKPI) return 0;
   if (kpis.length >= 6) return 3;
   if (kpis.length >= 4) return 2;
