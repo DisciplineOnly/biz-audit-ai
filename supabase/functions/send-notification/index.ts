@@ -99,7 +99,18 @@ function escapeHtml(str: string): string {
     .replace(/'/g, "&#39;");
 }
 
-function buildCategoryScoresHtml(scores: AuditRecord["scores"]): string {
+const BG_CATEGORY_LABELS: Record<string, string> = {
+  "Technology & Software": "Технологии и софтуер",
+  "Lead Funnel & Marketing": "Привличане на клиенти и маркетинг",
+  "Scheduling & Dispatch": "Планиране и диспечиране",
+  "Lead Management": "Управление на клиенти",
+  "Communication": "Комуникация",
+  "Follow-Up & Retention": "Проследяване и задържане",
+  "Operations & Accountability": "Операции и отчетност",
+  "Financial Operations": "Финансови операции",
+};
+
+function buildCategoryScoresHtml(scores: AuditRecord["scores"], isBG = false): string {
   try {
     const parsed = scores as AuditScores;
     const categories = parsed?.categories;
@@ -108,20 +119,24 @@ function buildCategoryScoresHtml(scores: AuditRecord["scores"]): string {
     const rows = categories
       .map((cat: CategoryScore) => {
         const color = getScoreColor(cat.score);
+        const label = isBG ? (BG_CATEGORY_LABELS[cat.label] ?? cat.label) : cat.label;
         return `
           <tr>
-            <td style="padding: 8px 12px; border-bottom: 1px solid #f0f0f0; font-size: 14px; color: #374151;">${escapeHtml(cat.label)}</td>
+            <td style="padding: 8px 12px; border-bottom: 1px solid #f0f0f0; font-size: 14px; color: #374151;">${escapeHtml(label)}</td>
             <td style="padding: 8px 12px; border-bottom: 1px solid #f0f0f0; font-size: 14px; font-weight: 600; color: ${color}; text-align: right;">${cat.score}/100</td>
           </tr>`;
       })
       .join("");
 
+    const thCategory = isBG ? "Категория" : "Category";
+    const thScore = isBG ? "Оценка" : "Score";
+
     return `
       <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin-top: 8px;">
         <thead>
           <tr>
-            <th style="padding: 8px 12px; background-color: #f9fafb; text-align: left; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #e5e7eb;">Category</th>
-            <th style="padding: 8px 12px; background-color: #f9fafb; text-align: right; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #e5e7eb;">Score</th>
+            <th style="padding: 8px 12px; background-color: #f9fafb; text-align: left; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #e5e7eb;">${thCategory}</th>
+            <th style="padding: 8px 12px; background-color: #f9fafb; text-align: right; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #e5e7eb;">${thScore}</th>
           </tr>
         </thead>
         <tbody>${rows}
@@ -315,18 +330,32 @@ function buildUserEmailHtml(
   record: AuditRecord,
   aiReport: AiReport | null,
 ): string {
-  const nicheLabel =
-    record.niche === "home_services" ? "Home Services" : "Real Estate";
+  const isBG = record.language === "bg";
+  const nicheLabel = isBG
+    ? (record.niche === "home_services" ? "Домашни услуги" : "Недвижими имоти")
+    : (record.niche === "home_services" ? "Home Services" : "Real Estate");
   const scoreColor = getScoreColor(record.overall_score);
   const langPrefix = record.language === "en" ? "/en" : "";
   const reportUrl = `https://bizaudit.epsystems.dev${langPrefix}/report/${record.id}`;
-  const categoryScoresHtml = buildCategoryScoresHtml(record.scores);
+  const categoryScoresHtml = buildCategoryScoresHtml(record.scores, isBG);
 
-  // Show executive summary if available
+  const t = {
+    title: isBG ? "Вашият доклад от одита е готов" : "Your Audit Report is Ready",
+    headerSub: isBG ? `Вашият одит за ${escapeHtml(nicheLabel)}` : `Your ${escapeHtml(nicheLabel)} Audit Report`,
+    greeting: isBG ? `Здравейте, ${escapeHtml(record.contact_name)}` : `Hi ${escapeHtml(record.contact_name)},`,
+    intro: isBG ? "Вашият бизнес одит е завършен. Ето резултатите:" : "Your business operations audit is complete. Here are your results:",
+    overallScore: isBG ? "Обща оценка" : "Overall Score",
+    summary: isBG ? "Резюме" : "Executive Summary",
+    categoryScores: isBG ? "Оценки по категории" : "Your Category Scores",
+    viewReport: isBG ? "Вижте пълния доклад &rarr;" : "View Your Full Report &rarr;",
+    available: isBG ? "Вашият доклад е достъпен по всяко време на линка по-горе." : "Your report is available anytime at the link above.",
+    footer: isBG ? "Изпратено от E&amp;P Systems" : "Sent by E&amp;P Systems",
+  };
+
   const summarySection = aiReport?.executiveSummary
     ? `<tr>
         <td style="padding: 24px 0; border-bottom: 1px solid #e5e7eb;">
-          <div style="font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">Executive Summary</div>
+          <div style="font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">${t.summary}</div>
           <div style="font-size: 14px; color: #374151; line-height: 1.6;">${escapeHtml(aiReport.executiveSummary)}</div>
         </td>
       </tr>`
@@ -335,18 +364,18 @@ function buildUserEmailHtml(
   const categorySection = categoryScoresHtml
     ? `<tr>
         <td style="padding: 24px 0 0;">
-          <div style="font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">Your Category Scores</div>
+          <div style="font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">${t.categoryScores}</div>
           ${categoryScoresHtml}
         </td>
       </tr>`
     : "";
 
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${isBG ? "bg" : "en"}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your Audit Report is Ready</title>
+  <title>${t.title}</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; background-color: #f3f4f6;">
   <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; background-color: #f3f4f6;">
@@ -358,7 +387,7 @@ function buildUserEmailHtml(
           <tr>
             <td style="background-color: #0f172a; padding: 24px 32px;">
               <div style="font-size: 20px; font-weight: 700; color: #ffffff;">BizAudit</div>
-              <div style="font-size: 13px; color: #94a3b8; margin-top: 4px;">Your ${escapeHtml(nicheLabel)} Audit Report</div>
+              <div style="font-size: 13px; color: #94a3b8; margin-top: 4px;">${t.headerSub}</div>
             </td>
           </tr>
 
@@ -370,15 +399,15 @@ function buildUserEmailHtml(
                 <!-- Greeting -->
                 <tr>
                   <td style="padding-bottom: 24px;">
-                    <div style="font-size: 16px; color: #111827; line-height: 1.6;">Hi ${escapeHtml(record.contact_name)},</div>
-                    <div style="font-size: 14px; color: #374151; line-height: 1.6; margin-top: 8px;">Your business operations audit is complete. Here are your results:</div>
+                    <div style="font-size: 16px; color: #111827; line-height: 1.6;">${t.greeting}</div>
+                    <div style="font-size: 14px; color: #374151; line-height: 1.6; margin-top: 8px;">${t.intro}</div>
                   </td>
                 </tr>
 
                 <!-- Overall Score -->
                 <tr>
                   <td style="padding: 24px 0; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb;">
-                    <div style="font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Overall Score</div>
+                    <div style="font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em;">${t.overallScore}</div>
                     <table cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
                       <tr>
                         <td>
@@ -399,11 +428,11 @@ function buildUserEmailHtml(
                     <table cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
                       <tr>
                         <td style="border-radius: 6px; background-color: #f97316;">
-                          <a href="${reportUrl}" style="display: inline-block; padding: 14px 28px; font-size: 15px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 6px;">View Your Full Report &rarr;</a>
+                          <a href="${reportUrl}" style="display: inline-block; padding: 14px 28px; font-size: 15px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 6px;">${t.viewReport}</a>
                         </td>
                       </tr>
                     </table>
-                    <div style="font-size: 13px; color: #6b7280; margin-top: 12px;">Your report is available anytime at the link above.</div>
+                    <div style="font-size: 13px; color: #6b7280; margin-top: 12px;">${t.available}</div>
                   </td>
                 </tr>
 
@@ -414,7 +443,7 @@ function buildUserEmailHtml(
           <!-- Footer -->
           <tr>
             <td style="background-color: #f9fafb; padding: 16px 32px; border-top: 1px solid #e5e7eb;">
-              <div style="font-size: 12px; color: #9ca3af; text-align: center;">Sent by E&amp;P Systems &bull; <a href="https://epsystems.dev" style="color: #9ca3af;">epsystems.dev</a></div>
+              <div style="font-size: 12px; color: #9ca3af; text-align: center;">${t.footer} &bull; <a href="https://epsystems.dev" style="color: #9ca3af;">epsystems.dev</a></div>
             </td>
           </tr>
 
@@ -553,10 +582,14 @@ Deno.serve(async (req: Request) => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${RESEND_API_KEY}`,
           },
+          const userSubject = record.language === "bg"
+            ? `Резултати от Вашия одит за ${record.niche === "home_services" ? "домашни услуги" : "недвижими имоти"} - ${record.overall_score}/100`
+            : `Your ${nicheLabel} Audit Results - ${record.overall_score}/100`;
+
           body: JSON.stringify({
             from: "E&P Systems <engineering@epsystems.org>",
             to: [record.contact_email],
-            subject: `Your ${nicheLabel} Audit Results - ${record.overall_score}/100`,
+            subject: userSubject,
             html: userHtml,
           }),
         });
