@@ -631,9 +631,10 @@ export function getBenchmark(score: number): "above" | "average" | "below" {
   return "below";
 }
 
-export function generateMockReport(state: AuditFormState, scores: AuditScores) {
+export function generateMockReport(state: AuditFormState, scores: AuditScores, lang: string = "en") {
   const isHS = state.niche === "home_services";
-  const businessName = state.step1.businessName || "Your Business";
+  const isBG = lang === "bg";
+  const businessName = state.step1.businessName || (isBG ? "Вашият бизнес" : "Your Business");
 
   // Find weakest categories for gap analysis
   const sorted = [...scores.categories].sort((a, b) => a.score - b.score);
@@ -643,7 +644,61 @@ export function generateMockReport(state: AuditFormState, scores: AuditScores) {
     const gapMap: Record<
       string,
       { title: string; description: string; impact: string }
-    > = {
+    > = isBG ? {
+      leads: {
+        title: "Пропуски в отговор на запитвания и конверсия",
+        description: isHS
+          ? `Времето Ви за отговор на запитвания и проследяването на конверсиите Ви струват поръчки. Бизнесите, които отговарят до 5 минути, имат 21 пъти по-голям шанс да квалифицират клиент от тези, които отговарят след 30 минути.`
+          : `Скоростта Ви на отговор и честотата на проследяване оставят сделки на масата. Екипите, които отговарят до 5 минути, конвертират 3 пъти повече интернет запитвания в срещи.`,
+        impact: "Очаквани 15–30% повече приключени сделки с автоматизация на отговорите",
+      },
+      technology: {
+        title: "Недостатъчно използване на технологиите",
+        description: isHS
+          ? `Текущият Ви софтуер не работи достатъчно ефективно за Вас. Модерните платформи за полеви услуги автоматизират планиране, диспечиране, фактуриране и проследяване — елиминирайки ръчна работа и човешки грешки.`
+          : `Вашият CRM не носи пълната си стойност. Най-добрите екипи използват CRM като единствен източник на истина за всички активности с клиенти, позволявайки обучение, прогнозиране и автоматизация.`,
+        impact: "10–20 часа/седмица спестени чрез автоматизация",
+      },
+      scheduling: {
+        title: isHS
+          ? "Неефективност в планирането и диспечирането"
+          : "Пропуски в управлението на клиенти",
+        description: isHS
+          ? `Ръчното планиране и диспечиране създава празнини в графика Ви, хаби време за пътуване на техниците и прави почти невъзможно ефективното обработване на спешни обаждания.`
+          : `Без документирана автоматизирана система за проследяване, клиентите се губят. Средното запитване изисква 8–12 контакта преди конверсия — повечето екипи се отказват след 2–3.`,
+        impact: isHS
+          ? "15–25% повече завършени задачи седмично с оптимизация на маршрути"
+          : "20–40% повече конвертирани клиенти със системно проследяване",
+      },
+      communication: {
+        title: "Пропуски в комуникацията с клиентите",
+        description: isHS
+          ? `Липсващи напомняния за срещи, без известия „на път съм" и непоследователно проследяване са причина №1 за негативни отзиви и отмени.`
+          : `Непоследователна комуникация с активни клиенти и липса на системно проследяване на минали клиенти причинява загуба на препоръки и повторен бизнес.`,
+        impact: "25–40% намаляване на отмените и неявяванията",
+      },
+      followUp: {
+        title: "Пропуски в проследяването и задържането",
+        description: isHS
+          ? `Оставяте повторни приходи и препоръки на масата. Повечето бизнеси получават 40–60% от приходите си от повторни клиенти — но само ако остават в съзнанието им чрез последователно проследяване.`
+          : `Проследяването след сделка и системите за препоръки са най-печелившата дейност в недвижимите имоти — но само ако е систематизирана. Без автоматизация просто не се случва последователно.`,
+        impact: "30–50% увеличение на приходите от повторни клиенти и препоръки",
+      },
+      operations: {
+        title: "Операционни и KPI слепи петна",
+        description: isHS
+          ? `Без проследяване на ключови показатели за ефективност, работите на сляпо. Не можете да подобрите нещо, което не измервате — а конкурентите Ви използват данни за оптимизиране на всеки аспект от бизнеса си.`
+          : `Без ясни KPI за агентите и системи за отчетност, топ изпълнителите носят на гърба си по-слабите и общата продуктивност на екипа страда. Обучението, базирано на данни, е ключовият диференциатор.`,
+        impact: "15–25% подобрение на продуктивността чрез системи за отчетност",
+      },
+      financial: {
+        title: "Пропуски във финансовите операции",
+        description: isHS
+          ? `Непоследователно ценообразуване, бавно фактуриране и лошо събиране на вземания директно влияят на паричния Ви поток и рентабилност. Бизнесите със стандартизирано ценообразуване и дигитално фактуриране в същия ден събират 30% по-бързо.`
+          : `Без детайлно проследяване на печалба/загуба и ROI по канали за маркетинг, не можете да вземате умни инвестиционни решения или да определите кои източници на клиенти са наистина печеливши.`,
+        impact: "Подобрен паричен поток и 10–20% намаляване на несъбрани приходи",
+      },
+    } : {
       leads: {
         title: "Lead Response & Conversion Gaps",
         description: isHS
@@ -701,98 +756,187 @@ export function generateMockReport(state: AuditFormState, scores: AuditScores) {
           "Improved cash flow and 10–20% reduction in uncollected revenue",
       },
     };
-    return (
-      gapMap[cat.category] || {
-        title: `${cat.label} Improvement Needed`,
-        description: `Your ${cat.label.toLowerCase()} score of ${cat.score}% indicates significant room for improvement with the right systems and processes.`,
-        impact: "Significant efficiency and revenue gains available",
-      }
-    );
+    const fallback = isBG
+      ? {
+          title: `${cat.label} — необходимо подобрение`,
+          description: `Вашият резултат от ${cat.score}% в ${cat.label.toLowerCase()} показва значителен потенциал за подобрение с правилните системи и процеси.`,
+          impact: "Значителни подобрения в ефективността и приходите са възможни",
+        }
+      : {
+          title: `${cat.label} Improvement Needed`,
+          description: `Your ${cat.label.toLowerCase()} score of ${cat.score}% indicates significant room for improvement with the right systems and processes.`,
+          impact: "Significant efficiency and revenue gains available",
+        };
+    return gapMap[cat.category] || fallback;
   });
 
   const quickWins = isHS
-    ? [
-        {
-          title: "Set Up Missed Call Text-Back",
-          description:
-            "Configure your CRM or a tool like Hatch or Missed Call Text Back to automatically text every missed caller within 60 seconds with a link to book online.",
-          timeframe: "Can be live in 24–48 hours",
-        },
-        {
-          title: "Activate Review Request Automation",
-          description:
-            "Set up an automated text message requesting a Google review immediately after every completed job. This alone can double your review count within 90 days.",
-          timeframe: "Set up in 1–2 hours with most field service platforms",
-        },
-        {
-          title: "Create a Post-Job Follow-Up Sequence",
-          description:
-            "Build a simple 3-message follow-up: (1) Thank you + review request, (2) Maintenance tip related to the job, (3) Seasonal service reminder. Set it to run automatically.",
-          timeframe: "1–2 days to create and activate",
-        },
-      ]
-    : [
-        {
-          title: "Implement 5-Minute Lead Response SOP",
-          description:
-            "Create a written standard operating procedure requiring all internet leads to receive a call + text within 5 minutes. Use round-robin automation in your CRM to enforce it.",
-          timeframe: "Can be implemented in 24 hours",
-        },
-        {
-          title: "Build a 30-Day Lead Nurture Sequence",
-          description:
-            "Create a minimum 8-touch email + text drip sequence for all new leads who don't immediately convert to appointments. Most CRMs have this built in and unused.",
-          timeframe: "3–5 hours to set up in your existing CRM",
-        },
-        {
-          title: "Launch a Past Client Referral Campaign",
-          description:
-            "Send a simple personal email to your last 2 years of closed clients asking if they know anyone who needs help buying or selling. Personal outreach converts at 20–30%.",
-          timeframe: "Can send today - takes 1 hour",
-        },
-      ];
+    ? isBG
+      ? [
+          {
+            title: "Настройте автоматичен отговор на пропуснати обаждания",
+            description:
+              "Конфигурирайте Вашия CRM да изпраща автоматичен SMS на всеки пропуснат обаждащ се в рамките на 60 секунди с линк за онлайн резервация.",
+            timeframe: "Може да е готово за 24–48 часа",
+          },
+          {
+            title: "Активирайте автоматизация за заявки за отзиви",
+            description:
+              "Настройте автоматичен SMS с молба за Google отзив веднага след всяка завършена задача. Само това може да удвои броя на отзивите Ви в рамките на 90 дни.",
+            timeframe: "Настройва се за 1–2 часа с повечето платформи",
+          },
+          {
+            title: "Създайте последователност за проследяване след задача",
+            description:
+              "Изградете проста 3-съобщения последователност: (1) Благодарност + заявка за отзив, (2) Съвет за поддръжка, свързан със задачата, (3) Сезонно напомняне за услуга. Настройте го на автоматичен режим.",
+            timeframe: "1–2 дни за създаване и активиране",
+          },
+        ]
+      : [
+          {
+            title: "Set Up Missed Call Text-Back",
+            description:
+              "Configure your CRM or a tool like Hatch or Missed Call Text Back to automatically text every missed caller within 60 seconds with a link to book online.",
+            timeframe: "Can be live in 24–48 hours",
+          },
+          {
+            title: "Activate Review Request Automation",
+            description:
+              "Set up an automated text message requesting a Google review immediately after every completed job. This alone can double your review count within 90 days.",
+            timeframe: "Set up in 1–2 hours with most field service platforms",
+          },
+          {
+            title: "Create a Post-Job Follow-Up Sequence",
+            description:
+              "Build a simple 3-message follow-up: (1) Thank you + review request, (2) Maintenance tip related to the job, (3) Seasonal service reminder. Set it to run automatically.",
+            timeframe: "1–2 days to create and activate",
+          },
+        ]
+    : isBG
+      ? [
+          {
+            title: "Въведете стандарт за отговор до 5 минути",
+            description:
+              "Създайте писмена процедура, изискваща всички интернет запитвания да получат обаждане + SMS до 5 минути. Използвайте автоматизация в CRM за разпределяне по ротация.",
+            timeframe: "Може да се приложи за 24 часа",
+          },
+          {
+            title: "Изградете 30-дневна последователност за проследяване",
+            description:
+              "Създайте минимум 8-стъпкова имейл + SMS последователност за всички нови запитвания, които не се конвертират веднага в срещи. Повечето CRM системи имат тази функция вградена.",
+            timeframe: "3–5 часа за настройка в текущия Ви CRM",
+          },
+          {
+            title: "Стартирайте кампания за препоръки от минали клиенти",
+            description:
+              "Изпратете личен имейл до клиентите Ви от последните 2 години с въпрос дали познават някой, който има нужда от помощ при покупка или продажба. Личните контакти конвертират с 20–30%.",
+            timeframe: "Може да се изпрати днес — отнема 1 час",
+          },
+        ]
+      : [
+          {
+            title: "Implement 5-Minute Lead Response SOP",
+            description:
+              "Create a written standard operating procedure requiring all internet leads to receive a call + text within 5 minutes. Use round-robin automation in your CRM to enforce it.",
+            timeframe: "Can be implemented in 24 hours",
+          },
+          {
+            title: "Build a 30-Day Lead Nurture Sequence",
+            description:
+              "Create a minimum 8-touch email + text drip sequence for all new leads who don't immediately convert to appointments. Most CRMs have this built in and unused.",
+            timeframe: "3–5 hours to set up in your existing CRM",
+          },
+          {
+            title: "Launch a Past Client Referral Campaign",
+            description:
+              "Send a simple personal email to your last 2 years of closed clients asking if they know anyone who needs help buying or selling. Personal outreach converts at 20–30%.",
+            timeframe: "Can send today - takes 1 hour",
+          },
+        ];
 
   const strategicRecs = isHS
-    ? [
-        {
-          title: "Implement an AI-Powered Answering & Booking System",
-          description:
-            "Deploy an AI voice agent or chatbot that answers after-hours calls, qualifies leads, and books jobs directly into your scheduling software - 24/7, without staff.",
-          roi: "Estimated 15–25 additional booked jobs per month",
-        },
-        {
-          title: "Upgrade to a Full Field Service Management Platform",
-          description:
-            "Migrate to an all-in-one platform (ServiceTitan, Jobber, or Housecall Pro) that unifies scheduling, dispatch, invoicing, customer communication, and reporting in one place.",
-          roi: "10–20 hours/week saved, 15–30% revenue increase typical within 12 months",
-        },
-        {
-          title: "Launch a Membership/Maintenance Plan Program",
-          description:
-            "Create recurring revenue with a seasonal maintenance plan. Even with 50 members at $150/year, that's $7,500 in predictable annual revenue - plus priority customers who refer.",
-          roi: "$50K–$200K in new recurring revenue depending on your customer base size",
-        },
-      ]
-    : [
-        {
-          title: "Deploy a Comprehensive CRM Follow-Up System",
-          description:
-            "Implement automated long-term lead nurture sequences (6–18 months) and a systematic past-client touchpoint plan. The average buyer/seller transaction takes 6–18 months to close.",
-          roi: "30–50% more closings from your existing lead database",
-        },
-        {
-          title: "Build an AI-Powered Lead Qualification System",
-          description:
-            "Implement AI chat or voice qualification on your website and portals to engage leads instantly, qualify their timeline and motivation, and route hot leads to agents immediately.",
-          roi: "3–5x improvement in internet lead conversion rates",
-        },
-        {
-          title: "Create Agent Performance Dashboards",
-          description:
-            "Build weekly KPI dashboards showing each agent's leads, contacts, appointments, and contracts. Data-driven coaching sessions improve team productivity by 20–35%.",
-          roi: "15–30% increase in team GCI within 6 months",
-        },
-      ];
+    ? isBG
+      ? [
+          {
+            title: "Внедрете AI система за отговори и резервации",
+            description:
+              "Деплойте AI гласов агент или чатбот, който отговаря на обаждания извън работно време, квалифицира запитвания и резервира задачи директно в софтуера Ви за планиране — 24/7, без персонал.",
+            roi: "Очаквани 15–25 допълнително резервирани задачи на месец",
+          },
+          {
+            title: "Надградете до пълна платформа за управление на полеви услуги",
+            description:
+              "Преминете към цялостна платформа, която обединява планиране, диспечиране, фактуриране, комуникация с клиенти и отчетност на едно място.",
+            roi: "10–20 часа/седмица спестени, 15–30% увеличение на приходите типично в рамките на 12 месеца",
+          },
+          {
+            title: "Стартирайте програма за абонаменти/планове за поддръжка",
+            description:
+              "Създайте рекурентен приход със сезонен план за поддръжка. Дори с 50 абоната, това е предвидим годишен приход — плюс приоритетни клиенти, които препоръчват.",
+            roi: "Значителен нов рекурентен приход в зависимост от размера на клиентската база",
+          },
+        ]
+      : [
+          {
+            title: "Implement an AI-Powered Answering & Booking System",
+            description:
+              "Deploy an AI voice agent or chatbot that answers after-hours calls, qualifies leads, and books jobs directly into your scheduling software - 24/7, without staff.",
+            roi: "Estimated 15–25 additional booked jobs per month",
+          },
+          {
+            title: "Upgrade to a Full Field Service Management Platform",
+            description:
+              "Migrate to an all-in-one platform (ServiceTitan, Jobber, or Housecall Pro) that unifies scheduling, dispatch, invoicing, customer communication, and reporting in one place.",
+            roi: "10–20 hours/week saved, 15–30% revenue increase typical within 12 months",
+          },
+          {
+            title: "Launch a Membership/Maintenance Plan Program",
+            description:
+              "Create recurring revenue with a seasonal maintenance plan. Even with 50 members at $150/year, that's $7,500 in predictable annual revenue - plus priority customers who refer.",
+            roi: "$50K–$200K in new recurring revenue depending on your customer base size",
+          },
+        ]
+    : isBG
+      ? [
+          {
+            title: "Внедрете цялостна CRM система за проследяване",
+            description:
+              "Приложете автоматизирани дългосрочни последователности за проследяване (6–18 месеца) и систематичен план за контакт с минали клиенти. Средната сделка за покупка/продажба отнема 6–18 месеца до приключване.",
+            roi: "30–50% повече сключени сделки от съществуващата Ви база данни",
+          },
+          {
+            title: "Изградете AI система за квалификация на запитвания",
+            description:
+              "Внедрете AI чат или гласова квалификация на уебсайта и порталите Ви, за да ангажирате запитвания мигновено, да квалифицирате времевата им рамка и мотивация, и да насочите горещите клиенти към агенти незабавно.",
+            roi: "3–5 пъти подобрение в конверсията на интернет запитвания",
+          },
+          {
+            title: "Създайте табла за представяне на агентите",
+            description:
+              "Изградете седмични KPI табла, показващи запитванията, контактите, срещите и договорите на всеки агент. Обучителните сесии, базирани на данни, подобряват продуктивността на екипа с 20–35%.",
+            roi: "15–30% увеличение на GCI на екипа в рамките на 6 месеца",
+          },
+        ]
+      : [
+          {
+            title: "Deploy a Comprehensive CRM Follow-Up System",
+            description:
+              "Implement automated long-term lead nurture sequences (6–18 months) and a systematic past-client touchpoint plan. The average buyer/seller transaction takes 6–18 months to close.",
+            roi: "30–50% more closings from your existing lead database",
+          },
+          {
+            title: "Build an AI-Powered Lead Qualification System",
+            description:
+              "Implement AI chat or voice qualification on your website and portals to engage leads instantly, qualify their timeline and motivation, and route hot leads to agents immediately.",
+            roi: "3–5x improvement in internet lead conversion rates",
+          },
+          {
+            title: "Create Agent Performance Dashboards",
+            description:
+              "Build weekly KPI dashboards showing each agent's leads, contacts, appointments, and contracts. Data-driven coaching sessions improve team productivity by 20–35%.",
+            roi: "15–30% increase in team GCI within 6 months",
+          },
+        ];
 
   return { criticalGaps, quickWins, strategicRecs };
 }

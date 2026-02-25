@@ -102,7 +102,7 @@ export default function Report() {
   const { auditId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const { prefix } = useLang();
+  const { prefix, lang } = useLang();
   const { t } = useTranslation("report");
   const { t: tc } = useTranslation("common");
   const { t: tCommon } = useTranslation("common");
@@ -395,7 +395,7 @@ export default function Report() {
   // ---- Full report rendering ----
 
   // Generate template content as fallback
-  const templateReport = generateMockReport(formState, scores);
+  const templateReport = generateMockReport(formState, scores, lang);
 
   // Resolve which content to render - AI takes priority
   const gaps = aiReport?.gaps ?? templateReport.criticalGaps ?? [];
@@ -484,7 +484,7 @@ export default function Report() {
               </h1>
               <p className="text-white/60 mb-1">
                 {t("hero.reportTitle", {
-                  date: new Date().toLocaleDateString("en-US", {
+                  date: new Date().toLocaleDateString(lang === "bg" ? "bg-BG" : "en-US", {
                     month: "long",
                     day: "numeric",
                     year: "numeric",
