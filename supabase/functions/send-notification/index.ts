@@ -575,6 +575,9 @@ Deno.serve(async (req: Request) => {
     if (record.contact_email) {
       try {
         const userHtml = buildUserEmailHtml(record, aiReport);
+        const userSubject = record.language === "bg"
+          ? `Резултати от Вашия одит за ${record.niche === "home_services" ? "домашни услуги" : "недвижими имоти"} - ${record.overall_score}/100`
+          : `Your ${nicheLabel} Audit Results - ${record.overall_score}/100`;
 
         const userRes = await fetch("https://api.resend.com/emails", {
           method: "POST",
@@ -582,10 +585,6 @@ Deno.serve(async (req: Request) => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${RESEND_API_KEY}`,
           },
-          const userSubject = record.language === "bg"
-            ? `Резултати от Вашия одит за ${record.niche === "home_services" ? "домашни услуги" : "недвижими имоти"} - ${record.overall_score}/100`
-            : `Your ${nicheLabel} Audit Results - ${record.overall_score}/100`;
-
           body: JSON.stringify({
             from: "E&P Systems <engineering@epsystems.org>",
             to: [record.contact_email],
