@@ -74,7 +74,7 @@
     "copied": "Copied!"
   },
   "executiveSummaryTemplate": {
-    "intro": "Based on your responses, <strong>{{businessName}}</strong> scored <scoreStrong>{{score}}/100</scoreStrong> overall \u2014 placing you in the <strong>{{label}}</strong> category for {{nicheType}} of your size.",
+    "intro": "Based on your responses, <strong>{{businessName}}</strong> scored <scoreStrong>{{score}}/100</scoreStrong> overall - placing you in the <strong>{{label}}</strong> category for {{nicheType}} of your size.",
     "strengths": "Your strongest areas are in <strong>{{areas}}</strong>, which suggests you have a solid operational foundation to build from.",
     "gaps": "However, significant gaps in <strong>{{areas}}</strong> represent your biggest opportunities. Businesses that close these gaps typically see <strong>20-40% revenue increases</strong> within 12 months through better lead conversion, retention, and operational efficiency.",
     "recommendation": "The recommendations in this report are based on your specific answers and industry benchmarks for {{nicheDescription}}.",

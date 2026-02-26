@@ -6,7 +6,7 @@
     "badge": "FREE \u00b7 AI-POWERED \u00b7 PERSONALIZED",
     "title": "Get Your Free",
     "titleHighlight": "AI Business Audit",
-    "subtitle": "Answer a few questions about your business and we'll generate a personalized report showing <strong>exactly where you're leaving money on the table</strong> \u2014 and how to fix it.",
+    "subtitle": "Answer a few questions about your business and we'll generate a personalized report showing <strong>exactly where you're leaving money on the table</strong> - and how to fix it.",
     "subtitleStrong": "exactly where you're leaving money on the table"
   },
   "benefits": [
@@ -35,13 +35,27 @@
     "hs": {
       "title": "Home Services & Trades",
       "description": "HVAC, Plumbing, Electrical, Roofing, Landscaping, Pest Control, and more",
-      "tags": ["HVAC", "Plumbing", "Electrical", "Roofing", "Landscaping", "More"],
+      "tags": [
+        "HVAC",
+        "Plumbing",
+        "Electrical",
+        "Roofing",
+        "Landscaping",
+        "More"
+      ],
       "cta": "Start My Audit"
     },
     "re": {
       "title": "Real Estate Teams & Brokerages",
       "description": "Agents, teams, brokerages, property management, and mortgage teams",
-      "tags": ["Residential", "Teams", "Brokerages", "Property Mgmt", "Mortgage", "More"],
+      "tags": [
+        "Residential",
+        "Teams",
+        "Brokerages",
+        "Property Mgmt",
+        "Mortgage",
+        "More"
+      ],
       "cta": "Start My Audit"
     }
   },

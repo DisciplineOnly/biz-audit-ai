@@ -17,17 +17,19 @@ const HS_EMPLOYEE_COUNTS = toOptions([
   "6–15",
   "16–30",
   "31–50",
-  "50+",
+  "50-99",
+  "100+",
 ]);
 const HS_REVENUES = toOptions([
-  "Under $250K",
-  "$250K–$500K",
-  "$500K–$1M",
-  "$1M–$3M",
-  "$3M–$5M",
-  "$5M+",
+  "Under €100K",
+  "€100K-€250K",
+  "€250K–€500K",
+  "€500K–€1M",
+  "€1M–€3M",
+  "€3M–€5M",
+  "€5M+",
 ]);
-const HS_YEARS = toOptions(["<1", "1–3", "3–5", "5–10", "10+"]);
+const HS_YEARS = toOptions(["<1", "1–3", "3–5", "5–10", "10-20", "20+"]);
 const HS_SERVICE_AREAS = toOptions([
   "Single city/town",
   "Multiple cities",
@@ -84,11 +86,11 @@ const BG_RE_VOLUMES = toOptions([
   "250+",
 ]);
 const RE_GCI = toOptions([
-  "Under $250K",
-  "$250K–$500K",
-  "$500K–$1M",
-  "$1M–$3M",
-  "$3M+",
+  "Under €250K",
+  "€250K–€500K",
+  "€500K–€1M",
+  "€1M–€3M",
+  "€3M+",
 ]);
 const RE_MARKETS = toOptions([
   "Residential resale",
@@ -215,7 +217,9 @@ export function Step1BusinessInfo({ state, dispatch, isHS }: StepProps) {
                 <StyledSelect
                   value={step1.serviceArea || ""}
                   onChange={(v) => update({ serviceArea: v })}
-                  options={lang === "bg" ? BG_HS_SERVICE_AREAS : HS_SERVICE_AREAS}
+                  options={
+                    lang === "bg" ? BG_HS_SERVICE_AREAS : HS_SERVICE_AREAS
+                  }
                 />
               </FormField>
             </div>
