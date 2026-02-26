@@ -10,6 +10,12 @@ import { useLang } from "@/hooks/useLang";
 
 const MIN_WAIT_MS = 8000;
 
+function clearAuditStorage() {
+  localStorage.removeItem("ep_audit_state");
+  localStorage.removeItem("ep_audit_state_scores");
+  localStorage.removeItem("ep_audit_state_form");
+}
+
 export default function Loading() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -58,6 +64,7 @@ export default function Loading() {
         if (!mountedRef.current) return;
         apiResolvedRef.current = true;
         setProgress(100);
+        clearAuditStorage();
         navigate(`${prefix}/report/${auditId}`, {
           state: {
             formState: formStateRef.current,
@@ -117,6 +124,7 @@ export default function Loading() {
         apiResolvedRef.current = true;
         setAiReport(data.report as AIReportData);
         setProgress(100);
+        clearAuditStorage();
         navigate(`${prefix}/report/${auditId}`, {
           state: {
             formState: formStateRef.current,
@@ -141,6 +149,7 @@ export default function Loading() {
 
   const handleSkipToReport = useCallback(() => {
     const auditId = auditIdRef.current || "demo-" + Date.now();
+    clearAuditStorage();
     navigate(`${prefix}/report/${auditId}`, {
       state: {
         formState: formStateRef.current,
