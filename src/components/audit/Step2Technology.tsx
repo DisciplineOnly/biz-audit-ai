@@ -3,6 +3,7 @@ import {
   FormField,
   StepHeader,
   StyledSelect,
+  StyledInput,
   MultiCheckbox,
   StyledTextarea,
   RatingButtons,
@@ -166,10 +167,19 @@ export function Step2Technology({ state, dispatch, isHS }: StepProps) {
         >
           <StyledSelect
             value={step2.primaryCRM}
-            onChange={(v) => update({ primaryCRM: v })}
+            onChange={(v) =>
+              update({ primaryCRM: v, ...(v !== "Other" && { primaryCRMOther: "" }) })
+            }
             options={crmOptions}
             placeholder={t("step2.fields.primaryCRM.placeholder")}
           />
+          {step2.primaryCRM === "Other" && (
+            <StyledInput
+              value={step2.primaryCRMOther || ""}
+              onChange={(v) => update({ primaryCRMOther: v })}
+              placeholder={t("step2.fields.primaryCRM.otherPlaceholder")}
+            />
+          )}
         </FormField>
 
         <FormField

@@ -31,7 +31,7 @@
     },
     "re": {
       "sectionHeader": "About Your Real Estate Business",
-      "role": { "label": "Your Role" },
+      "role": { "label": "Your Role", "otherPlaceholder": "Please specify your role..." },
       "teamSize": { "label": "Team Size" },
       "transactionVolume": { "label": "Annual Transaction Volume" },
       "annualGCI": { "label": "Annual GCI (Gross Commission Income)" },
@@ -47,7 +47,8 @@
       "primaryCRM": {
         "hs": { "label": "Primary CRM / Field Service Software" },
         "re": { "label": "Primary CRM" },
-        "placeholder": "Select your primary software..."
+        "placeholder": "Select your primary software...",
+        "otherPlaceholder": "Please specify your CRM/software name..."
       },
       "crmSatisfaction": {
         "hs": { "label": "How satisfied are you with your current software?" },

@@ -36,6 +36,7 @@ export interface AuditFormState {
     serviceArea?: string;
     // Real Estate specific
     role?: string;
+    roleOther?: string;
     teamSize?: string;
     transactionVolume?: string;
     annualGCI?: string;
@@ -45,6 +46,7 @@ export interface AuditFormState {
   // Step 2
   step2: {
     primaryCRM: string;
+    primaryCRMOther?: string;
     crmSatisfaction: number; // 1-5
     toolsUsed: string[];
     techFrustrations: string;

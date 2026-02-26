@@ -228,9 +228,18 @@ export function Step1BusinessInfo({ state, dispatch, isHS }: StepProps) {
               <FormField label={t("step1.re.role.label")} required>
                 <StyledSelect
                   value={step1.role || ""}
-                  onChange={(v) => update({ role: v })}
+                  onChange={(v) =>
+                    update({ role: v, ...(v !== "Other" && { roleOther: "" }) })
+                  }
                   options={lang === "bg" ? BG_RE_ROLES : RE_ROLES}
                 />
+                {step1.role === "Other" && (
+                  <StyledInput
+                    value={step1.roleOther || ""}
+                    onChange={(v) => update({ roleOther: v })}
+                    placeholder={t("step1.re.role.otherPlaceholder")}
+                  />
+                )}
               </FormField>
 
               <FormField label={t("step1.re.teamSize.label")}>
