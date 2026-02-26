@@ -156,10 +156,10 @@ const BG_LABELS: Record<string, string> = {
   "No consistent process": "Без последователен процес",
   "It depends on the agent": "Зависи от агента",
   // Lead tracking
-  "CRM with pipeline stages": "CRM с етапи на фунията",
+  "CRM with pipeline stages": "Специален софтуер",
   "Spreadsheet/Google Sheets": "Таблица/Google Sheets",
   "Notebook/whiteboard": "Тетрадка/бяла дъска",
-  "Software but not consistently": "Софтуер, но не последователно",
+  "Software but not consistently": "Софтуер, но не постоянно",
   "We don't really track this": "Не проследяваме това",
   // HS conversion rates
   "Yes - above 50%": "Да - над 50%",

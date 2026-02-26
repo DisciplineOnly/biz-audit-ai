@@ -83,15 +83,16 @@ const RE_COLD = toOptions([
 
 const BG_LABELS: Record<string, string> = {
   // HS Scheduling
-  "Software with drag-and-drop board": "Софтуер с drag-and-drop табло",
+  "Software with drag-and-drop board": "Специален софтуер",
   "Google/Outlook Calendar": "Google/Outlook календар",
   "Phone calls and a whiteboard": "Телефонни обаждания и бяла дъска",
   "Paper schedule": "Хартиен график",
   "No real system": "Без реална система",
   // HS Dispatch
   "Automated through software": "Автоматизирано чрез софтуер",
-  "Manual - office calls/texts techs": "Ръчно - офисът звъни/пише на техниците",
-  "Techs check a shared calendar": "Техниците проверяват споделен календар",
+  "Manual - office calls/texts techs":
+    "Ръчно - офисът звъни/пише на служителите",
+  "Techs check a shared calendar": "Служителите проверяват споделен календар",
   "Mixed approach": "Смесен подход",
   // HS Route
   "Yes - software optimized": "Да - оптимизирано чрез софтуер",
@@ -110,7 +111,7 @@ const BG_LABELS: Record<string, string> = {
   "We usually can't accommodate them": "Обикновено не можем да ги поемем",
   "It's chaotic": "Хаотично е",
   // RE Follow Up
-  "Yes - automated drip campaigns": "Да - автоматизирани drip кампании",
+  "Yes - automated drip campaigns": "Да - автоматизирано",
   "Yes - manual but documented": "Да - ръчно, но документирано",
   "Sort of - agents do their own thing":
     "Донякъде - агентите действат самостоятелно",

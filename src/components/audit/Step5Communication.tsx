@@ -120,7 +120,7 @@ const BG_LABELS: Record<string, string> = {
   "Some manual updates": "Някои ръчни актуализации",
   "No - agents handle individually": "Не - агентите се справят поотделно",
   // RE Past client
-  "Automated long-term drip": "Автоматизиран дългосрочен drip",
+  "Automated long-term drip": "Автоматизиран дългосрочен контакт",
   "Annual check-ins/market updates": "Годишни проверки/пазарни актуализации",
   "Holiday cards/occasional emails": "Празнични картички/случайни имейли",
   "We don't maintain contact consistently":
